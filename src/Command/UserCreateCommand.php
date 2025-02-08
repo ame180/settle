@@ -20,49 +20,47 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 final class UserCreateCommand extends Command
 {
     public function __construct(
-		private readonly EntityManagerInterface $entityManager,
-		private readonly UserRepository $userRepository,
-		private readonly UserPasswordHasherInterface $passwordHasher,
-	) {
+        private readonly EntityManagerInterface $entityManager,
+        private readonly UserRepository $userRepository,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+    ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
         $this
-			->addArgument('email', InputArgument::REQUIRED, 'User email')
-			->addArgument('password', InputArgument::REQUIRED, 'User password');
+            ->addArgument('email', InputArgument::REQUIRED, 'User email')
+            ->addArgument('password', InputArgument::REQUIRED, 'User password');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $email = $input->getArgument('email');
-		$password = $input->getArgument('password');
+        $password = $input->getArgument('password');
 
-		if (empty($email) || empty($password))
-		{
-			$io->error('Email and password cannot be empty');
+        if (empty($email) || empty($password)) {
+            $io->error('Email and password cannot be empty');
 
-			return Command::FAILURE;
-		}
+            return Command::FAILURE;
+        }
 
-		$user = $this->userRepository->findOneBy(['email' => $email]);
-		if (null !== $user)
-		{
-			$io->error('User already exists');
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+        if (null !== $user) {
+            $io->error('User already exists');
 
-			return Command::FAILURE;
-		}
+            return Command::FAILURE;
+        }
 
-		$user = new User();
-		$user->setEmail($email);
-		$user->setPassword($this->passwordHasher->hashPassword($user, $password));
+        $user = new User();
+        $user->setEmail($email);
+        $user->setPassword($this->passwordHasher->hashPassword($user, $password));
 
-		$this->entityManager->persist($user);
-		$this->entityManager->flush();
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
-		$io->success('User created successfully');
+        $io->success('User created successfully');
 
         return Command::SUCCESS;
     }
