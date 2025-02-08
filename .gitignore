@@ -1,4 +1,5 @@
 .env
+.idea/
 config/secrets/prod/prod.decrypt.private.php
 
 public/bundles/
