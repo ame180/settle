@@ -19,7 +19,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "80:80"
+      - "${NGINX_PORT}:80"
     depends_on:
       - php
 
