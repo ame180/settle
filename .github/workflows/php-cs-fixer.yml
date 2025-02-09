@@ -1,0 +1,23 @@
+name: PHP CS Fixer
+
+on:
+  - push
+  - pull_request
+
+env:
+  PHP_VERSION: '8.3'
+
+jobs:
+  php-cs-fixer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      - uses: php-actions/composer@v6
+        with:
+          php_version: ${{ env.PHP_VERSION }}
+          args: --no-scripts --ignore-platform-reqs
+      - name: PHP CS Fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run
