@@ -7,7 +7,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN docker-php-ext-install pdo_mysql
 
 # Install dependencies
-RUN apt-get update && apt-get -y install git && apt-get clean
+RUN apt-get update && apt-get -y install git unzip && apt-get clean
 
 RUN git config --global --add safe.directory /app
 
