@@ -12,6 +12,7 @@ class UserDebtService
         foreach ($user->getDebts() as $debt) {
             $debtAmount = bcadd($debt->getAmount(), $debtAmount, 2);
         }
+
         return $debtAmount;
     }
 }

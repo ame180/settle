@@ -15,5 +15,4 @@ class DebtRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Debt::class);
     }
-
 }
