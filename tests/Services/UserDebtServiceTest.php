@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Services;
 
 use App\Entity\Debt;
 use App\Entity\User;
 use App\Services\UserDebtService;
-use App\Tests\Services\Utils\UserTestFactory;
+use App\Tests\Services\Utils\UserFactory;
 use PHPUnit\Framework\TestCase;
 
 
@@ -13,13 +15,12 @@ class UserDebtServiceTest extends TestCase
 {
     private UserDebtService $service;
 
-    public function debtsAmountProvider()
+    public function debtsAmountProvider(): array
     {
         return [
-            [UserTestFactory::createUser(), ['10', '20', '30'], '60.00'],
-            [UserTestFactory::createUser(), ['10', 20.00, '30', '40'], '100.00'],
-            [UserTestFactory::createUser(), [10, '20', '30', '40', '50'], '150.00'],
-            [UserTestFactory::createUser(), [10.001, 20.01, 30.1], '60.11'],
+            [UserFactory::createUser(), [], "0.00"],
+            [UserFactory::createUser(), ['10', '20', '30'], '60.00'],
+            [UserFactory::createUser(), ["10.001", "20.01", "30.1"], '60.11'],
         ];
     }
 
@@ -31,14 +32,14 @@ class UserDebtServiceTest extends TestCase
 
     /**
      * @param User   $user
-     * @param int[]  $amounts
+     * @param string[] $amounts
      * @param string $resultAmount
      *
      * @dataProvider debtsAmountProvider
      */
     public function testFewDebtsAmount(User $user, array $amounts, string $resultAmount): void
     {
-        $user = UserTestFactory::createUser();
+        $user = UserFactory::createUser();
         foreach ($amounts as $amount) {
             $this->addDebtToUser($user, $amount);
         }
@@ -47,11 +48,11 @@ class UserDebtServiceTest extends TestCase
 
     public function testNumberPrecision(): void
     {
-        $user = UserTestFactory::createUser();
+        $user = UserFactory::createUser();
         $float = 0.1;
         $floatResult = 0;
         for ($i = 0; $i < 1000; $i++) {
-            $this->addDebtToUser($user, $float);
+            $this->addDebtToUser($user, (string)$float);
             $floatResult += $float;
         }
         $userDebtAmount = $this->service->getUserDebtAmount($user);

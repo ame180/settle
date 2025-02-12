@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\DebtRepository;
@@ -53,7 +55,7 @@ class Debt
 
     public function setAmount(string $amount): static
     {
-        $this->amount = bcadd($amount, 0, 2);
+        $this->amount = bcadd($amount, "0", 2);
 
         return $this;
     }
