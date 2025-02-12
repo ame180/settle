@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -26,6 +28,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, Debt>
+     */
+    #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'Debt')]
+    private Collection $debts;
+
+    public function __construct()
+    {
+        $this->debts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -86,5 +99,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Debt>
+     */
+    public function getDebts(): Collection
+    {
+        return $this->debts;
+    }
+
+    public function addDebt(Debt $debt): static
+    {
+        if (!$this->debts->contains($debt)) {
+            $this->debts->add($debt);
+            $debt->setPayer($this);
+        }
+
+        return $this;
     }
 }
