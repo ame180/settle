@@ -35,11 +35,11 @@
     "symfony/runtime": "7.2.*",
     "symfony/security-bundle": "7.2.*",
     "symfony/serializer": "7.2.*",
-    "symfony/stimulus-bundle": "^2.22.1",
+    "symfony/stimulus-bundle": "^2.23.0",
     "symfony/string": "7.2.*",
     "symfony/translation": "7.2.*",
     "symfony/twig-bundle": "7.2.*",
-    "symfony/ux-turbo": "^2.22.1",
+    "symfony/ux-turbo": "^2.23.0",
     "symfony/validator": "7.2.*",
     "symfony/web-link": "7.2.*",
     "symfony/yaml": "7.2.*",
@@ -86,7 +86,8 @@
     ],
     "post-update-cmd": [
       "@auto-scripts"
-    ]
+    ],
+    "php-cs-fixer": "php-cs-fixer --config=./.php-cs-fixer.php"
   },
   "conflict": {
     "symfony/symfony": "*"
