@@ -118,15 +118,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
-    public function removeDebt(Debt $debt): static
-    {
-        if ($this->debts->removeElement($debt)) {
-            if ($debt->getPayer() === $this) {
-                $debt->setPayer(null);
-            }
-        }
-
-        return $this;
-    }
 }

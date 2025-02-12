@@ -10,7 +10,7 @@ class UserDebtService
 {
     public function getUserDebtAmount(User $user): string
     {
-        $debtAmount = "0.00";
+        $debtAmount = '0.00';
         foreach ($user->getDebts() as $debt) {
             $debtAmount = bcadd($debt->getAmount(), $debtAmount, 2);
         }

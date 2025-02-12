@@ -36,7 +36,7 @@ class Debt
         return $this->id;
     }
 
-    public function getPayer(): ?User
+    public function getPayer(): User
     {
         return $this->payer;
     }
@@ -55,7 +55,7 @@ class Debt
 
     public function setAmount(string $amount): static
     {
-        $this->amount = bcadd($amount, "0", 2);
+        $this->amount = bcadd($amount, '0', 2);
 
         return $this;
     }
