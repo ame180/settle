@@ -1,0 +1,25 @@
+name: Unit tests
+
+on:
+  - push
+  - pull_request
+
+env:
+  PHP_VERSION: '8.3'
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      - uses: php-actions/composer@v6
+        with:
+          php_version: ${{ env.PHP_VERSION }}
+          args: --no-scripts --ignore-platform-reqs
+      - name: Create .env file
+        run: cp .env.example .env
+      - name: Unit tests
+        run: vendor/bin/phpunit --testdox
