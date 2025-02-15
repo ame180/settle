@@ -1,4 +1,4 @@
-FROM php:8.3-fpm AS base
+FROM php:8.4-fpm AS base
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
