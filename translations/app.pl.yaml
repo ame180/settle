@@ -1,0 +1,6 @@
+login:
+  sign_in: "Zaloguj się"
+  logout: "Wyloguj się"
+  logged_in: "Jesteś zalogowany jako %name%"
+  email: 'Adres email'
+  password: 'Hasło'
