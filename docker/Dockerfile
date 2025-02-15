@@ -4,7 +4,7 @@ FROM php:8.3-fpm AS base
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install pdo_mysql bcmath
 
 # Install dependencies
 RUN apt-get update && apt-get -y install git unzip && apt-get clean
