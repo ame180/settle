@@ -104,9 +104,9 @@ class Expense
 
     public function addDebt(Debt $debt): static
     {
-		if ($debt->getExpense() !== $this) {
-			throw new \InvalidArgumentException('Debt expense must be the same as the Expense');
-		}
+        if ($debt->getExpense() !== $this) {
+            throw new \InvalidArgumentException('Debt expense must be the same as the Expense');
+        }
 
         if (!$this->debts->contains($debt)) {
             $this->debts->add($debt);
