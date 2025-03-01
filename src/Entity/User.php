@@ -32,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Debt>
      */
-    #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'Debt')]
+    #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'payer')]
     private Collection $debts;
 
     /**
