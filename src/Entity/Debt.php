@@ -25,9 +25,14 @@ class Debt
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
 
-    public function __construct(User $user, string $amount)
+    #[ORM\ManyToOne(inversedBy: 'debts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Expense $expense;
+
+    public function __construct(User $user, Expense $expense, string $amount)
     {
         $this->payer = $user;
+        $this->expense = $expense;
         $this->setAmount($amount);
     }
 
@@ -58,5 +63,10 @@ class Debt
         $this->amount = bcadd($amount, '0', 2);
 
         return $this;
+    }
+
+    public function getExpense(): Expense
+    {
+        return $this->expense;
     }
 }

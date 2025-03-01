@@ -35,9 +35,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'Debt')]
     private Collection $debts;
 
+    /**
+     * @var Collection<int, Debt>
+     */
+    #[ORM\OneToMany(targetEntity: Expense::class, mappedBy: 'payee', orphanRemoval: true)]
+    private Collection $expenses;
+
     public function __construct()
     {
         $this->debts = new ArrayCollection();
+        $this->expenses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -114,6 +121,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->debts->contains($debt)) {
             $this->debts->add($debt);
             $debt->setPayer($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Debt>
+     */
+    public function getExpenses(): Collection
+    {
+        return $this->expenses;
+    }
+
+    public function addExpense(Expense $expense): static
+    {
+        if (!$this->expenses->contains($expense)) {
+            $this->expenses->add($expense);
         }
 
         return $this;
