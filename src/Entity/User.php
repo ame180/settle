@@ -118,6 +118,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function addDebt(Debt $debt): static
     {
+		if ($debt->getPayer() !== $this) {
+			throw new \InvalidArgumentException('Debt payer must be the same as the User');
+		}
+
         if (!$this->debts->contains($debt)) {
             $this->debts->add($debt);
         }
@@ -135,6 +139,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function addExpense(Expense $expense): static
     {
+		if ($expense->getPayee() !== $this) {
+			throw new \InvalidArgumentException('Expense payee must be the same as the User');
+		}
+
         if (!$this->expenses->contains($expense)) {
             $this->expenses->add($expense);
         }
