@@ -120,7 +120,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->debts->contains($debt)) {
             $this->debts->add($debt);
-            $debt->setPayer($this);
         }
 
         return $this;

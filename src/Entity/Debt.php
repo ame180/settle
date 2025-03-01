@@ -46,13 +46,6 @@ class Debt
         return $this->payer;
     }
 
-    public function setPayer(User $payer): static
-    {
-        $this->payer = $payer;
-
-        return $this;
-    }
-
     public function getAmount(): string
     {
         return $this->amount;
