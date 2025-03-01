@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Services;
 
 use App\Entity\Debt;
+use App\Entity\Expense;
 use App\Entity\User;
 use App\Services\UserDebtService;
 use App\Tests\Services\Utils\UserFactory;
@@ -15,12 +16,22 @@ class UserDebtServiceTest extends TestCase
 {
     private UserDebtService $service;
 
-    public function debtsAmountProvider(): array
+    public function expenseAndDebtsProvider(): array
     {
         return [
-            [UserFactory::createUser(), [], "0.00"],
-            [UserFactory::createUser(), ['10', '20', '30'], '60.00'],
-            [UserFactory::createUser(), ["10.001", "20.01", "30.1"], '60.11'],
+			// Debt calculation
+            [UserFactory::createUser(), [], [], '0.00'],
+            [UserFactory::createUser(), [],['10', '20', '30'], '60.00'],
+            [UserFactory::createUser(), [],['10.001', '20.01', '30.1'], '60.11'],
+			// Expense calculation
+            [UserFactory::createUser(), [],[], '0.00'],
+            [UserFactory::createUser(), ['10', '20', '30'],[], '-60.00'],
+            [UserFactory::createUser(), ['10.001', '20.01', '30.1'],[], '-60.11'],
+			// Debt and expense calculation
+			[UserFactory::createUser(), ['10', '20', '30'],['10', '20', '30'], '0.00'],
+			[UserFactory::createUser(), ['10.001', '20.01', '30.1'],['10.001', '20.01', '30.1'], '0.00'],
+			[UserFactory::createUser(), ['10', '20', '30'],['10.001', '20.01', '30.1'], '0.11'],
+			[UserFactory::createUser(), ['10.001', '20.01', '30.1'],['10', '20', '30'], '-0.11'],
         ];
     }
 
@@ -32,17 +43,21 @@ class UserDebtServiceTest extends TestCase
 
     /**
      * @param User   $user
-     * @param string[] $amounts
+     * @param string[] $expenses
+     * @param string[] $debts
      * @param string $resultAmount
      *
-     * @dataProvider debtsAmountProvider
+     * @dataProvider expenseAndDebtsProvider
      */
-    public function testFewDebtsAmount(User $user, array $amounts, string $resultAmount): void
+    public function testFewDebtsAmount(User $user, array $expenses, array $debts, string $resultAmount): void
     {
         $user = UserFactory::createUser();
-        foreach ($amounts as $amount) {
+        foreach ($debts as $amount) {
             $this->addDebtToUser($user, $amount);
         }
+		foreach ($expenses as $amount) {
+			$this->addExpenseToUser($user, $amount);
+		}
         $this->assertEquals($resultAmount, $this->service->getUserDebtAmount($user));
     }
 
@@ -62,6 +77,16 @@ class UserDebtServiceTest extends TestCase
 
     private function addDebtToUser(User $user, string $amount): void
     {
-        $user->addDebt(new Debt($user, $amount));
+		$otherUser = UserFactory::createUser();
+		$expense = new Expense($otherUser, 'title', 'description', $amount);
+
+		$user->addDebt(new Debt($user, $expense, $amount));
     }
+
+	private function addExpenseToUser(User $user, string $amount): void
+	{
+		$expense = new Expense($user, 'title', 'description', $amount);
+
+		$user->addExpense($expense);
+	}
 }
