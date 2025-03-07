@@ -26,7 +26,7 @@ class Expense
     private string $title;
 
     #[ORM\Column(type: Types::TEXT, nullable: false)]
-    private ?string $description;
+    private string $description;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
