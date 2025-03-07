@@ -11,7 +11,6 @@ use App\Services\UserDebtService;
 use App\Tests\Services\Utils\UserFactory;
 use PHPUnit\Framework\TestCase;
 
-
 class UserDebtServiceTest extends TestCase
 {
     private UserDebtService $service;
@@ -19,19 +18,19 @@ class UserDebtServiceTest extends TestCase
     public function expenseAndDebtsProvider(): array
     {
         return [
-			// Debt calculation
+            // Debt calculation
             [UserFactory::createUser(), [], [], '0.00'],
-            [UserFactory::createUser(), [],['10', '20', '30'], '60.00'],
-            [UserFactory::createUser(), [],['10.001', '20.01', '30.1'], '60.11'],
-			// Expense calculation
-            [UserFactory::createUser(), [],[], '0.00'],
-            [UserFactory::createUser(), ['10', '20', '30'],[], '-60.00'],
-            [UserFactory::createUser(), ['10.001', '20.01', '30.1'],[], '-60.11'],
-			// Debt and expense calculation
-			[UserFactory::createUser(), ['10', '20', '30'],['10', '20', '30'], '0.00'],
-			[UserFactory::createUser(), ['10.001', '20.01', '30.1'],['10.001', '20.01', '30.1'], '0.00'],
-			[UserFactory::createUser(), ['10', '20', '30'],['10.001', '20.01', '30.1'], '0.11'],
-			[UserFactory::createUser(), ['10.001', '20.01', '30.1'],['10', '20', '30'], '-0.11'],
+            [UserFactory::createUser(), [], ['10', '20', '30'], '60.00'],
+            [UserFactory::createUser(), [], ['10.001', '20.01', '30.1'], '60.11'],
+            // Expense calculation
+            [UserFactory::createUser(), [], [], '0.00'],
+            [UserFactory::createUser(), ['10', '20', '30'], [], '-60.00'],
+            [UserFactory::createUser(), ['10.001', '20.01', '30.1'], [], '-60.11'],
+            // Debt and expense calculation
+            [UserFactory::createUser(), ['10', '20', '30'], ['10', '20', '30'], '0.00'],
+            [UserFactory::createUser(), ['10.001', '20.01', '30.1'], ['10.001', '20.01', '30.1'], '0.00'],
+            [UserFactory::createUser(), ['10', '20', '30'], ['10.001', '20.01', '30.1'], '0.11'],
+            [UserFactory::createUser(), ['10.001', '20.01', '30.1'], ['10', '20', '30'], '-0.11'],
         ];
     }
 
@@ -42,10 +41,8 @@ class UserDebtServiceTest extends TestCase
     }
 
     /**
-     * @param User   $user
      * @param string[] $expenses
      * @param string[] $debts
-     * @param string $resultAmount
      *
      * @dataProvider expenseAndDebtsProvider
      */
@@ -55,9 +52,9 @@ class UserDebtServiceTest extends TestCase
         foreach ($debts as $amount) {
             $this->addDebtToUser($user, $amount);
         }
-		foreach ($expenses as $amount) {
-			$this->addExpenseToUser($user, $amount);
-		}
+        foreach ($expenses as $amount) {
+            $this->addExpenseToUser($user, $amount);
+        }
         $this->assertEquals($resultAmount, $this->service->getUserDebtAmount($user));
     }
 
@@ -66,8 +63,8 @@ class UserDebtServiceTest extends TestCase
         $user = UserFactory::createUser();
         $float = 0.1;
         $floatResult = 0;
-        for ($i = 0; $i < 1000; $i++) {
-            $this->addDebtToUser($user, (string)$float);
+        for ($i = 0; $i < 1000; ++$i) {
+            $this->addDebtToUser($user, (string) $float);
             $floatResult += $float;
         }
         $userDebtAmount = $this->service->getUserDebtAmount($user);
@@ -77,16 +74,16 @@ class UserDebtServiceTest extends TestCase
 
     private function addDebtToUser(User $user, string $amount): void
     {
-		$otherUser = UserFactory::createUser();
-		$expense = new Expense($otherUser, 'title', 'description', $amount);
+        $otherUser = UserFactory::createUser();
+        $expense = new Expense($otherUser, 'title', 'description', $amount);
 
-		$user->addDebt(new Debt($user, $expense, $amount));
+        $user->addDebt(new Debt($user, $expense, $amount));
     }
 
-	private function addExpenseToUser(User $user, string $amount): void
-	{
-		$expense = new Expense($user, 'title', 'description', $amount);
+    private function addExpenseToUser(User $user, string $amount): void
+    {
+        $expense = new Expense($user, 'title', 'description', $amount);
 
-		$user->addExpense($expense);
-	}
+        $user->addExpense($expense);
+    }
 }
