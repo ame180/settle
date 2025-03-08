@@ -72,6 +72,28 @@ class UserDebtServiceTest extends TestCase
         $this->assertNotEquals($floatResult, $userDebtAmount);
     }
 
+    public function testMultiUserDebtAmounts(): void
+    {
+        $user1 = UserFactory::createUser();
+        $user2 = UserFactory::createUser();
+
+        $expense1 = new Expense($user1, '50/50 Expense', '', '10');
+        $user1->addExpense($expense1);
+        $user1->addDebt(new Debt($user1, $expense1, '5'));
+        $user2->addDebt(new Debt($user2, $expense1, '5'));
+
+        $expense2 = new Expense($user2, 'Fully owed expense', '', '10');
+        $user2->addExpense($expense2);
+        $user1->addDebt(new Debt($user1, $expense2, '10'));
+
+        $expense3 = new Expense($user1, 'Expense owed to self', '', '10');
+        $user1->addExpense($expense3);
+        $user1->addDebt(new Debt($user1, $expense3, '10'));
+
+        $this->assertEquals('5.00', $this->service->getUserDebtAmount($user1));
+        $this->assertEquals('-5.00', $this->service->getUserDebtAmount($user2));
+    }
+
     private function addDebtToUser(User $user, string $amount): void
     {
         $otherUser = UserFactory::createUser();
