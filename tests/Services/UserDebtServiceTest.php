@@ -15,6 +15,9 @@ class UserDebtServiceTest extends TestCase
 {
     private UserDebtService $service;
 
+    /**
+     * @return array<int, array{User, list<string>, list<string>, string}>
+     */
     public function expenseAndDebtsProvider(): array
     {
         return [
