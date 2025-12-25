@@ -48,7 +48,6 @@ class UserDebtServiceTest extends TestCase
      */
     public function testFewDebtsAmount(User $user, array $expenses, array $debts, string $resultAmount): void
     {
-        $user = UserFactory::createUser();
         foreach ($debts as $amount) {
             $this->addDebtToUser($user, $amount);
         }

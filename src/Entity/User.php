@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $debts;
 
     /**
-     * @var Collection<int, Debt>
+     * @var Collection<int, Expense>
      */
     #[ORM\OneToMany(targetEntity: Expense::class, mappedBy: 'payee', orphanRemoval: true)]
     private Collection $expenses;
@@ -130,7 +130,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Debt>
+     * @return Collection<int, Expense>
      */
     public function getExpenses(): Collection
     {
