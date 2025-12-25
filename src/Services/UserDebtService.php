@@ -15,6 +15,10 @@ class UserDebtService
             $debtAmount = bcadd($debt->getAmount(), $debtAmount, 2);
         }
 
+        foreach ($user->getExpenses() as $expense) {
+            $debtAmount = bcsub($debtAmount, $expense->getAmount(), 2);
+        }
+
         return $debtAmount;
     }
 }

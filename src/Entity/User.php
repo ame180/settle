@@ -32,12 +32,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Debt>
      */
-    #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'Debt')]
+    #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'payer', orphanRemoval: true)]
     private Collection $debts;
+
+    /**
+     * @var Collection<int, Expense>
+     */
+    #[ORM\OneToMany(targetEntity: Expense::class, mappedBy: 'payee', orphanRemoval: true)]
+    private Collection $expenses;
 
     public function __construct()
     {
         $this->debts = new ArrayCollection();
+        $this->expenses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -111,9 +118,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function addDebt(Debt $debt): static
     {
+        if ($debt->getPayer() !== $this) {
+            throw new \InvalidArgumentException('Debt payer must be the same as the User');
+        }
+
         if (!$this->debts->contains($debt)) {
             $this->debts->add($debt);
-            $debt->setPayer($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Expense>
+     */
+    public function getExpenses(): Collection
+    {
+        return $this->expenses;
+    }
+
+    public function addExpense(Expense $expense): static
+    {
+        if ($expense->getPayee() !== $this) {
+            throw new \InvalidArgumentException('Expense payee must be the same as the User');
+        }
+
+        if (!$this->expenses->contains($expense)) {
+            $this->expenses->add($expense);
         }
 
         return $this;
