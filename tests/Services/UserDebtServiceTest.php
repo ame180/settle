@@ -96,6 +96,68 @@ class UserDebtServiceTest extends TestCase
         $this->assertEquals('-5.00', $this->service->getUserDebtAmount($user2));
     }
 
+    /**
+     * @return array<string, array{numeric-string, array<string, numeric-string>, string, numeric-string}>
+     */
+    public function calculateExpenseBalanceProvider(): array
+    {
+        return [
+            'Payee is owed balance' => [
+                '100.00',
+                ['payee' => '20.00', 'payer1' => '40.00', 'payer2' => '40.00'],
+                'payee',
+                '80.00',
+            ],
+            'Payer owes balance' => [
+                '50.00',
+                ['payee' => '25.00', 'payer' => '25.00'],
+                'payer',
+                '-25.00',
+            ],
+            'Uninvolved user has no balance' => [
+                '10.00',
+                ['payer' => '10.00'],
+                'uninvolved',
+                '0.00',
+            ],
+            'Payee owes full amount to self' => [
+                '100.00',
+                ['payee' => '100.00'],
+                'payee',
+                '0.00',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider calculateExpenseBalanceProvider
+     *
+     * @param array<string, numeric-string> $debts
+     */
+    public function testCalculateExpenseBalanceForUser(string $totalAmount, array $debts, string $targetUserKey, string $expectedBalance): void
+    {
+        $users = [
+            'payee' => UserFactory::createUser(),
+        ];
+
+        $expense = new Expense($users['payee'], 'Title', 'Description', $totalAmount);
+
+        foreach ($debts as $userKey => $amount) {
+            if (!isset($users[$userKey])) {
+                $users[$userKey] = UserFactory::createUser();
+            }
+            $debt = new Debt($users[$userKey], $expense, $amount);
+            $expense->addDebt($debt);
+        }
+
+        if (!isset($users[$targetUserKey])) {
+            $users[$targetUserKey] = UserFactory::createUser();
+        }
+
+        $balance = $this->service->calculateExpenseBalanceForUser($expense, $users[$targetUserKey]);
+        $this->assertEquals($expectedBalance, $balance);
+    }
+
     private function addDebtToUser(User $user, string $amount): void
     {
         $otherUser = UserFactory::createUser();
