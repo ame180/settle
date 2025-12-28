@@ -1,5 +1,6 @@
 .env
 .idea/
+.vscode/
 config/secrets/prod/prod.decrypt.private.php
 
 public/bundles/
