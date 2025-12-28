@@ -11,8 +11,8 @@ class UserFactory
 {
     public static function createUser(): User
     {
-        $user = new User();
-
-        return $user->setEmail(Factory::create()->email());
+        return (new User())
+            ->setEmail(Factory::create()->email())
+            ->setPassword('password');
     }
 }
