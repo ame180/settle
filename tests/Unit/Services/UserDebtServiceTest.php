@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Services;
+namespace App\Tests\Unit\Services;
 
 use App\Entity\Debt;
 use App\Entity\Expense;
 use App\Entity\User;
 use App\Services\UserDebtService;
-use App\Tests\Services\Utils\UserFactory;
+use App\Tests\Support\Factory\UserFactory;
 use PHPUnit\Framework\TestCase;
 
 class UserDebtServiceTest extends TestCase
