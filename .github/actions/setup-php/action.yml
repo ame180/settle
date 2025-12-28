@@ -1,0 +1,31 @@
+name: 'Setup PHP with Composer Cache'
+description: 'Sets up PHP with the specified version and caches Composer dependencies'
+inputs:
+  php-version:
+    description: 'The PHP version to setup'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        coverage: none
+    
+    - name: Get Composer cache directory
+      id: composer-cache
+      shell: bash
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+    
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+    
+    - name: Install Composer dependencies
+      shell: bash
+      run: composer install --no-scripts --no-interaction --prefer-dist --optimize-autoloader

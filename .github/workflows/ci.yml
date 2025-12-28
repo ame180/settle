@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [ dev, main ]
+  pull_request:
+    branches: [ dev, main ]
+
+env:
+  PHP_VERSION: '8.4'
+
+jobs:
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+    
+    env:
+      MYSQL_DATABASE: settle_test
+      MYSQL_USER: settle
+      MYSQL_PASSWORD: settle
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+    
+    services:
+      mysql:
+        image: mariadb:10.11
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP with Composer cache
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      
+      - name: Create .env file
+        run: cp .env.example .env
+
+      - name: Cache AssetMapper packages
+        uses: actions/cache@v4
+        with:
+          path: assets/vendor
+          key: ${{ runner.os }}-assetmapper-${{ hashFiles('importmap.php') }}
+          restore-keys: ${{ runner.os }}-assetmapper-
+
+      - name: Install AssetMapper dependencies
+        run: php bin/console importmap:install
+
+      - name: Create database schema
+        run: php bin/console --env=test doctrine:migrations:migrate --no-interaction
+      
+      - name: Run PHPUnit tests
+        run: vendor/bin/phpunit --testdox
+
+  php-cs-fixer:
+    name: PHP CS Fixer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP with Composer cache
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      
+      - name: Run PHP CS Fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  phpstan:
+    name: PHPStan Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP with Composer cache
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --error-format=github

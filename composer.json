@@ -4,7 +4,7 @@
   "minimum-stability": "stable",
   "prefer-stable": true,
   "require": {
-    "php": ">=8.2",
+    "php": "8.4.*",
     "ext-bcmath": "*",
     "ext-ctype": "*",
     "ext-iconv": "*",
@@ -88,7 +88,18 @@
     "post-update-cmd": [
       "@auto-scripts"
     ],
-    "php-cs-fixer": "php-cs-fixer --config=./.php-cs-fixer.php"
+    "cs": "php-cs-fixer fix",
+    "stan": "phpstan analyse",
+    "test": [
+      "bin/console --env=test doctrine:database:drop --force --if-exists",
+      "bin/console --env=test doctrine:database:create",
+      "bin/console --env=test doctrine:migrations:migrate --no-interaction",
+      "phpunit"
+    ],
+    "checkup": [
+      "@cs",
+      "@stan"
+    ]
   },
   "conflict": {
     "symfony/symfony": "*"
@@ -100,6 +111,7 @@
     }
   },
   "require-dev": {
+    "dama/doctrine-test-bundle": "^8.2",
     "fakerphp/faker": "^1.24.1",
     "friendsofphp/php-cs-fixer": "^3.92.3",
     "phpstan/extension-installer": "^1.4",

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Services\Utils;
+namespace App\Tests\Support\Factory;
 
 use App\Entity\User;
 use Faker\Factory;

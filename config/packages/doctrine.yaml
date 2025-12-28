@@ -1,8 +1,8 @@
 doctrine:
     dbal:
         dbname: '%env(MYSQL_DATABASE)%'
-        host: mysql
-        port: 3306
+        host: '%env(MYSQL_HOST)%'
+        port: '%env(MYSQL_PORT)%'
         user: '%env(MYSQL_USER)%'
         password: '%env(MYSQL_PASSWORD)%'
         driver: pdo_mysql
@@ -27,12 +27,6 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
-
-when@test:
-    doctrine:
-        dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
     doctrine:
