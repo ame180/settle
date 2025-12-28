@@ -13,6 +13,30 @@ jobs:
   phpunit:
     name: PHPUnit Tests
     runs-on: ubuntu-latest
+    
+    env:
+      MYSQL_DATABASE: settle_test
+      MYSQL_USER: settle
+      MYSQL_PASSWORD: settle
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,6 +48,9 @@ jobs:
       
       - name: Create .env file
         run: cp .env.example .env
+      
+      - name: Create database schema
+        run: php bin/console --env=test doctrine:migrations:migrate --no-interaction
       
       - name: Run PHPUnit tests
         run: vendor/bin/phpunit --testdox
