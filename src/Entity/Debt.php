@@ -7,10 +7,8 @@ namespace App\Entity;
 use App\Repository\DebtRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\UX\Turbo\Attribute\Broadcast;
 
 #[ORM\Entity(repositoryClass: DebtRepository::class)]
-#[Broadcast]
 class Debt
 {
     #[ORM\Id]
