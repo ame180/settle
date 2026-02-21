@@ -23,7 +23,8 @@ class ContactApiController extends AbstractController
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
-    ) {}
+    ) {
+    }
 
     #[Route('/contacts', name: 'api_contacts_create', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
