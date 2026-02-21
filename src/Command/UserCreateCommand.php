@@ -39,8 +39,8 @@ final class UserCreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $email = $input->getArgument('email');
-        $password = $input->getArgument('password');
+        $email = mb_strtolower(trim((string) $input->getArgument('email')));
+        $password = (string) $input->getArgument('password');
 
         if (empty($email) || empty($password)) {
             $io->error('Email and password cannot be empty');
@@ -49,20 +49,24 @@ final class UserCreateCommand extends Command
         }
 
         $user = $this->userRepository->findOneBy(['email' => $email]);
-        if (null !== $user) {
+        if (null !== $user && null !== $user->getPassword()) {
             $io->error('User already exists');
 
             return Command::FAILURE;
         }
 
-        $user = new User();
-        $user->setEmail($email);
-        $user->setPassword($this->passwordHasher->hashPassword($user, $password));
+        $isClaimingShadowUser = null !== $user;
 
-        $this->entityManager->persist($user);
+        if (null === $user) {
+            $user = new User();
+            $user->setEmail($email);
+            $this->entityManager->persist($user);
+        }
+
+        $user->setPassword($this->passwordHasher->hashPassword($user, $password));
         $this->entityManager->flush();
 
-        $io->success('User created successfully');
+        $io->success($isClaimingShadowUser ? 'Shadow user account claimed successfully' : 'User created successfully');
 
         return Command::SUCCESS;
     }

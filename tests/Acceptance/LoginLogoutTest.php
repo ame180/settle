@@ -53,4 +53,38 @@ class LoginLogoutTest extends WebTestCase
         $token = $tokenStorage->getToken();
         $this->assertNull($token);
     }
+
+    public function testShadowUserCannotLogin(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $shadowUser = new User();
+        $shadowUser->setEmail('shadow@example.com');
+        $shadowUser->setPassword(null);
+
+        $entityManager->persist($shadowUser);
+        $entityManager->flush();
+
+        $crawler = $client->request('GET', '/login');
+        $this->assertResponseIsSuccessful();
+
+        $form = $crawler->selectButton('Sign in')->form([
+            '_username' => 'shadow@example.com',
+            '_password' => 'any-password',
+        ]);
+
+        $client->submit($form);
+        $this->assertResponseRedirects('/login');
+
+        $client->followRedirect();
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.alert-danger');
+
+        $tokenStorage = $container->get(TokenStorageInterface::class);
+        $token = $tokenStorage->getToken();
+        $this->assertNull($token);
+    }
 }
