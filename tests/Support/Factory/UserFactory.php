@@ -9,10 +9,10 @@ use Faker\Factory;
 
 class UserFactory
 {
-    public static function createUser(): User
+    public static function createUser(?string $email = null, ?string $password = 'password'): User
     {
         return (new User())
-            ->setEmail(Factory::create()->email())
-            ->setPassword('password');
+            ->setEmail($email ?? Factory::create()->email())
+            ->setPassword($password);
     }
 }
