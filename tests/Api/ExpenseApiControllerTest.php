@@ -9,9 +9,167 @@ use App\Entity\Expense;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 class ExpenseApiControllerTest extends ApiTestCase
 {
+    public function testCreateNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/api/expenses');
+
+        $this->assertResponseRedirects('/login');
+    }
+
+    public function testCreateSuccess(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+
+        $otherUser = UserFactory::createUser();
+        $entityManager->persist($otherUser);
+
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'description' => 'Friday dinner',
+            'amount' => '100.00',
+            'payeeId' => $creator->getId(),
+            'debts' => [
+                ['payerId' => $otherUser->getId(), 'amount' => '70.00'],
+                ['payerId' => $creator->getId(), 'amount' => '30.00'],
+            ],
+        ]);
+
+        $this->assertJsonResponseIsSuccessful(201);
+        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'payeeId']);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame('Dinner', $response['title']);
+        $this->assertSame('Friday dinner', $response['description']);
+        $this->assertSame('100.00', $response['amount']);
+        $this->assertSame($creator->getId(), $response['payeeId']);
+    }
+
+    public function testCreateFailsWhenDebtsSumDoesNotMatchAmount(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+
+        $otherUser = UserFactory::createUser();
+        $entityManager->persist($otherUser);
+
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'description' => 'Friday dinner',
+            'amount' => '100.00',
+            'payeeId' => $creator->getId(),
+            'debts' => [
+                ['payerId' => $otherUser->getId(), 'amount' => '60.00'],
+                ['payerId' => $creator->getId(), 'amount' => '30.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testCreateFailsWhenUserDoesNotExist(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'description' => 'Friday dinner',
+            'amount' => '100.00',
+            'payeeId' => 999999,
+            'debts' => [
+                ['payerId' => $creator->getId(), 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenCreatorIsNotInvolved(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $debtor = UserFactory::createUser();
+        $entityManager->persist($debtor);
+
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'description' => 'Friday dinner',
+            'amount' => '100.00',
+            'payeeId' => $payee->getId(),
+            'debts' => [
+                ['payerId' => $debtor->getId(), 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsValidationForNonPositiveAmounts(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'description' => 'Friday dinner',
+            'amount' => '0.00',
+            'payeeId' => $creator->getId(),
+            'debts' => [
+                ['payerId' => $creator->getId(), 'amount' => '-1.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
     public function testListNotLoggedIn(): void
     {
         $client = static::createClient();
@@ -138,5 +296,23 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('Test Description', $response[0]['description']);
         $this->assertSame($user->getEmail(), $response[0]['payeeEmail']);
         $this->assertSame('100.00', $response[0]['value']);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function requestJson(KernelBrowser $client, string $method, string $url, array $payload): void
+    {
+        $client->request(
+            $method,
+            $url,
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+            ],
+            json_encode($payload, JSON_THROW_ON_ERROR)
+        );
     }
 }
