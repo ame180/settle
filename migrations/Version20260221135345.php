@@ -21,7 +21,11 @@ final class Version20260221135345 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql('UPDATE user SET password = \'\' WHERE password IS NULL');
+        $this->abortIf(
+            (int) $this->connection->executeQuery('SELECT COUNT(*) FROM user WHERE password IS NULL')->fetchOne() > 0,
+            'Cannot safely rollback migration: found users with NULL passwords (shadow users). Remove or update these users before running down().'
+        );
+
         $this->addSql('ALTER TABLE user CHANGE password password VARCHAR(255) NOT NULL');
     }
 }
