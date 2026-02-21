@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Dto\CreateExpenseRequest;
+use App\Dto\CreateExpenseResponse;
 use App\Dto\ExpenseListItemDto;
 use App\Dto\PaginationQuery;
 use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\ExpenseRepository;
+use App\Services\ExpenseCreateService;
 use App\Services\UserDebtService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -22,6 +26,7 @@ class ExpenseApiController extends AbstractController
     public function __construct(
         private readonly ExpenseRepository $expenseRepository,
         private readonly UserDebtService $userDebtService,
+        private readonly ExpenseCreateService $expenseCreateService,
     ) {
     }
 
@@ -51,5 +56,25 @@ class ExpenseApiController extends AbstractController
         );
 
         return $this->json($dtos);
+    }
+
+    #[Route('/expenses', name: 'api_expenses_create', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function create(
+        #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: JsonResponse::HTTP_BAD_REQUEST)]
+        CreateExpenseRequest $request,
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $expense = $this->expenseCreateService->create($user, $request);
+
+        return $this->json(new CreateExpenseResponse(
+            id: $expense->getId(),
+            title: $expense->getTitle(),
+            description: $expense->getDescription(),
+            amount: $expense->getAmount(),
+            payeeId: $expense->getPayee()->getId(),
+        ), JsonResponse::HTTP_CREATED);
     }
 }
