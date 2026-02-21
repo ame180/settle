@@ -11,12 +11,12 @@ use Symfony\Component\Validator\Constraints\Compound;
 final class Decimal extends Compound
 {
     public function __construct(
-        public readonly int $precision = 2,
+        public readonly int $scale = 2,
         ?array $groups = null,
         mixed $payload = null,
     ) {
-        if ($precision <= 0) {
-            throw new \InvalidArgumentException('Precision must be greater than 0.');
+        if ($scale <= 0) {
+            throw new \InvalidArgumentException('Scale must be greater than 0.');
         }
 
         parent::__construct([], $groups, $payload);
@@ -26,7 +26,7 @@ final class Decimal extends Compound
     {
         return [
             new Assert\Type('numeric'),
-            new Assert\Regex(sprintf('/^-?\\d+(?:\\.\\d{1,%d})?$/', $this->precision)),
+            new Assert\Regex(sprintf('/^-?\\d+(?:\\.\\d{1,%d})?$/', $this->scale)),
         ];
     }
 }

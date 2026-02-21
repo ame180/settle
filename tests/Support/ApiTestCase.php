@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Support;
 
 use PHPUnit\Framework\Constraint\LogicalAnd;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Test\Constraint\ResponseHasHeader;
 use Symfony\Component\HttpFoundation\Test\Constraint\ResponseIsSuccessful;
@@ -111,5 +112,23 @@ abstract class ApiTestCase extends WebTestCase
             $this->assertIsArray($data[0] ?? null, 'Expected first element to be an array');
             $this->assertJsonStructure($value, $data[0]);
         }
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    protected function requestJson(KernelBrowser $client, string $method, string $url, array $payload): void
+    {
+        $client->request(
+            $method,
+            $url,
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+            ],
+            json_encode($payload, JSON_THROW_ON_ERROR)
+        );
     }
 }

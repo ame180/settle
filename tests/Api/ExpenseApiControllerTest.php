@@ -9,7 +9,6 @@ use App\Entity\Expense;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 class ExpenseApiControllerTest extends ApiTestCase
 {
@@ -56,6 +55,33 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('Friday dinner', $response['description']);
         $this->assertSame('100.00', $response['amount']);
         $this->assertSame($creator->getId(), $response['payeeId']);
+
+        $entityManager->clear();
+        $expenseRepository = $entityManager->getRepository(Expense::class);
+
+        /** @var Expense|null $expense */
+        $expense = $expenseRepository->find($response['id']);
+
+        $this->assertInstanceOf(Expense::class, $expense);
+        $this->assertSame($response['title'], $expense->getTitle());
+        $this->assertSame($response['description'], $expense->getDescription());
+        $this->assertSame($response['amount'], $expense->getAmount());
+        $this->assertSame($creator->getId(), $expense->getPayee()->getId());
+
+        $debts = $expense->getDebts();
+        $this->assertCount(2, $debts);
+
+        $debtsByPayerId = [];
+        foreach ($debts as $debt) {
+            $debtsByPayerId[$debt->getPayer()->getId()] = $debt->getAmount();
+        }
+
+        $expectedDebts = [
+            $otherUser->getId() => '70.00',
+            $creator->getId() => '30.00',
+        ];
+
+        $this->assertSame($expectedDebts, $debtsByPayerId);
     }
 
     public function testCreateFailsWhenDebtsSumDoesNotMatchAmount(): void
@@ -167,7 +193,7 @@ class ExpenseApiControllerTest extends ApiTestCase
             ],
         ]);
 
-        $this->assertResponseStatusCodeSame(422);
+        $this->assertResponseStatusCodeSame(400);
     }
 
     public function testListNotLoggedIn(): void
@@ -296,23 +322,5 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('Test Description', $response[0]['description']);
         $this->assertSame($user->getEmail(), $response[0]['payeeEmail']);
         $this->assertSame('100.00', $response[0]['value']);
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     */
-    private function requestJson(KernelBrowser $client, string $method, string $url, array $payload): void
-    {
-        $client->request(
-            $method,
-            $url,
-            [],
-            [],
-            [
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_ACCEPT' => 'application/json',
-            ],
-            json_encode($payload, JSON_THROW_ON_ERROR)
-        );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Dto\CreateExpenseRequest;
+use App\Dto\CreateExpenseResponse;
 use App\Dto\ExpenseListItemDto;
 use App\Dto\PaginationQuery;
 use App\Entity\Expense;
@@ -60,19 +61,20 @@ class ExpenseApiController extends AbstractController
     #[Route('/expenses', name: 'api_expenses_create', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function create(
-        #[MapRequestPayload] CreateExpenseRequest $request,
+        #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: JsonResponse::HTTP_BAD_REQUEST)]
+        CreateExpenseRequest $request,
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
 
         $expense = $this->expenseCreateService->create($user, $request);
 
-        return $this->json([
-            'id' => $expense->getId(),
-            'title' => $expense->getTitle(),
-            'description' => $expense->getDescription(),
-            'amount' => $expense->getAmount(),
-            'payeeId' => $expense->getPayee()->getId(),
-        ], JsonResponse::HTTP_CREATED);
+        return $this->json(new CreateExpenseResponse(
+            id: $expense->getId(),
+            title: $expense->getTitle(),
+            description: $expense->getDescription(),
+            amount: $expense->getAmount(),
+            payeeId: $expense->getPayee()->getId(),
+        ), JsonResponse::HTTP_CREATED);
     }
 }

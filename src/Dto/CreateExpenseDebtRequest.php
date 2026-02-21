@@ -14,7 +14,7 @@ readonly class CreateExpenseDebtRequest
         public int $payerId,
 
         #[Assert\Positive]
-        #[Decimal(precision: 2)]
+        #[Decimal(scale: 2)]
         public string $amount,
     ) {
     }

@@ -20,7 +20,7 @@ readonly class CreateExpenseRequest
         public string $description,
 
         #[Assert\Positive]
-        #[Decimal(precision: 2)]
+        #[Decimal(scale: 2)]
         public string $amount,
 
         #[Assert\Positive]
