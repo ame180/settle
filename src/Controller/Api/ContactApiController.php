@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Dto\ContactCreateRequest;
+use App\Dto\ContactListItemDto;
 use App\Dto\ContactResponse;
 use App\Entity\User;
 use App\Repository\UserRepository;
@@ -24,6 +25,26 @@ class ContactApiController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
+    }
+
+    #[Route('/users/contacts', name: 'api_users_contacts_list_derived', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function listDerived(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $contacts = $this->userRepository->findDerivedContactsForUser($user);
+
+        $dtos = array_map(
+            fn (User $contact) => new ContactListItemDto(
+                id: $contact->getId(),
+                email: $contact->getEmail(),
+            ),
+            array_values($contacts)
+        );
+
+        return $this->json($dtos);
     }
 
     #[Route('/contacts', name: 'api_contacts_create', methods: ['POST'])]
