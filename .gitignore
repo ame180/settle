@@ -2,6 +2,7 @@
 .idea/
 .vscode/
 config/secrets/prod/prod.decrypt.private.php
+compose.override.yaml
 
 public/bundles/
 public/assets/
