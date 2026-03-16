@@ -196,6 +196,243 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(400);
     }
 
+    public function testUpdateNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $client->request('PUT', '/api/expenses/1');
+
+        $this->assertResponseRedirects('/login');
+    }
+
+    public function testUpdateSuccess(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $otherUser = UserFactory::createUser();
+        $entityManager->persist($otherUser);
+
+        $newPayer = UserFactory::createUser();
+        $entityManager->persist($newPayer);
+
+        $expense = new Expense($editor, 'Old title', 'Old description', '100.00');
+        $entityManager->persist($expense);
+
+        $oldDebt = new Debt($otherUser, $expense, '100.00');
+        $entityManager->persist($oldDebt);
+
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Updated dinner',
+            'description' => '',
+            'amount' => '120.00',
+            'payeeId' => $otherUser->getId(),
+            'debts' => [
+                ['payerId' => $editor->getId(), 'amount' => '60.00'],
+                ['payerId' => $newPayer->getId(), 'amount' => '60.00'],
+            ],
+        ]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'payeeId']);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame($expense->getId(), $response['id']);
+        $this->assertSame('Updated dinner', $response['title']);
+        $this->assertSame('', $response['description']);
+        $this->assertSame('120.00', $response['amount']);
+        $this->assertSame($otherUser->getId(), $response['payeeId']);
+
+        $entityManager->clear();
+        $expenseRepository = $entityManager->getRepository(Expense::class);
+
+        /** @var Expense|null $updatedExpense */
+        $updatedExpense = $expenseRepository->find($response['id']);
+        $this->assertInstanceOf(Expense::class, $updatedExpense);
+        $this->assertSame('Updated dinner', $updatedExpense->getTitle());
+        $this->assertSame('', $updatedExpense->getDescription());
+        $this->assertSame('120.00', $updatedExpense->getAmount());
+        $this->assertSame($otherUser->getId(), $updatedExpense->getPayee()->getId());
+
+        $debtsByPayerId = [];
+        foreach ($updatedExpense->getDebts() as $debt) {
+            $debtsByPayerId[$debt->getPayer()->getId()] = $debt->getAmount();
+        }
+
+        $this->assertSame([
+            $editor->getId() => '60.00',
+            $newPayer->getId() => '60.00',
+        ], $debtsByPayerId);
+    }
+
+    public function testUpdateFailsWhenExpenseDoesNotExist(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+
+        $this->requestJson($client, 'PUT', '/api/expenses/999999', [
+            'title' => 'Updated dinner',
+            'description' => 'Friday dinner',
+            'amount' => '100.00',
+            'payeeId' => $user->getId(),
+            'debts' => [
+                ['payerId' => $user->getId(), 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testUpdateFailsWhenEditorIsNotInvolvedInExistingExpense(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $debtor = UserFactory::createUser();
+        $entityManager->persist($debtor);
+
+        $expense = new Expense($payee, 'Dinner', 'Friday dinner', '100.00');
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($debtor, $expense, '100.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Updated dinner',
+            'description' => 'Updated description',
+            'amount' => '100.00',
+            'payeeId' => $payee->getId(),
+            'debts' => [
+                ['payerId' => $debtor->getId(), 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    public function testUpdateFailsWhenDebtUserDoesNotExist(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $expense = new Expense($editor, 'Dinner', 'Friday dinner', '100.00');
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($editor, $expense, '100.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Updated dinner',
+            'description' => 'Updated description',
+            'amount' => '100.00',
+            'payeeId' => $editor->getId(),
+            'debts' => [
+                ['payerId' => 999999, 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testUpdateFailsWhenDebtsSumDoesNotMatchAmount(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $otherUser = UserFactory::createUser();
+        $entityManager->persist($otherUser);
+
+        $expense = new Expense($editor, 'Dinner', 'Friday dinner', '100.00');
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($otherUser, $expense, '100.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Updated dinner',
+            'description' => 'Updated description',
+            'amount' => '100.00',
+            'payeeId' => $editor->getId(),
+            'debts' => [
+                ['payerId' => $editor->getId(), 'amount' => '40.00'],
+                ['payerId' => $otherUser->getId(), 'amount' => '40.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testUpdateFailsWhenEditorIsNotInvolvedInNewState(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $debtor = UserFactory::createUser();
+        $entityManager->persist($debtor);
+
+        $expense = new Expense($editor, 'Dinner', 'Friday dinner', '100.00');
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($debtor, $expense, '100.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Updated dinner',
+            'description' => 'Updated description',
+            'amount' => '100.00',
+            'payeeId' => $payee->getId(),
+            'debts' => [
+                ['payerId' => $debtor->getId(), 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
     public function testListNotLoggedIn(): void
     {
         $client = static::createClient();

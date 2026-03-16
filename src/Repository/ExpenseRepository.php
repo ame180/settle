@@ -36,4 +36,19 @@ class ExpenseRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findOneByIdWithDebts(int $id): ?Expense
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.debts', 'd')
+            ->addSelect('d')
+            ->leftJoin('d.payer', 'p')
+            ->addSelect('p')
+            ->leftJoin('e.payee', 'payee')
+            ->addSelect('payee')
+            ->where('e.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
