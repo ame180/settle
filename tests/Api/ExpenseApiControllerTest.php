@@ -433,6 +433,36 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
     }
 
+    public function testUpdateFailsWhenPayeeDoesNotExist(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $expense = new Expense($editor, 'Dinner', 'Friday dinner', '100.00');
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($editor, $expense, '100.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Updated dinner',
+            'description' => 'Updated description',
+            'amount' => '100.00',
+            'payeeId' => 999999,
+            'debts' => [
+                ['payerId' => $editor->getId(), 'amount' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
     public function testListNotLoggedIn(): void
     {
         $client = static::createClient();
