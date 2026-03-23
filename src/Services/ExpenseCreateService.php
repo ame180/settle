@@ -28,7 +28,7 @@ class ExpenseCreateService
             $userIds[] = $debtRequest->payerId;
         }
 
-        $usersById = $this->getUsersById($userIds);
+        $usersById = $this->userRepository->findIndexedById($userIds);
 
         if (!isset($usersById[$request->payeeId])) {
             throw new UnprocessableEntityHttpException('Payee user does not exist.');
@@ -67,29 +67,5 @@ class ExpenseCreateService
         $this->entityManager->flush();
 
         return $expense;
-    }
-
-    /**
-     * @param list<int> $userIds
-     *
-     * @return array<int, User>
-     */
-    private function getUsersById(array $userIds): array
-    {
-        $normalizedIds = array_values(array_unique($userIds));
-
-        $users = $this->userRepository->findBy(['id' => $normalizedIds]);
-        $usersById = [];
-
-        foreach ($users as $user) {
-            $userId = $user->getId();
-            if (null === $userId) {
-                continue;
-            }
-
-            $usersById[$userId] = $user;
-        }
-
-        return $usersById;
     }
 }
