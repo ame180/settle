@@ -38,7 +38,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->where('debt.payer = :user')
             ->andWhere('u != :user')
             ->setParameter('user', $user)
-            ->groupBy('u.id')
+            ->distinct()
             ->getQuery()
             ->getResult();
 
@@ -49,7 +49,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->where('expense.payee = :user')
             ->andWhere('u != :user')
             ->setParameter('user', $user)
-            ->groupBy('u.id')
+            ->distinct()
             ->getQuery()
             ->getResult();
 
