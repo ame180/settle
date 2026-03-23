@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api;
 
+use App\Entity\Debt;
+use App\Entity\Expense;
 use App\Entity\User;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
@@ -146,5 +148,112 @@ class ContactApiControllerTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testListDerivedNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/users/contacts');
+
+        $this->assertResponseRedirects('/login');
+    }
+
+    public function testListDerivedReturnsUniqueContactsOrderedByEmail(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        // alice: payee of expense where currentUser is debtor
+        $alice = UserFactory::createUser('alice@example.com');
+        // carol: debtor of expense where currentUser is payee
+        $carol = UserFactory::createUser('carol@example.com');
+        // bob: appears in both directions — should be deduplicated to one result
+        $bob = UserFactory::createUser('bob@example.com');
+        // nobody: shares an expense but as co-debtor with currentUser, so should not appear as a contact
+        $nobody = UserFactory::createUser('nobody@example.com');
+
+        foreach ([$currentUser, $alice, $carol, $bob, $nobody] as $user) {
+            $entityManager->persist($user);
+        }
+
+        // alice is payee, currentUser is debtor
+        $aliceExpense = new Expense($alice, 'Lunch', 'Shared lunch', '30.00');
+        $entityManager->persist($aliceExpense);
+        $entityManager->persist(new Debt($currentUser, $aliceExpense, '30.00'));
+
+        // currentUser is payee, carol is debtor
+        $myExpense = new Expense($currentUser, 'Dinner', 'Shared dinner', '40.00');
+        $entityManager->persist($myExpense);
+        $entityManager->persist(new Debt($carol, $myExpense, '40.00'));
+
+        // bob appears via both paths: payee of one expense and debtor on another
+        $bobExpense = new Expense($bob, 'Coffee', 'Morning coffee', '10.00');
+        $entityManager->persist($bobExpense);
+        $entityManager->persist(new Debt($currentUser, $bobExpense, '5.00'));
+        $entityManager->persist(new Debt($nobody, $bobExpense, '5.00'));
+
+        $myOtherExpense = new Expense($currentUser, 'Taxi', 'Shared taxi', '20.00');
+        $entityManager->persist($myOtherExpense);
+        $entityManager->persist(new Debt($bob, $myOtherExpense, '20.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($currentUser);
+        $client->request('GET', '/api/users/contacts');
+
+        $this->assertJsonResponseIsSuccessful();
+        $this->assertJsonStructure([0 => ['id', 'email']]);
+
+        $response = $this->getJsonResponse();
+        $this->assertCount(3, $response);
+
+        // Ordered by email ascending: alice, bob, carol
+        $this->assertSame('alice@example.com', $response[0]['email']);
+        $this->assertSame($alice->getId(), $response[0]['id']);
+        $this->assertSame('bob@example.com', $response[1]['email']);
+        $this->assertSame($bob->getId(), $response[1]['id']);
+        $this->assertSame('carol@example.com', $response[2]['email']);
+        $this->assertSame($carol->getId(), $response[2]['id']);
+    }
+
+    public function testListDerivedExcludesSelf(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $entityManager->persist($currentUser);
+
+        // currentUser is both payee and debtor on the same expense
+        $expense = new Expense($currentUser, 'Self-split', 'Test', '50.00');
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($currentUser, $expense, '50.00'));
+        $entityManager->flush();
+
+        $client->loginUser($currentUser);
+        $client->request('GET', '/api/users/contacts');
+
+        $this->assertJsonResponseIsSuccessful();
+        $this->assertSame([], $this->getJsonResponse());
+    }
+
+    public function testListDerivedReturnsEmptyWithNoSharedExpenses(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $entityManager->persist($currentUser);
+        $entityManager->flush();
+
+        $client->loginUser($currentUser);
+        $client->request('GET', '/api/users/contacts');
+
+        $this->assertJsonResponseIsSuccessful();
+        $this->assertSame([], $this->getJsonResponse());
     }
 }
