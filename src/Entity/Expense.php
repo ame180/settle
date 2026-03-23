@@ -58,6 +58,13 @@ class Expense
         return $this->payee;
     }
 
+    public function setPayee(User $payee): static
+    {
+        $this->payee = $payee;
+
+        return $this;
+    }
+
     public function getTitle(): string
     {
         return $this->title;
