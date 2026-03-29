@@ -24,6 +24,9 @@ class Debt
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
 
+    #[ORM\Column(length: 3)]
+    private string $currency;
+
     #[ORM\ManyToOne(inversedBy: 'debts')]
     #[ORM\JoinColumn(nullable: false)]
     private Expense $expense;
@@ -34,11 +37,12 @@ class Debt
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
 
-    public function __construct(User $user, Expense $expense, string $amount)
+    public function __construct(User $user, Expense $expense, string $amount, string $currency = 'PLN')
     {
         $this->payer = $user;
         $this->expense = $expense;
         $this->setAmount($amount);
+        $this->setCurrency($currency);
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
@@ -68,6 +72,22 @@ class Debt
     public function getExpense(): Expense
     {
         return $this->expense;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(string $currency): static
+    {
+        if (1 !== preg_match('/^[A-Z]{3}$/', $currency)) {
+            throw new \InvalidArgumentException('Currency must be a 3-letter uppercase ISO 4217 code.');
+        }
+
+        $this->currency = $currency;
+
+        return $this;
     }
 
     public function getCreatedAt(): \DateTimeImmutable

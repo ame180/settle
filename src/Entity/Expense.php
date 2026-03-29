@@ -32,6 +32,9 @@ class Expense
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
 
+    #[ORM\Column(length: 3)]
+    private string $currency;
+
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private \DateTimeImmutable $occurredOn;
 
@@ -47,7 +50,7 @@ class Expense
     #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'expense', orphanRemoval: true)]
     private Collection $debts;
 
-    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn)
+    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn, string $currency = 'PLN')
     {
         $this->payee = $payee;
         $this->title = $title;
@@ -56,6 +59,7 @@ class Expense
         $this->setAmount($amount);
 
         $this->occurredOn = $occurredOn;
+        $this->setCurrency($currency);
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->debts = new ArrayCollection();
@@ -126,6 +130,22 @@ class Expense
         return $this;
     }
 
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(string $currency): static
+    {
+        if (1 !== preg_match('/^[A-Z]{3}$/', $currency)) {
+            throw new \InvalidArgumentException('Currency must be a 3-letter uppercase ISO 4217 code.');
+        }
+
+        $this->currency = $currency;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Debt>
      */
@@ -138,6 +158,10 @@ class Expense
     {
         if ($debt->getExpense() !== $this) {
             throw new \InvalidArgumentException('Debt expense must be the same as the Expense');
+        }
+
+        if ($debt->getCurrency() !== $this->currency) {
+            throw new \InvalidArgumentException('Debt currency must match the Expense currency');
         }
 
         if (!$this->debts->contains($debt)) {

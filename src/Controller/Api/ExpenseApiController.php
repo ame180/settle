@@ -53,6 +53,7 @@ class ExpenseApiController extends AbstractController
                 title: $expense->getTitle(),
                 description: $expense->getDescription(),
                 payeeEmail: $expense->getPayee()->getEmail(),
+                currency: $expense->getCurrency(),
                 value: $this->userDebtService->calculateExpenseBalanceForUser($expense, $user),
                 occurredOn: $expense->getOccurredOn(),
             ),
@@ -78,6 +79,7 @@ class ExpenseApiController extends AbstractController
             title: $expense->getTitle(),
             description: $expense->getDescription(),
             amount: $expense->getAmount(),
+            currency: $expense->getCurrency(),
             payeeId: $expense->getPayee()->getId(),
             occurredOn: $expense->getOccurredOn(),
         ), JsonResponse::HTTP_CREATED);
@@ -105,6 +107,7 @@ class ExpenseApiController extends AbstractController
             title: $expense->getTitle(),
             description: $expense->getDescription(),
             amount: $expense->getAmount(),
+            currency: $expense->getCurrency(),
             payeeId: $expense->getPayee()->getId(),
             occurredOn: $expense->getOccurredOn(),
         ));

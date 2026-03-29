@@ -49,12 +49,13 @@ class ExpenseApiControllerTest extends ApiTestCase
         ]);
 
         $this->assertJsonResponseIsSuccessful(201);
-        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'payeeId', 'occurredOn']);
+        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'currency', 'payeeId', 'occurredOn']);
 
         $response = $this->getJsonResponse();
         $this->assertSame('Dinner', $response['title']);
         $this->assertSame('Friday dinner', $response['description']);
         $this->assertSame('100.00', $response['amount']);
+        $this->assertSame('PLN', $response['currency']);
         $this->assertSame($creator->getId(), $response['payeeId']);
         $this->assertStringStartsWith('2026-01-01', $response['occurredOn']);
 
@@ -278,13 +279,14 @@ class ExpenseApiControllerTest extends ApiTestCase
         ]);
 
         $this->assertJsonResponseIsSuccessful(200);
-        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'payeeId', 'occurredOn']);
+        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'currency', 'payeeId', 'occurredOn']);
 
         $response = $this->getJsonResponse();
         $this->assertSame($expense->getId(), $response['id']);
         $this->assertSame('Updated dinner', $response['title']);
         $this->assertSame('', $response['description']);
         $this->assertSame('120.00', $response['amount']);
+        $this->assertSame('PLN', $response['currency']);
         $this->assertSame($otherUser->getId(), $response['payeeId']);
         $this->assertStringStartsWith('2026-01-15', $response['occurredOn']);
 
@@ -657,13 +659,14 @@ class ExpenseApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful();
         $this->assertJsonStructure([
-            0 => ['id', 'title', 'description', 'payeeEmail', 'value', 'occurredOn'],
+            0 => ['id', 'title', 'description', 'payeeEmail', 'currency', 'value', 'occurredOn'],
         ]);
 
         $response = $this->getJsonResponse();
         $this->assertSame('Test Expense', $response[0]['title']);
         $this->assertSame('Test Description', $response[0]['description']);
         $this->assertSame($user->getEmail(), $response[0]['payeeEmail']);
+        $this->assertSame('PLN', $response[0]['currency']);
         $this->assertSame('100.00', $response[0]['value']);
         $this->assertStringStartsWith('2026-01-01', $response[0]['occurredOn']);
     }
