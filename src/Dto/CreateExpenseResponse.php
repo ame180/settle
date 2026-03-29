@@ -9,9 +9,10 @@ readonly class CreateExpenseResponse
     public function __construct(
         public int $id,
         public string $title,
-        public string $description,
+        public ?string $description,
         public string $amount,
         public int $payeeId,
+        public \DateTimeImmutable $occurredOn,
     ) {
     }
 }

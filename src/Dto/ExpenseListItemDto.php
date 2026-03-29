@@ -9,9 +9,10 @@ readonly class ExpenseListItemDto
     public function __construct(
         public int $id,
         public string $title,
-        public string $description,
+        public ?string $description,
         public string $payeeEmail,
         public string $value,
+        public \DateTimeImmutable $occurredOn,
     ) {
     }
 }

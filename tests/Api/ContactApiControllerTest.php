@@ -179,22 +179,22 @@ class ContactApiControllerTest extends ApiTestCase
         }
 
         // alice is payee, currentUser is debtor
-        $aliceExpense = new Expense($alice, 'Lunch', 'Shared lunch', '30.00');
+        $aliceExpense = new Expense($alice, 'Lunch', 'Shared lunch', '30.00', new \DateTimeImmutable('2026-01-01'));
         $entityManager->persist($aliceExpense);
         $entityManager->persist(new Debt($currentUser, $aliceExpense, '30.00'));
 
         // currentUser is payee, carol is debtor
-        $myExpense = new Expense($currentUser, 'Dinner', 'Shared dinner', '40.00');
+        $myExpense = new Expense($currentUser, 'Dinner', 'Shared dinner', '40.00', new \DateTimeImmutable('2026-01-01'));
         $entityManager->persist($myExpense);
         $entityManager->persist(new Debt($carol, $myExpense, '40.00'));
 
         // bob appears via both paths: payee of one expense and debtor on another
-        $bobExpense = new Expense($bob, 'Coffee', 'Morning coffee', '10.00');
+        $bobExpense = new Expense($bob, 'Coffee', 'Morning coffee', '10.00', new \DateTimeImmutable('2026-01-01'));
         $entityManager->persist($bobExpense);
         $entityManager->persist(new Debt($currentUser, $bobExpense, '5.00'));
         $entityManager->persist(new Debt($nobody, $bobExpense, '5.00'));
 
-        $myOtherExpense = new Expense($currentUser, 'Taxi', 'Shared taxi', '20.00');
+        $myOtherExpense = new Expense($currentUser, 'Taxi', 'Shared taxi', '20.00', new \DateTimeImmutable('2026-01-01'));
         $entityManager->persist($myOtherExpense);
         $entityManager->persist(new Debt($bob, $myOtherExpense, '20.00'));
 
@@ -228,7 +228,7 @@ class ContactApiControllerTest extends ApiTestCase
         $entityManager->persist($currentUser);
 
         // currentUser is both payee and debtor on the same expense
-        $expense = new Expense($currentUser, 'Self-split', 'Test', '50.00');
+        $expense = new Expense($currentUser, 'Self-split', 'Test', '50.00', new \DateTimeImmutable('2026-01-01'));
         $entityManager->persist($expense);
         $entityManager->persist(new Debt($currentUser, $expense, '50.00'));
         $entityManager->flush();

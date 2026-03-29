@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DebtRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Debt
 {
     #[ORM\Id]
@@ -27,11 +28,19 @@ class Debt
     #[ORM\JoinColumn(nullable: false)]
     private Expense $expense;
 
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
+
     public function __construct(User $user, Expense $expense, string $amount)
     {
         $this->payer = $user;
         $this->expense = $expense;
         $this->setAmount($amount);
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -59,5 +68,21 @@ class Debt
     public function getExpense(): Expense
     {
         return $this->expense;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PreUpdate]
+    public function refreshUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }

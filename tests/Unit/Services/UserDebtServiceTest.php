@@ -79,16 +79,16 @@ class UserDebtServiceTest extends TestCase
         $user1 = UserFactory::createUser();
         $user2 = UserFactory::createUser();
 
-        $expense1 = new Expense($user1, '50/50 Expense', '', '10');
+        $expense1 = new Expense($user1, '50/50 Expense', '', '10', new \DateTimeImmutable('2026-01-01'));
         $user1->addExpense($expense1);
         $user1->addDebt(new Debt($user1, $expense1, '5'));
         $user2->addDebt(new Debt($user2, $expense1, '5'));
 
-        $expense2 = new Expense($user2, 'Fully owed expense', '', '10');
+        $expense2 = new Expense($user2, 'Fully owed expense', '', '10', new \DateTimeImmutable('2026-01-01'));
         $user2->addExpense($expense2);
         $user1->addDebt(new Debt($user1, $expense2, '10'));
 
-        $expense3 = new Expense($user1, 'Expense owed to self', '', '10');
+        $expense3 = new Expense($user1, 'Expense owed to self', '', '10', new \DateTimeImmutable('2026-01-01'));
         $user1->addExpense($expense3);
         $user1->addDebt(new Debt($user1, $expense3, '10'));
 
@@ -140,7 +140,7 @@ class UserDebtServiceTest extends TestCase
             'payee' => UserFactory::createUser(),
         ];
 
-        $expense = new Expense($users['payee'], 'Title', 'Description', $totalAmount);
+        $expense = new Expense($users['payee'], 'Title', 'Description', $totalAmount, new \DateTimeImmutable('2026-01-01'));
 
         foreach ($debts as $userKey => $amount) {
             if (!isset($users[$userKey])) {
@@ -161,14 +161,14 @@ class UserDebtServiceTest extends TestCase
     private function addDebtToUser(User $user, string $amount): void
     {
         $otherUser = UserFactory::createUser();
-        $expense = new Expense($otherUser, 'title', 'description', $amount);
+        $expense = new Expense($otherUser, 'title', 'description', $amount, new \DateTimeImmutable('2026-01-01'));
 
         $user->addDebt(new Debt($user, $expense, $amount));
     }
 
     private function addExpenseToUser(User $user, string $amount): void
     {
-        $expense = new Expense($user, 'title', 'description', $amount);
+        $expense = new Expense($user, 'title', 'description', $amount, new \DateTimeImmutable('2026-01-01'));
 
         $user->addExpense($expense);
     }
