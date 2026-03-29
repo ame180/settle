@@ -67,7 +67,8 @@ class ExpenseUpdateService
             ->setPayee($usersById[$request->payeeId])
             ->setTitle($request->title)
             ->setDescription($request->description)
-            ->setAmount($request->amount);
+            ->setAmount($request->amount)
+            ->setOccurredOn($request->occurredOn);
 
         foreach ($request->debts as $debtRequest) {
             $debt = new Debt($usersById[$debtRequest->payerId], $expense, $debtRequest->amount);

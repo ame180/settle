@@ -17,8 +17,6 @@ readonly class CreateExpenseRequest
         #[Assert\Length(max: 255)]
         public string $title,
 
-        public string $description,
-
         #[Assert\Positive]
         #[Decimal(scale: 2)]
         public string $amount,
@@ -33,6 +31,10 @@ readonly class CreateExpenseRequest
         ])]
         #[Assert\Valid]
         public array $debts,
+
+        public \DateTimeImmutable $occurredOn,
+
+        public ?string $description = null,
     ) {
     }
 }

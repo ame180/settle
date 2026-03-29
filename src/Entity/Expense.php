@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ExpenseRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Expense
 {
     #[ORM\Id]
@@ -25,11 +26,20 @@ class Expense
     #[ORM\Column(length: 255)]
     private string $title;
 
-    #[ORM\Column(type: Types::TEXT, nullable: false)]
-    private string $description;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private \DateTimeImmutable $occurredOn;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
 
     /**
      * @var Collection<int, Debt>
@@ -37,7 +47,7 @@ class Expense
     #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'expense', orphanRemoval: true)]
     private Collection $debts;
 
-    public function __construct(User $payee, string $title, string $description, string $amount)
+    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn)
     {
         $this->payee = $payee;
         $this->title = $title;
@@ -45,6 +55,9 @@ class Expense
 
         $this->setAmount($amount);
 
+        $this->occurredOn = $occurredOn;
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->debts = new ArrayCollection();
     }
 
@@ -77,12 +90,12 @@ class Expense
         return $this;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -97,6 +110,18 @@ class Expense
     public function setAmount(string $amount): static
     {
         $this->amount = bcadd($amount, '0', 2);
+
+        return $this;
+    }
+
+    public function getOccurredOn(): \DateTimeImmutable
+    {
+        return $this->occurredOn;
+    }
+
+    public function setOccurredOn(\DateTimeImmutable $occurredOn): static
+    {
+        $this->occurredOn = $occurredOn;
 
         return $this;
     }
@@ -127,5 +152,21 @@ class Expense
         $this->debts->removeElement($debt);
 
         return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PreUpdate]
+    public function refreshUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }
