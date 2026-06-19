@@ -10,7 +10,6 @@ use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ExpenseCreateService
@@ -18,6 +17,7 @@ class ExpenseCreateService
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly SplitCalculator $splitCalculator,
     ) {
     }
 
@@ -39,29 +39,23 @@ class ExpenseCreateService
             throw new UnprocessableEntityHttpException('Creator must be the payee or one of the debtors.');
         }
 
+        foreach ($request->debts as $debtRequest) {
+            if (!isset($usersById[$debtRequest->payerId])) {
+                throw new UnprocessableEntityHttpException('One or more debt users do not exist.');
+            }
+        }
+
         $payee = $usersById[$request->payeeId];
-        $expense = new Expense($payee, $request->title, $request->description, $request->amount, $request->occurredOn);
+        $expense = new Expense($payee, $request->title, $request->description, $request->amount, $request->occurredOn, splitType: $request->splitType);
 
         $this->entityManager->persist($expense);
 
-        $debtsTotal = '0.00';
+        $splits = $this->splitCalculator->calculate($request->splitType, $request->amount, $request->debts);
 
-        foreach ($request->debts as $debtRequest) {
-            $payer = $usersById[$debtRequest->payerId] ?? null;
-            if (null === $payer) {
-                throw new UnprocessableEntityHttpException('One or more debt users do not exist.');
-            }
-
-            $debt = new Debt($payer, $expense, $debtRequest->amount, $expense->getCurrency());
+        foreach ($splits as $split) {
+            $debt = new Debt($usersById[$split['payerId']], $expense, $split['amount'], $expense->getCurrency(), $split['splitValue']);
             $expense->addDebt($debt);
-
             $this->entityManager->persist($debt);
-
-            $debtsTotal = bcadd($debtsTotal, $debtRequest->amount, 2);
-        }
-
-        if (0 !== bccomp($debtsTotal, $request->amount, 2)) {
-            throw new BadRequestHttpException('Debts amount sum must be equal to expense amount.');
         }
 
         $this->entityManager->flush();

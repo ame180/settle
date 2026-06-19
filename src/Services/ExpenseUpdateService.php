@@ -11,7 +11,6 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ExpenseUpdateService
@@ -19,6 +18,7 @@ class ExpenseUpdateService
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly SplitCalculator $splitCalculator,
     ) {
     }
 
@@ -44,18 +44,13 @@ class ExpenseUpdateService
             throw new UnprocessableEntityHttpException('Payee user does not exist.');
         }
 
-        $debtsTotal = '0.00';
         foreach ($request->debts as $debtRequest) {
             if (!isset($usersById[$debtRequest->payerId])) {
                 throw new UnprocessableEntityHttpException('One or more debt users do not exist.');
             }
-
-            $debtsTotal = bcadd($debtsTotal, $debtRequest->amount, 2);
         }
 
-        if (0 !== bccomp($debtsTotal, $request->amount, 2)) {
-            throw new BadRequestHttpException('Debts amount sum must be equal to expense amount.');
-        }
+        $splits = $this->splitCalculator->calculate($request->splitType, $request->amount, $request->debts);
 
         $existingDebts = $this->entityManager->getRepository(Debt::class)->findBy(['expense' => $expense]);
         foreach ($existingDebts as $debt) {
@@ -68,10 +63,11 @@ class ExpenseUpdateService
             ->setTitle($request->title)
             ->setDescription($request->description)
             ->setAmount($request->amount)
-            ->setOccurredOn($request->occurredOn);
+            ->setOccurredOn($request->occurredOn)
+            ->setSplitType($request->splitType);
 
-        foreach ($request->debts as $debtRequest) {
-            $debt = new Debt($usersById[$debtRequest->payerId], $expense, $debtRequest->amount, $expense->getCurrency());
+        foreach ($splits as $split) {
+            $debt = new Debt($usersById[$split['payerId']], $expense, $split['amount'], $expense->getCurrency(), $split['splitValue']);
             $expense->addDebt($debt);
             $this->entityManager->persist($debt);
         }

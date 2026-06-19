@@ -24,6 +24,9 @@ class Debt
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $splitValue = null;
+
     #[ORM\Column(length: 3)]
     private string $currency;
 
@@ -37,12 +40,13 @@ class Debt
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
 
-    public function __construct(User $user, Expense $expense, string $amount, string $currency = 'PLN')
+    public function __construct(User $user, Expense $expense, string $amount, string $currency = 'PLN', ?string $splitValue = null)
     {
         $this->payer = $user;
         $this->expense = $expense;
         $this->setAmount($amount);
         $this->setCurrency($currency);
+        $this->setSplitValue($splitValue);
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
@@ -65,6 +69,18 @@ class Debt
     public function setAmount(string $amount): static
     {
         $this->amount = bcadd($amount, '0', 2);
+
+        return $this;
+    }
+
+    public function getSplitValue(): ?string
+    {
+        return $this->splitValue;
+    }
+
+    public function setSplitValue(?string $splitValue): static
+    {
+        $this->splitValue = null === $splitValue ? null : bcadd($splitValue, '0', 2);
 
         return $this;
     }

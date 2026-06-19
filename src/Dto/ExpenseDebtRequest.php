@@ -15,7 +15,7 @@ readonly class ExpenseDebtRequest
 
         #[Assert\Positive]
         #[Decimal(scale: 2)]
-        public string $amount,
+        public ?string $value = null,
     ) {
     }
 }

@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Debt;
 use App\Entity\Expense;
+use App\Enum\SplitType;
 use App\Tests\Support\Factory\UserFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -79,6 +80,19 @@ class ExpenseTest extends TestCase
             'numeric' => ['123'],
             'empty string' => [''],
         ];
+    }
+
+    public function testConstructorDefaultsToExactSplitType(): void
+    {
+        $this->assertSame(SplitType::Exact, $this->makeExpense()->getSplitType());
+    }
+
+    public function testSetSplitType(): void
+    {
+        $expense = $this->makeExpense();
+        $expense->setSplitType(SplitType::Shares);
+
+        $this->assertSame(SplitType::Shares, $expense->getSplitType());
     }
 
     public function testAddDebtAcceptsMatchingCurrency(): void
