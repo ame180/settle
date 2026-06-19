@@ -48,12 +48,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Expense::class, mappedBy: 'payee', orphanRemoval: true)]
     private Collection $expenses;
 
+    /**
+     * @var Collection<int, Transfer>
+     */
+    #[ORM\OneToMany(targetEntity: Transfer::class, mappedBy: 'payer', orphanRemoval: true)]
+    private Collection $transfersSent;
+
+    /**
+     * @var Collection<int, Transfer>
+     */
+    #[ORM\OneToMany(targetEntity: Transfer::class, mappedBy: 'payee', orphanRemoval: true)]
+    private Collection $transfersReceived;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->debts = new ArrayCollection();
         $this->expenses = new ArrayCollection();
+        $this->transfersSent = new ArrayCollection();
+        $this->transfersReceived = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -166,6 +180,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         if (!$this->expenses->contains($expense)) {
             $this->expenses->add($expense);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Transfer>
+     */
+    public function getTransfersSent(): Collection
+    {
+        return $this->transfersSent;
+    }
+
+    public function addTransferSent(Transfer $transfer): static
+    {
+        if ($transfer->getPayer() !== $this) {
+            throw new \InvalidArgumentException('Transfer payer must be the same as the User');
+        }
+
+        if (!$this->transfersSent->contains($transfer)) {
+            $this->transfersSent->add($transfer);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Transfer>
+     */
+    public function getTransfersReceived(): Collection
+    {
+        return $this->transfersReceived;
+    }
+
+    public function addTransferReceived(Transfer $transfer): static
+    {
+        if ($transfer->getPayee() !== $this) {
+            throw new \InvalidArgumentException('Transfer payee must be the same as the User');
+        }
+
+        if (!$this->transfersReceived->contains($transfer)) {
+            $this->transfersReceived->add($transfer);
         }
 
         return $this;
