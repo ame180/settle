@@ -12,6 +12,7 @@ use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\ExpenseRepository;
 use App\Services\ExpenseCreateService;
+use App\Services\ExpenseDeleteService;
 use App\Services\ExpenseUpdateService;
 use App\Services\UserDebtService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ class ExpenseApiController extends AbstractController
         private readonly UserDebtService $userDebtService,
         private readonly ExpenseCreateService $expenseCreateService,
         private readonly ExpenseUpdateService $expenseUpdateService,
+        private readonly ExpenseDeleteService $expenseDeleteService,
     ) {
     }
 
@@ -128,5 +130,26 @@ class ExpenseApiController extends AbstractController
         }
 
         return false;
+    }
+
+    #[Route('/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER')]
+    public function delete(int $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $expense = $this->expenseRepository->findOneByIdWithDebts($id);
+        if (null === $expense) {
+            throw $this->createNotFoundException('Expense not found.');
+        }
+
+        if (!$this->isUserInvolved($user, $expense)) {
+            throw $this->createAccessDeniedException('You are not involved in this expense.');
+        }
+
+        $this->expenseDeleteService->delete($expense);
+
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
