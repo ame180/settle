@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-readonly class ExpenseListItemDto
+readonly class ExpenseResponse
 {
     public function __construct(
         public int $id,
         public string $title,
         public ?string $description,
-        public string $payeeEmail,
-        public string $value,
+        public string $amount,
+        public int $payeeId,
         public \DateTimeImmutable $occurredOn,
     ) {
     }

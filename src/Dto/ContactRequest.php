@@ -6,7 +6,7 @@ namespace App\Dto;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-readonly class ContactCreateRequest
+readonly class ContactRequest
 {
     public function __construct(
         #[Assert\NotBlank(normalizer: 'trim')]

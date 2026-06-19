@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Dto\CreateExpenseRequest;
+use App\Dto\ExpenseRequest;
 use App\Entity\Debt;
 use App\Entity\Expense;
 use App\Entity\User;
@@ -21,7 +21,7 @@ class ExpenseCreateService
     ) {
     }
 
-    public function create(User $creator, CreateExpenseRequest $request): Expense
+    public function create(User $creator, ExpenseRequest $request): Expense
     {
         $userIds = [$request->payeeId];
         foreach ($request->debts as $debtRequest) {

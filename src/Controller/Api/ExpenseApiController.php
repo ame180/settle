@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Dto\CreateExpenseRequest;
-use App\Dto\CreateExpenseResponse;
-use App\Dto\ExpenseListItemDto;
+use App\Dto\ExpenseRequest;
+use App\Dto\ExpenseResponse;
+use App\Dto\ExpenseSummary;
 use App\Dto\PaginationQuery;
-use App\Dto\UpdateExpenseRequest;
 use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\ExpenseRepository;
@@ -48,7 +47,7 @@ class ExpenseApiController extends AbstractController
         );
 
         $dtos = array_map(
-            fn (Expense $expense) => new ExpenseListItemDto(
+            fn (Expense $expense) => new ExpenseSummary(
                 id: $expense->getId(),
                 title: $expense->getTitle(),
                 description: $expense->getDescription(),
@@ -66,14 +65,14 @@ class ExpenseApiController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function create(
         #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: JsonResponse::HTTP_BAD_REQUEST)]
-        CreateExpenseRequest $request,
+        ExpenseRequest $request,
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
 
         $expense = $this->expenseCreateService->create($user, $request);
 
-        return $this->json(new CreateExpenseResponse(
+        return $this->json(new ExpenseResponse(
             id: $expense->getId(),
             title: $expense->getTitle(),
             description: $expense->getDescription(),
@@ -88,7 +87,7 @@ class ExpenseApiController extends AbstractController
     public function update(
         int $id,
         #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: JsonResponse::HTTP_BAD_REQUEST)]
-        UpdateExpenseRequest $request,
+        ExpenseRequest $request,
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
@@ -100,7 +99,7 @@ class ExpenseApiController extends AbstractController
 
         $expense = $this->expenseUpdateService->update($user, $expense, $request);
 
-        return $this->json(new CreateExpenseResponse(
+        return $this->json(new ExpenseResponse(
             id: $expense->getId(),
             title: $expense->getTitle(),
             description: $expense->getDescription(),
