@@ -52,7 +52,7 @@ class ExpenseCreateService
                 throw new UnprocessableEntityHttpException('One or more debt users do not exist.');
             }
 
-            $debt = new Debt($payer, $expense, $debtRequest->amount);
+            $debt = new Debt($payer, $expense, $debtRequest->amount, $expense->getCurrency());
             $expense->addDebt($debt);
 
             $this->entityManager->persist($debt);

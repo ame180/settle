@@ -11,6 +11,7 @@ readonly class ExpenseResponse
         public string $title,
         public ?string $description,
         public string $amount,
+        public string $currency,
         public int $payeeId,
         public \DateTimeImmutable $occurredOn,
     ) {

@@ -71,7 +71,7 @@ class ExpenseUpdateService
             ->setOccurredOn($request->occurredOn);
 
         foreach ($request->debts as $debtRequest) {
-            $debt = new Debt($usersById[$debtRequest->payerId], $expense, $debtRequest->amount);
+            $debt = new Debt($usersById[$debtRequest->payerId], $expense, $debtRequest->amount, $expense->getCurrency());
             $expense->addDebt($debt);
             $this->entityManager->persist($debt);
         }

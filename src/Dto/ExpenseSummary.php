@@ -11,6 +11,7 @@ readonly class ExpenseSummary
         public string $title,
         public ?string $description,
         public string $payeeEmail,
+        public string $currency,
         public string $value,
         public \DateTimeImmutable $occurredOn,
     ) {
