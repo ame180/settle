@@ -7,10 +7,10 @@ namespace App\Dto;
 use App\Validator\Constraints\Decimal;
 use Symfony\Component\Validator\Constraints as Assert;
 
-readonly class UpdateExpenseRequest
+readonly class ExpenseRequest
 {
     /**
-     * @param list<CreateExpenseDebtRequest> $debts
+     * @param list<ExpenseDebtRequest> $debts
      */
     public function __construct(
         #[Assert\NotBlank]
@@ -27,7 +27,7 @@ readonly class UpdateExpenseRequest
         #[Assert\NotNull]
         #[Assert\Count(min: 1)]
         #[Assert\All([
-            new Assert\Type(type: CreateExpenseDebtRequest::class),
+            new Assert\Type(type: ExpenseDebtRequest::class),
         ])]
         #[Assert\Valid]
         public array $debts,

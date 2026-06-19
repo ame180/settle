@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Dto\UpdateExpenseRequest;
+use App\Dto\ExpenseRequest;
 use App\Entity\Debt;
 use App\Entity\Expense;
 use App\Entity\User;
@@ -22,7 +22,7 @@ class ExpenseUpdateService
     ) {
     }
 
-    public function update(User $editor, Expense $expense, UpdateExpenseRequest $request): Expense
+    public function update(User $editor, Expense $expense, ExpenseRequest $request): Expense
     {
         if (!$this->isUserInvolved($editor, $expense)) {
             throw new AccessDeniedHttpException('Editor must be involved in the existing expense.');

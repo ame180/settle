@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Dto\ContactCreateRequest;
-use App\Dto\ContactListItemDto;
+use App\Dto\ContactListItem;
+use App\Dto\ContactRequest;
 use App\Dto\ContactResponse;
 use App\Entity\User;
 use App\Repository\UserRepository;
@@ -37,7 +37,7 @@ class ContactApiController extends AbstractController
         $contacts = $this->userRepository->findDerivedContactsForUser($user);
 
         $dtos = array_map(
-            fn (User $contact) => new ContactListItemDto(
+            fn (User $contact) => new ContactListItem(
                 id: $contact->getId(),
                 email: $contact->getEmail(),
             ),
@@ -51,7 +51,7 @@ class ContactApiController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function create(
         #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: Response::HTTP_BAD_REQUEST)]
-        ContactCreateRequest $contactCreateRequest,
+        ContactRequest $contactCreateRequest,
     ): JsonResponse {
         $normalizedEmail = mb_strtolower(trim($contactCreateRequest->email));
 
