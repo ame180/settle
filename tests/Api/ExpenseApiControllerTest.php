@@ -546,6 +546,121 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
     }
 
+    public function testDeleteNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $client->request('DELETE', '/api/expenses/1');
+
+        $this->assertResponseRedirects('/login');
+    }
+
+    public function testDeleteSuccess(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $debtor = UserFactory::createUser();
+        $entityManager->persist($debtor);
+
+        $expense = new Expense($payee, 'Dinner', 'Friday dinner', '100.00', new \DateTimeImmutable('2026-01-01'));
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($debtor, $expense, '100.00'));
+
+        $entityManager->flush();
+        $expenseId = $expense->getId();
+
+        $client->loginUser($payee);
+
+        $client->request('DELETE', sprintf('/api/expenses/%d', $expenseId));
+
+        $this->assertResponseStatusCodeSame(204);
+
+        $entityManager->clear();
+        $this->assertNull($entityManager->getRepository(Expense::class)->find($expenseId));
+        $this->assertCount(0, $entityManager->getRepository(Debt::class)->findBy(['expense' => $expenseId]));
+    }
+
+    public function testDeleteSuccessWhenDebtor(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $debtor = UserFactory::createUser();
+        $entityManager->persist($debtor);
+
+        $expense = new Expense($payee, 'Dinner', 'Friday dinner', '100.00', new \DateTimeImmutable('2026-01-01'));
+        $entityManager->persist($expense);
+
+        $debt = new Debt($debtor, $expense, '100.00');
+        $expense->addDebt($debt);
+        $entityManager->persist($debt);
+
+        $entityManager->flush();
+        $expenseId = $expense->getId();
+
+        $client->loginUser($debtor);
+
+        $client->request('DELETE', sprintf('/api/expenses/%d', $expenseId));
+
+        $this->assertResponseStatusCodeSame(204);
+
+        $entityManager->clear();
+        $this->assertNull($entityManager->getRepository(Expense::class)->find($expenseId));
+    }
+
+    public function testDeleteFailsWhenExpenseDoesNotExist(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+
+        $client->request('DELETE', '/api/expenses/999999');
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testDeleteFailsWhenUserNotInvolved(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $debtor = UserFactory::createUser();
+        $entityManager->persist($debtor);
+
+        $outsider = UserFactory::createUser();
+        $entityManager->persist($outsider);
+
+        $expense = new Expense($payee, 'Dinner', 'Friday dinner', '100.00', new \DateTimeImmutable('2026-01-01'));
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($debtor, $expense, '100.00'));
+
+        $entityManager->flush();
+
+        $client->loginUser($outsider);
+
+        $client->request('DELETE', sprintf('/api/expenses/%d', $expense->getId()));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testListNotLoggedIn(): void
     {
         $client = static::createClient();
