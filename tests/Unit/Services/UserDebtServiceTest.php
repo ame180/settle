@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Services;
 
 use App\Entity\Debt;
 use App\Entity\Expense;
+use App\Entity\Transfer;
 use App\Entity\User;
 use App\Services\UserDebtService;
 use App\Tests\Support\Factory\UserFactory;
@@ -156,6 +157,40 @@ class UserDebtServiceTest extends TestCase
 
         $balance = $this->service->calculateExpenseBalanceForUser($expense, $users[$targetUserKey]);
         $this->assertEquals($expectedBalance, $balance);
+    }
+
+    public function testTransfersAdjustUserDebtAmount(): void
+    {
+        $payer = UserFactory::createUser();
+        $payee = UserFactory::createUser();
+
+        $transfer = new Transfer($payer, $payee, '10.00', new \DateTimeImmutable('2026-01-01'));
+        $payer->addTransferSent($transfer);
+        $payee->addTransferReceived($transfer);
+
+        // Paying reduces what the payer owes; being paid reduces what the payee is owed.
+        $this->assertEquals('-10.00', $this->service->getUserDebtAmount($payer));
+        $this->assertEquals('10.00', $this->service->getUserDebtAmount($payee));
+    }
+
+    public function testTransferSettlesDebtToZero(): void
+    {
+        $debtor = UserFactory::createUser();
+        $creditor = UserFactory::createUser();
+
+        $expense = new Expense($creditor, 'Dinner', '', '10.00', new \DateTimeImmutable('2026-01-01'));
+        $creditor->addExpense($expense);
+        $debtor->addDebt(new Debt($debtor, $expense, '10.00'));
+
+        $this->assertEquals('10.00', $this->service->getUserDebtAmount($debtor));
+        $this->assertEquals('-10.00', $this->service->getUserDebtAmount($creditor));
+
+        $transfer = new Transfer($debtor, $creditor, '10.00', new \DateTimeImmutable('2026-01-02'));
+        $debtor->addTransferSent($transfer);
+        $creditor->addTransferReceived($transfer);
+
+        $this->assertEquals('0.00', $this->service->getUserDebtAmount($debtor));
+        $this->assertEquals('0.00', $this->service->getUserDebtAmount($creditor));
     }
 
     private function addDebtToUser(User $user, string $amount): void
