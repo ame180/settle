@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Enum\SplitType;
 use App\Validator\Constraints\Decimal;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -33,6 +34,8 @@ readonly class ExpenseRequest
         public array $debts,
 
         public \DateTimeImmutable $occurredOn,
+
+        public SplitType $splitType = SplitType::Exact,
 
         public ?string $description = null,
     ) {

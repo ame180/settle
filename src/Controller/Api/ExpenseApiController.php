@@ -73,15 +73,26 @@ class ExpenseApiController extends AbstractController
 
         $expense = $this->expenseCreateService->create($user, $request);
 
-        return $this->json(new ExpenseResponse(
-            id: $expense->getId(),
-            title: $expense->getTitle(),
-            description: $expense->getDescription(),
-            amount: $expense->getAmount(),
-            currency: $expense->getCurrency(),
-            payeeId: $expense->getPayee()->getId(),
-            occurredOn: $expense->getOccurredOn(),
-        ), JsonResponse::HTTP_CREATED);
+        return $this->json(ExpenseResponse::fromExpense($expense), JsonResponse::HTTP_CREATED);
+    }
+
+    #[Route('/expenses/{id}', name: 'api_expenses_show', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function show(int $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $expense = $this->expenseRepository->findOneByIdWithDebts($id);
+        if (null === $expense) {
+            throw $this->createNotFoundException('Expense not found.');
+        }
+
+        if (!$this->isUserInvolved($user, $expense)) {
+            throw $this->createAccessDeniedException('You are not involved in this expense.');
+        }
+
+        return $this->json(ExpenseResponse::fromExpense($expense));
     }
 
     #[Route('/expenses/{id}', name: 'api_expenses_update', methods: ['PUT'])]
@@ -101,14 +112,21 @@ class ExpenseApiController extends AbstractController
 
         $expense = $this->expenseUpdateService->update($user, $expense, $request);
 
-        return $this->json(new ExpenseResponse(
-            id: $expense->getId(),
-            title: $expense->getTitle(),
-            description: $expense->getDescription(),
-            amount: $expense->getAmount(),
-            currency: $expense->getCurrency(),
-            payeeId: $expense->getPayee()->getId(),
-            occurredOn: $expense->getOccurredOn(),
-        ));
+        return $this->json(ExpenseResponse::fromExpense($expense));
+    }
+
+    private function isUserInvolved(User $user, Expense $expense): bool
+    {
+        if ($expense->getPayee()->getId() === $user->getId()) {
+            return true;
+        }
+
+        foreach ($expense->getDebts() as $debt) {
+            if ($debt->getPayer()->getId() === $user->getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

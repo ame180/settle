@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\SplitType;
 use App\Repository\ExpenseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -35,6 +36,9 @@ class Expense
     #[ORM\Column(length: 3)]
     private string $currency;
 
+    #[ORM\Column(length: 16, enumType: SplitType::class)]
+    private SplitType $splitType;
+
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private \DateTimeImmutable $occurredOn;
 
@@ -50,7 +54,7 @@ class Expense
     #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'expense', orphanRemoval: true)]
     private Collection $debts;
 
-    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn, string $currency = 'PLN')
+    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn, string $currency = 'PLN', SplitType $splitType = SplitType::Exact)
     {
         $this->payee = $payee;
         $this->title = $title;
@@ -60,6 +64,7 @@ class Expense
 
         $this->occurredOn = $occurredOn;
         $this->setCurrency($currency);
+        $this->splitType = $splitType;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->debts = new ArrayCollection();
@@ -142,6 +147,18 @@ class Expense
         }
 
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getSplitType(): SplitType
+    {
+        return $this->splitType;
+    }
+
+    public function setSplitType(SplitType $splitType): static
+    {
+        $this->splitType = $splitType;
 
         return $this;
     }
