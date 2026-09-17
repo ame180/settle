@@ -10,7 +10,6 @@ use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ExpenseUpdateService
@@ -24,10 +23,6 @@ class ExpenseUpdateService
 
     public function update(User $editor, Expense $expense, ExpenseRequest $request): Expense
     {
-        if (!$this->isUserInvolved($editor, $expense)) {
-            throw new AccessDeniedHttpException('Editor must be involved in the existing expense.');
-        }
-
         $editorId = $editor->getId();
         $userIds = [$request->payeeId];
         foreach ($request->debts as $debtRequest) {
@@ -75,20 +70,5 @@ class ExpenseUpdateService
         $this->entityManager->flush();
 
         return $expense;
-    }
-
-    private function isUserInvolved(User $user, Expense $expense): bool
-    {
-        if ($expense->getPayee()->getId() === $user->getId()) {
-            return true;
-        }
-
-        foreach ($expense->getDebts() as $debt) {
-            if ($debt->getPayer()->getId() === $user->getId()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
