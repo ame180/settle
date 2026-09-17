@@ -10,7 +10,6 @@ use App\Entity\Transfer;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -49,12 +48,8 @@ class TransferService
         return $transfer;
     }
 
-    public function update(User $editor, Transfer $transfer, TransferUpdateRequest $request): Transfer
+    public function update(Transfer $transfer, TransferUpdateRequest $request): Transfer
     {
-        if (!$this->isUserInvolved($editor, $transfer)) {
-            throw new AccessDeniedHttpException('Editor must be involved in the transfer.');
-        }
-
         $transfer
             ->setAmount($request->amount)
             ->setOccurredOn($request->occurredOn)
@@ -65,21 +60,9 @@ class TransferService
         return $transfer;
     }
 
-    public function delete(User $editor, Transfer $transfer): void
+    public function delete(Transfer $transfer): void
     {
-        if (!$this->isUserInvolved($editor, $transfer)) {
-            throw new AccessDeniedHttpException('Editor must be involved in the transfer.');
-        }
-
         $this->entityManager->remove($transfer);
         $this->entityManager->flush();
-    }
-
-    private function isUserInvolved(User $user, Transfer $transfer): bool
-    {
-        $userId = $user->getId();
-
-        return $transfer->getPayer()->getId() === $userId
-            || $transfer->getPayee()->getId() === $userId;
     }
 }

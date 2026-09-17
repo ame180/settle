@@ -76,6 +76,11 @@ class Transfer
         return $this->payee;
     }
 
+    public function involves(User $user): bool
+    {
+        return $this->payer->isSameAs($user) || $this->payee->isSameAs($user);
+    }
+
     public function getAmount(): string
     {
         return $this->amount;
