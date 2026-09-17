@@ -17,7 +17,8 @@ class ExpenseApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('POST', '/api/expenses');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testCreateSuccess(): void
@@ -241,7 +242,8 @@ class ExpenseApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('PUT', '/api/expenses/1');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testUpdateSuccess(): void
@@ -551,7 +553,8 @@ class ExpenseApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('DELETE', '/api/expenses/1');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testDeleteSuccess(): void
@@ -666,7 +669,8 @@ class ExpenseApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('GET', '/api/expenses');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testListPagination(): void

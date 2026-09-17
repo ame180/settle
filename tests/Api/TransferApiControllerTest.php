@@ -16,7 +16,8 @@ class TransferApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('POST', '/api/transfers');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testCreateSuccess(): void

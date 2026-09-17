@@ -6,6 +6,7 @@ doctrine:
         user: '%env(MYSQL_USER)%'
         password: '%env(MYSQL_PASSWORD)%'
         driver: pdo_mysql
+        server_version: '%env(default:app.mysql_server_version:MYSQL_SERVER_VERSION)%'
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
