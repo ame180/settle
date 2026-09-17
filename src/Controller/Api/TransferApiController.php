@@ -10,6 +10,7 @@ use App\Dto\TransferUpdateRequest;
 use App\Entity\Transfer;
 use App\Entity\User;
 use App\Repository\TransferRepository;
+use App\Security\Voter\TransferVoter;
 use App\Services\TransferService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,15 +48,14 @@ class TransferApiController extends AbstractController
         #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: JsonResponse::HTTP_BAD_REQUEST)]
         TransferUpdateRequest $request,
     ): JsonResponse {
-        /** @var User $user */
-        $user = $this->getUser();
-
         $transfer = $this->transferRepository->find($id);
         if (null === $transfer) {
             throw $this->createNotFoundException('Transfer not found.');
         }
 
-        $transfer = $this->transferService->update($user, $transfer, $request);
+        $this->denyAccessUnlessGranted(TransferVoter::EDIT, $transfer);
+
+        $transfer = $this->transferService->update($transfer, $request);
 
         return $this->json($this->toResponse($transfer));
     }
@@ -64,15 +64,14 @@ class TransferApiController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function delete(int $id): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         $transfer = $this->transferRepository->find($id);
         if (null === $transfer) {
             throw $this->createNotFoundException('Transfer not found.');
         }
 
-        $this->transferService->delete($user, $transfer);
+        $this->denyAccessUnlessGranted(TransferVoter::DELETE, $transfer);
+
+        $this->transferService->delete($transfer);
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }

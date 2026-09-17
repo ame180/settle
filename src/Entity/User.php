@@ -75,6 +75,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
+    public function isSameAs(User $other): bool
+    {
+        if ($this === $other) {
+            return true;
+        }
+
+        return null !== $this->id && $this->id === $other->getId();
+    }
+
     public function getEmail(): string
     {
         return $this->email;

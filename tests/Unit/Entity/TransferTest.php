@@ -101,4 +101,17 @@ class TransferTest extends TestCase
             'empty string' => [''],
         ];
     }
+
+    public function testInvolvesPayerAndPayeeOnly(): void
+    {
+        $payer = UserFactory::createUser();
+        $payee = UserFactory::createUser();
+        $stranger = UserFactory::createUser();
+
+        $transfer = new Transfer($payer, $payee, '10.00', new \DateTimeImmutable());
+
+        $this->assertTrue($transfer->involves($payer));
+        $this->assertTrue($transfer->involves($payee));
+        $this->assertFalse($transfer->involves($stranger));
+    }
 }

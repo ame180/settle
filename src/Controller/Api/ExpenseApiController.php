@@ -11,6 +11,7 @@ use App\Dto\PaginationQuery;
 use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\ExpenseRepository;
+use App\Security\Voter\ExpenseVoter;
 use App\Services\ExpenseCreateService;
 use App\Services\ExpenseDeleteService;
 use App\Services\ExpenseUpdateService;
@@ -82,17 +83,12 @@ class ExpenseApiController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function show(int $id): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         $expense = $this->expenseRepository->findOneByIdWithDebts($id);
         if (null === $expense) {
             throw $this->createNotFoundException('Expense not found.');
         }
 
-        if (!$this->isUserInvolved($user, $expense)) {
-            throw $this->createAccessDeniedException('You are not involved in this expense.');
-        }
+        $this->denyAccessUnlessGranted(ExpenseVoter::VIEW, $expense);
 
         return $this->json(ExpenseResponse::fromExpense($expense));
     }
@@ -112,41 +108,23 @@ class ExpenseApiController extends AbstractController
             throw $this->createNotFoundException('Expense not found.');
         }
 
+        $this->denyAccessUnlessGranted(ExpenseVoter::EDIT, $expense);
+
         $expense = $this->expenseUpdateService->update($user, $expense, $request);
 
         return $this->json(ExpenseResponse::fromExpense($expense));
-    }
-
-    private function isUserInvolved(User $user, Expense $expense): bool
-    {
-        if ($expense->getPayee()->getId() === $user->getId()) {
-            return true;
-        }
-
-        foreach ($expense->getDebts() as $debt) {
-            if ($debt->getPayer()->getId() === $user->getId()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     #[Route('/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'])]
     #[IsGranted('ROLE_USER')]
     public function delete(int $id): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         $expense = $this->expenseRepository->findOneByIdWithDebts($id);
         if (null === $expense) {
             throw $this->createNotFoundException('Expense not found.');
         }
 
-        if (!$this->isUserInvolved($user, $expense)) {
-            throw $this->createAccessDeniedException('You are not involved in this expense.');
-        }
+        $this->denyAccessUnlessGranted(ExpenseVoter::DELETE, $expense);
 
         $this->expenseDeleteService->delete($expense);
 
