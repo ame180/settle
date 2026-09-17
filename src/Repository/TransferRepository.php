@@ -17,4 +17,26 @@ class TransferRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Transfer::class);
     }
+
+    /**
+     * @param list<int> $ids
+     *
+     * @return list<Transfer>
+     */
+    public function findByIdsWithParties(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.payer', 'payer')
+            ->addSelect('payer')
+            ->leftJoin('t.payee', 'payee')
+            ->addSelect('payee')
+            ->where('t.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
 }
