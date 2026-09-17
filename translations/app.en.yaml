@@ -1,6 +1,0 @@
-login:
-  sign_in: "Sign in"
-  logout: "Logout"
-  logged_in: "You are logged in as %name%"
-  email: 'Email address'
-  password: 'Password'
