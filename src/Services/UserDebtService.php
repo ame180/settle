@@ -20,6 +20,14 @@ class UserDebtService
             $debtAmount = bcsub($debtAmount, $expense->getAmount(), 2);
         }
 
+        foreach ($user->getTransfersSent() as $transfer) {
+            $debtAmount = bcsub($debtAmount, $transfer->getAmount(), 2);
+        }
+
+        foreach ($user->getTransfersReceived() as $transfer) {
+            $debtAmount = bcadd($debtAmount, $transfer->getAmount(), 2);
+        }
+
         return $debtAmount;
     }
 
