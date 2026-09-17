@@ -114,4 +114,18 @@ class ExpenseTest extends TestCase
         $this->expectExceptionMessage('currency');
         $expense->addDebt($debt);
     }
+
+    public function testInvolvesPayeeAndDebtorsOnly(): void
+    {
+        $payee = UserFactory::createUser();
+        $debtor = UserFactory::createUser();
+        $stranger = UserFactory::createUser();
+
+        $expense = new Expense($payee, 'Dinner', null, '10.00', new \DateTimeImmutable());
+        $expense->addDebt(new Debt($debtor, $expense, '10.00'));
+
+        $this->assertTrue($expense->involves($payee));
+        $this->assertTrue($expense->involves($debtor));
+        $this->assertFalse($expense->involves($stranger));
+    }
 }

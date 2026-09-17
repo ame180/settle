@@ -195,6 +195,21 @@ class Expense
         return $this;
     }
 
+    public function involves(User $user): bool
+    {
+        if ($this->payee->isSameAs($user)) {
+            return true;
+        }
+
+        foreach ($this->debts as $debt) {
+            if ($debt->getPayer()->isSameAs($user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
