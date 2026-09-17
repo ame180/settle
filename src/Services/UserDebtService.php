@@ -35,12 +35,12 @@ class UserDebtService
     {
         $balance = '0.00';
 
-        if ($expense->getPayee() === $user) {
+        if ($expense->getPayee()->isSameAs($user)) {
             $balance = $expense->getAmount();
         }
 
         foreach ($expense->getDebts() as $debt) {
-            if ($debt->getPayer() === $user) {
+            if ($debt->getPayer()->isSameAs($user)) {
                 $balance = bcsub($balance, $debt->getAmount(), 2);
             }
         }
