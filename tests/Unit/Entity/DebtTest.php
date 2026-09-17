@@ -25,6 +25,22 @@ class DebtTest extends TestCase
         return new Debt(UserFactory::createUser(), $expense, '10.00', $currency);
     }
 
+    public function testSplitValueDefaultsToNull(): void
+    {
+        $this->assertNull($this->makeDebt()->getSplitValue());
+    }
+
+    public function testSetSplitValueNormalisesToTwoDecimals(): void
+    {
+        $debt = $this->makeDebt();
+        $debt->setSplitValue('2');
+
+        $this->assertSame('2.00', $debt->getSplitValue());
+
+        $debt->setSplitValue(null);
+        $this->assertNull($debt->getSplitValue());
+    }
+
     public function testSetCurrencyAcceptsValidIsoCodes(): void
     {
         $debt = $this->makeDebt();
