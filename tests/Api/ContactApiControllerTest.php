@@ -25,7 +25,8 @@ class ContactApiControllerTest extends ApiTestCase
             json_encode(['email' => 'friend@example.com'])
         );
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testCreateContactCreatesShadowUser(): void
@@ -155,7 +156,8 @@ class ContactApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('GET', '/api/users/contacts');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testListDerivedReturnsUniqueContactsOrderedByEmail(): void

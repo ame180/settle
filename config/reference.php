@@ -146,7 +146,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         cookie_name?: scalar|null, // The name of the cookie to use when using stateless protection. // Default: "csrf-token"
  *     },
  *     form?: bool|array{ // Form configuration
- *         enabled?: bool, // Default: true
+ *         enabled?: bool, // Default: false
  *         csrf_protection?: array{
  *             enabled?: scalar|null, // Default: null
  *             token_id?: scalar|null, // Default: null
@@ -262,7 +262,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         formats?: array<string, string|list<scalar|null>>,
  *     },
  *     assets?: bool|array{ // Assets configuration
- *         enabled?: bool, // Default: true
+ *         enabled?: bool, // Default: false
  *         strict_mode?: bool, // Throw an exception if an entry is missing from the manifest.json. // Default: false
  *         version_strategy?: scalar|null, // Default: null
  *         version?: scalar|null, // Default: null
@@ -281,7 +281,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         }>,
  *     },
  *     asset_mapper?: bool|array{ // Asset Mapper configuration
- *         enabled?: bool, // Default: true
+ *         enabled?: bool, // Default: false
  *         paths?: array<string, scalar|null>,
  *         excluded_patterns?: list<scalar|null>,
  *         exclude_dotfiles?: bool, // If true, any files starting with "." will be excluded from the asset mapper. // Default: true
@@ -989,67 +989,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     intercept_redirects?: bool, // Default: false
  *     excluded_ajax_paths?: scalar|null, // Default: "^/((index|app(_[\\w]+)?)\\.php/)?_wdt"
  * }
- * @psalm-type StimulusConfig = array{
- *     controller_paths?: list<scalar|null>,
- *     controllers_json?: scalar|null, // Default: "%kernel.project_dir%/assets/controllers.json"
- * }
- * @psalm-type TurboConfig = array{
- *     broadcast?: bool|array{
- *         enabled?: bool, // Default: true
- *         entity_template_prefixes?: list<scalar|null>,
- *         doctrine_orm?: bool|array{ // Enable the Doctrine ORM integration
- *             enabled?: bool, // Default: true
- *         },
- *     },
- *     default_transport?: scalar|null, // Default: "default"
- * }
- * @psalm-type TwigExtraConfig = array{
- *     cache?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     html?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     markdown?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     intl?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     cssinliner?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     inky?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     string?: bool|array{
- *         enabled?: bool, // Default: false
- *     },
- *     commonmark?: array{
- *         renderer?: array{ // Array of options for rendering HTML.
- *             block_separator?: scalar|null,
- *             inner_separator?: scalar|null,
- *             soft_break?: scalar|null,
- *         },
- *         html_input?: "strip"|"allow"|"escape", // How to handle HTML input.
- *         allow_unsafe_links?: bool, // Remove risky link and image URLs by setting this to false. // Default: true
- *         max_nesting_level?: int, // The maximum nesting level for blocks. // Default: 9223372036854775807
- *         max_delimiters_per_line?: int, // The maximum number of strong/emphasis delimiters per line. // Default: 9223372036854775807
- *         slug_normalizer?: array{ // Array of options for configuring how URL-safe slugs are created.
- *             instance?: mixed,
- *             max_length?: int, // Default: 255
- *             unique?: mixed,
- *         },
- *         commonmark?: array{ // Array of options for configuring the CommonMark core extension.
- *             enable_em?: bool, // Default: true
- *             enable_strong?: bool, // Default: true
- *             use_asterisk?: bool, // Default: true
- *             use_underscore?: bool, // Default: true
- *             unordered_list_markers?: list<scalar|null>,
- *         },
- *         ...<mixed>
- *     },
- * }
  * @psalm-type SecurityConfig = array{
  *     access_denied_url?: scalar|null, // Default: null
  *     session_fixation_strategy?: "none"|"migrate"|"invalidate", // Default: "migrate"
@@ -1339,9 +1278,9 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *             lifetime?: int, // Default: 31536000
  *             path?: scalar|null, // Default: "/"
  *             domain?: scalar|null, // Default: null
- *             secure?: true|false|"auto", // Default: false
+ *             secure?: true|false|"auto", // Default: null
  *             httponly?: bool, // Default: true
- *             samesite?: null|"lax"|"strict"|"none", // Default: null
+ *             samesite?: null|"lax"|"strict"|"none", // Default: "lax"
  *             always_remember_me?: bool, // Default: false
  *             remember_me_parameter?: scalar|null, // Default: "_remember_me"
  *         },
@@ -1548,9 +1487,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     doctrine?: DoctrineConfig,
  *     doctrine_migrations?: DoctrineMigrationsConfig,
  *     twig?: TwigConfig,
- *     stimulus?: StimulusConfig,
- *     turbo?: TurboConfig,
- *     twig_extra?: TwigExtraConfig,
  *     security?: SecurityConfig,
  *     monolog?: MonologConfig,
  *     "when@dev"?: array{
@@ -1563,9 +1499,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         debug?: DebugConfig,
  *         twig?: TwigConfig,
  *         web_profiler?: WebProfilerConfig,
- *         stimulus?: StimulusConfig,
- *         turbo?: TurboConfig,
- *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         maker?: MakerConfig,
@@ -1578,9 +1511,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         twig?: TwigConfig,
- *         stimulus?: StimulusConfig,
- *         turbo?: TurboConfig,
- *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *     },
@@ -1593,9 +1523,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         twig?: TwigConfig,
  *         web_profiler?: WebProfilerConfig,
- *         stimulus?: StimulusConfig,
- *         turbo?: TurboConfig,
- *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         dama_doctrine_test?: DamaDoctrineTestConfig,
