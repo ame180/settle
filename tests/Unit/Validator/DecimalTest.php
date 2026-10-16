@@ -45,6 +45,7 @@ class DecimalTest extends TestCase
         yield 'precision overflow with decimals' => ['100000000.00'];
         yield 'precision overflow without decimals' => ['123456789'];
         yield 'negative precision overflow' => ['-123456789.00'];
+        yield 'trailing newline' => ["100\n"];
     }
 
     /**
