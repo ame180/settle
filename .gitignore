@@ -5,8 +5,10 @@ config/secrets/prod/prod.decrypt.private.php
 compose.override.yaml
 
 public/bundles/
-public/assets/
-assets/vendor/
+public/app/
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
 var/
 vendor/
 

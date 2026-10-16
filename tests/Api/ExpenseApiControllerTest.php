@@ -17,7 +17,8 @@ class ExpenseApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('POST', '/api/expenses');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testCreateSuccess(): void
@@ -236,12 +237,38 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(400);
     }
 
+    public function testCreateFailsValidationWhenAmountExceedsColumnPrecision(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Yacht',
+            'amount' => '100000000.00',
+            'payeeId' => $creator->getId(),
+            'occurredOn' => '2026-01-01',
+            'debts' => [
+                ['payerId' => $creator->getId(), 'value' => '100000000.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
     public function testUpdateNotLoggedIn(): void
     {
         $client = static::createClient();
         $client->request('PUT', '/api/expenses/1');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testUpdateSuccess(): void
@@ -551,7 +578,8 @@ class ExpenseApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('DELETE', '/api/expenses/1');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testDeleteSuccess(): void

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Acceptance;
 
 use App\Entity\User;
+use App\Tests\Support\ApiTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class LoginLogoutTest extends WebTestCase
+class LoginLogoutTest extends ApiTestCase
 {
     public function testUserCanLoginAndLogout(): void
     {
@@ -22,36 +21,54 @@ class LoginLogoutTest extends WebTestCase
 
         $user = new User();
         $user->setEmail('test@example.com');
-        $hashedPassword = $passwordHasher->hashPassword($user, 'password123');
-        $user->setPassword($hashedPassword);
+        $user->setPassword($passwordHasher->hashPassword($user, 'password123'));
 
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $crawler = $client->request('GET', '/login');
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('form');
-
-        $form = $crawler->selectButton('Sign in')->form([
-            '_username' => 'test@example.com',
-            '_password' => 'password123',
+        $this->requestJson($client, 'POST', '/api/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123',
         ]);
 
-        $client->submit($form);
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertJsonStructure(['id', 'email']);
+        $this->assertSame('test@example.com', $this->getJsonResponse()['email']);
 
-        $this->assertResponseRedirects();
+        $client->request('GET', '/api/me');
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame($user->getId(), $this->getJsonResponse()['id']);
 
-        $tokenStorage = $container->get(TokenStorageInterface::class);
+        $client->request('POST', '/api/logout');
+        $this->assertResponseStatusCodeSame(204);
 
-        $user = $tokenStorage->getToken()?->getUser();
-        $this->assertInstanceOf(User::class, $user);
+        $client->request('GET', '/api/me');
+        $this->assertResponseStatusCodeSame(401);
+    }
 
-        $client->request('GET', '/logout');
+    public function testInvalidCredentialsAreRejected(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
 
-        $this->assertResponseRedirects();
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $passwordHasher = $container->get(UserPasswordHasherInterface::class);
 
-        $token = $tokenStorage->getToken();
-        $this->assertNull($token);
+        $user = new User();
+        $user->setEmail('test@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password123'));
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $this->requestJson($client, 'POST', '/api/login', [
+            'email' => 'test@example.com',
+            'password' => 'wrong',
+        ]);
+
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertArrayHasKey('error', $this->getJsonResponse());
     }
 
     public function testShadowUserCannotLogin(): void
@@ -68,23 +85,14 @@ class LoginLogoutTest extends WebTestCase
         $entityManager->persist($shadowUser);
         $entityManager->flush();
 
-        $crawler = $client->request('GET', '/login');
-        $this->assertResponseIsSuccessful();
-
-        $form = $crawler->selectButton('Sign in')->form([
-            '_username' => 'shadow@example.com',
-            '_password' => 'any-password',
+        $this->requestJson($client, 'POST', '/api/login', [
+            'email' => 'shadow@example.com',
+            'password' => 'any-password',
         ]);
 
-        $client->submit($form);
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
 
-        $client->followRedirect();
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('.alert-danger');
-
-        $tokenStorage = $container->get(TokenStorageInterface::class);
-        $token = $tokenStorage->getToken();
-        $this->assertNull($token);
+        $client->request('GET', '/api/me');
+        $this->assertResponseStatusCodeSame(401);
     }
 }
