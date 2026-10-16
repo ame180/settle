@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Expense;
-use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -20,20 +19,25 @@ class ExpenseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all expenses where user is either the payee or a debtor.
+     * @param list<int> $ids
      *
-     * @return Expense[]
+     * @return list<Expense>
      */
-    public function findByUserParticipation(User $user, int $limit, int $offset): array
+    public function findByIdsWithDebts(array $ids): array
     {
+        if ([] === $ids) {
+            return [];
+        }
+
         return $this->createQueryBuilder('e')
             ->leftJoin('e.debts', 'd')
-            ->where('e.payee = :user OR d.payer = :user')
-            ->setParameter('user', $user)
-            ->orderBy('e.occurredOn', 'DESC')
-            ->addOrderBy('e.id', 'DESC')
-            ->setMaxResults($limit)
-            ->setFirstResult($offset)
+            ->addSelect('d')
+            ->leftJoin('d.payer', 'p')
+            ->addSelect('p')
+            ->leftJoin('e.payee', 'payee')
+            ->addSelect('payee')
+            ->where('e.id IN (:ids)')
+            ->setParameter('ids', $ids)
             ->getQuery()
             ->getResult();
     }
