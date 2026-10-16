@@ -136,6 +136,56 @@ class ActivityApiControllerTest extends ApiTestCase
         $this->assertSame('transfer', $response[1]['type']);
     }
 
+    public function testPaginationIsStableForItemsOnTheSameDate(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $user = UserFactory::createUser();
+        $contact = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->persist($contact);
+
+        $this->createExpense($user, $contact, '10.00', '2026-04-10', 'Expense A');
+        $this->createExpense($contact, $user, '20.00', '2026-04-10', 'Expense B');
+        $this->createTransfer($contact, $user, '30.00', '2026-04-10', 'Transfer A');
+        $this->createTransfer($user, $contact, '40.00', '2026-04-10', 'Transfer B');
+
+        $entityManager->flush();
+
+        $client->loginUser($user);
+
+        $pagedItems = [];
+        for ($offset = 0; $offset < 10; ++$offset) {
+            $client->request('GET', '/api/activity', ['limit' => 1, 'offset' => $offset]);
+            $this->assertJsonResponseIsSuccessful();
+
+            $page = $this->getJsonResponse();
+            if ([] === $page) {
+                break;
+            }
+
+            $this->assertCount(1, $page);
+            $pagedItems[] = $page[0]['type'].':'.$page[0]['id'];
+        }
+
+        $this->assertCount(4, $pagedItems);
+        $this->assertSame($pagedItems, array_values(array_unique($pagedItems)));
+
+        $client->request('GET', '/api/activity', ['limit' => 10]);
+        $this->assertJsonResponseIsSuccessful();
+
+        $singleRequest = $this->getJsonResponse();
+        $this->assertSame(
+            $pagedItems,
+            array_map(static fn (array $item): string => $item['type'].':'.$item['id'], $singleRequest)
+        );
+        $this->assertEqualsCanonicalizing(
+            ['Expense A', 'Expense B', 'Transfer A', 'Transfer B'],
+            array_map(static fn (array $item): string => $item['title'], $singleRequest)
+        );
+    }
+
     public function testActivityRejectsOutOfRangePagination(): void
     {
         $client = static::createClient();

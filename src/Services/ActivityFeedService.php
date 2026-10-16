@@ -90,7 +90,7 @@ class ActivityFeedService
             SELECT 'transfer' AS item_type, t.id AS item_id, t.occurred_on AS occurred_on, t.created_at AS created_at
             FROM transfer t
             WHERE ($transferCondition)
-            ORDER BY occurred_on DESC, created_at DESC, item_id DESC
+            ORDER BY occurred_on DESC, created_at DESC, item_id DESC, item_type DESC
             LIMIT :limit OFFSET :offset
             SQL;
 
