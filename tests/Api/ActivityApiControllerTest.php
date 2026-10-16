@@ -19,7 +19,8 @@ class ActivityApiControllerTest extends ApiTestCase
         $client = static::createClient();
         $client->request('GET', '/api/activity');
 
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
     }
 
     public function testActivityStructure(): void
