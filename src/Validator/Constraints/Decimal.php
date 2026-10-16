@@ -36,11 +36,11 @@ final class Decimal extends Compound
         return [
             new Assert\Type('numeric'),
             new Assert\Regex(
-                pattern: sprintf('/^-?\d+(?:\.\d{1,%d})?$/', $this->scale),
+                pattern: sprintf('/^-?\d+(?:\.\d{1,%d})?\z/', $this->scale),
                 message: sprintf('This value must be a number with at most %d decimal places.', $this->scale),
             ),
             new Assert\Regex(
-                pattern: sprintf('/^-?\d{1,%d}(?:\.|$)/', $integerDigits),
+                pattern: sprintf('/^-?\d{1,%d}(?:\.|\z)/', $integerDigits),
                 message: sprintf('This value must have at most %d digits before the decimal point.', $integerDigits),
             ),
         ];
