@@ -96,7 +96,7 @@ class ContactService
 
     /**
      * Finds or creates the (shadow) user behind the email and makes sure the owner has a
-     * Contact row for them. The nickname is only touched when one is given.
+     * Contact row for them. The nickname is only touched when a non-blank one is given.
      *
      * @return array{User, bool} the contact user and whether that user was newly created
      */
@@ -107,7 +107,7 @@ class ContactService
         $contact = $this->contactRepository->findOneByOwnerAndUser($owner, $user);
         if (null === $contact) {
             $this->entityManager->persist(new Contact($owner, $user, $nickname));
-        } elseif (null !== $nickname) {
+        } elseif (null !== $nickname && '' !== trim($nickname)) {
             $contact->setNickname($nickname);
         }
 

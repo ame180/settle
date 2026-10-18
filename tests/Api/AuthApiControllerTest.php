@@ -69,6 +69,22 @@ class AuthApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(400);
     }
 
+    public function testUpdateMeRequiresName(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::createUser('me@example.com')->setName('Ame');
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PATCH', '/api/me', []);
+
+        $this->assertResponseStatusCodeSame(400);
+        $entityManager->refresh($user);
+        $this->assertSame('Ame', $user->getName());
+    }
+
     public function testUpdateMeNotLoggedIn(): void
     {
         $client = static::createClient();
