@@ -8,8 +8,8 @@ readonly class TransferResponse
 {
     public function __construct(
         public int $id,
-        public int $payerId,
-        public int $payeeId,
+        public PersonRef $payer,
+        public PersonRef $payee,
         public string $amount,
         public string $currency,
         public \DateTimeImmutable $occurredOn,
