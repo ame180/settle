@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Api;
 
+use App\Entity\Contact;
 use App\Entity\Debt;
 use App\Entity\Expense;
 use App\Tests\Support\ApiTestCase;
@@ -883,6 +884,41 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('exact', $response['splitType']);
         $this->assertCount(1, $response['debts']);
         $this->assertSame($debtor->getId(), $response['debts'][0]['payer']['id']);
+    }
+
+    public function testShowResolvesDisplayNamesForViewer(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $payee = UserFactory::createUser('payee@example.com')->setName('Paula');
+        $nicknamedDebtor = UserFactory::createUser('debtor@example.com')->setName('Daniel');
+        $plainDebtor = UserFactory::createUser('plain@example.com');
+        foreach ([$payee, $nicknamedDebtor, $plainDebtor] as $user) {
+            $entityManager->persist($user);
+        }
+        $entityManager->persist(new Contact($payee, $nicknamedDebtor, 'Danny'));
+
+        $expense = new Expense($payee, 'Dinner', null, '20.00', new \DateTimeImmutable('2026-01-01'));
+        $entityManager->persist($expense);
+        foreach ([$nicknamedDebtor, $plainDebtor] as $debtor) {
+            $debt = new Debt($debtor, $expense, '10.00');
+            $expense->addDebt($debt);
+            $entityManager->persist($debt);
+        }
+        $entityManager->flush();
+
+        $client->loginUser($payee);
+        $client->request('GET', sprintf('/api/expenses/%d', $expense->getId()));
+
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame('Paula', $response['payee']['displayName']);
+        $this->assertSame(
+            ['Danny', 'plain@example.com'],
+            array_map(static fn (array $debt): string => $debt['payer']['displayName'], $response['debts'])
+        );
     }
 
     public function testShowFailsWhenExpenseDoesNotExist(): void

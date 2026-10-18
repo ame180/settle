@@ -146,6 +146,11 @@ class ContactApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertSame('Buddy', $this->getJsonResponse()['nickname']);
+
+        $this->requestJson($client, 'POST', '/api/contacts', ['email' => 'friend@example.com', 'nickname' => '  ']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame('Buddy', $this->getJsonResponse()['nickname']);
     }
 
     public function testCreateContactRejectsOwnEmail(): void
@@ -406,6 +411,28 @@ class ContactApiControllerTest extends ApiTestCase
         $response = $this->getJsonResponse();
         $this->assertNull($response['nickname']);
         $this->assertSame('friend@example.com', $response['person']['displayName']);
+    }
+
+    public function testUpdateAllowsAddedContactWithoutSharedActivity(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $friend = UserFactory::createUser('friend@example.com', null);
+        $entityManager->persist($currentUser);
+        $entityManager->persist($friend);
+        $entityManager->persist(new Contact($currentUser, $friend));
+        $entityManager->flush();
+
+        $client->loginUser($currentUser);
+        $this->requestJson($client, 'PUT', sprintf('/api/contacts/%d', $friend->getId()), ['nickname' => 'Grandma']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame('Grandma', $response['nickname']);
+        $this->assertSame([], $response['balances']);
     }
 
     public function testUpdateReturnsNotFoundForUnrelatedUser(): void

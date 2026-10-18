@@ -45,6 +45,19 @@ export type TransferResponse = {
   description: string | null
 }
 
+export type ActivityItem = {
+  type: 'expense' | 'transfer'
+  id: number
+  occurredOn: string
+  currency: string
+  amount: string
+  value: string
+  title: string | null
+  description: string | null
+  payee: PersonRef
+  payer: PersonRef | null
+}
+
 export type ContactListItem = {
   person: PersonRef
   nickname: string | null
