@@ -1,12 +1,24 @@
 export type MeResponse = {
   id: number
   email: string
+  name: string | null
+}
+
+export type PersonRef = {
+  id: number
+  displayName: string
+  email: string
+}
+
+export type CurrencyAmount = {
+  currency: string
+  amount: string
 }
 
 export type SplitType = 'exact' | 'percentage' | 'shares' | 'equal'
 
 export type ExpenseDebtResponse = {
-  payerId: number
+  payer: PersonRef
   amount: string
   splitValue: string | null
 }
@@ -17,7 +29,7 @@ export type ExpenseResponse = {
   description: string | null
   amount: string
   currency: string
-  payeeId: number
+  payee: PersonRef
   occurredOn: string
   splitType: SplitType
   debts: ExpenseDebtResponse[]
@@ -25,8 +37,8 @@ export type ExpenseResponse = {
 
 export type TransferResponse = {
   id: number
-  payerId: number
-  payeeId: number
+  payer: PersonRef
+  payee: PersonRef
   amount: string
   currency: string
   occurredOn: string
@@ -34,14 +46,16 @@ export type TransferResponse = {
 }
 
 export type ContactListItem = {
-  id: number
-  email: string
+  person: PersonRef
+  nickname: string | null
+  name: string | null
+  isRegistered: boolean
+  balances: CurrencyAmount[]
 }
 
-export type ContactResponse = {
-  id: number
-  email: string
-  isRegistered: boolean
+export type ContactListResponse = {
+  totals: CurrencyAmount[]
+  items: ContactListItem[]
 }
 
 export type ApiViolation = {
