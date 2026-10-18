@@ -6,12 +6,14 @@ namespace App\Services;
 
 use App\Dto\ActivityItem;
 use App\Dto\ActivityQuery;
+use App\Dto\PersonRef;
 use App\Entity\Expense;
 use App\Entity\Transfer;
 use App\Entity\User;
 use App\Enum\ActivityType;
 use App\Repository\ExpenseRepository;
 use App\Repository\TransferRepository;
+use App\Repository\UserRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 
@@ -22,6 +24,8 @@ class ActivityFeedService
         private readonly ExpenseRepository $expenseRepository,
         private readonly TransferRepository $transferRepository,
         private readonly UserDebtService $userDebtService,
+        private readonly UserRepository $userRepository,
+        private readonly PersonRefFactory $personRefFactory,
     ) {
     }
 
@@ -30,6 +34,14 @@ class ActivityFeedService
      */
     public function fetch(User $user, ActivityQuery $query): array
     {
+        $counterpart = null;
+        if (null !== $query->contactId) {
+            $counterpart = $this->userRepository->find($query->contactId);
+            if (null === $counterpart) {
+                return [];
+            }
+        }
+
         $rows = $this->fetchOrderedRows($user, $query);
         if ([] === $rows) {
             return [];
@@ -49,12 +61,13 @@ class ActivityFeedService
 
         $expenses = $this->indexById($this->expenseRepository->findByIdsWithDebts($expenseIds));
         $transfers = $this->indexById($this->transferRepository->findByIdsWithParties($transferIds));
+        $people = $this->personRefFactory->createMany($user, $this->collectParties($expenses, $transfers));
 
         $items = [];
         foreach ($rows as $row) {
             $item = ActivityType::Expense === $row['type']
-                ? $this->buildExpenseItem($expenses[$row['id']] ?? null, $user)
-                : $this->buildTransferItem($transfers[$row['id']] ?? null, $user);
+                ? $this->buildExpenseItem($expenses[$row['id']] ?? null, $user, $counterpart, $people)
+                : $this->buildTransferItem($transfers[$row['id']] ?? null, $user, $people);
 
             if (null === $item) {
                 continue;
@@ -138,11 +151,39 @@ class ActivityFeedService
         return $indexed;
     }
 
-    private function buildExpenseItem(?Expense $expense, User $user): ?ActivityItem
+    /**
+     * @param array<int, Expense>  $expenses
+     * @param array<int, Transfer> $transfers
+     *
+     * @return list<User>
+     */
+    private function collectParties(array $expenses, array $transfers): array
+    {
+        $parties = [];
+        foreach ($expenses as $expense) {
+            $parties[] = $expense->getPayee();
+        }
+
+        foreach ($transfers as $transfer) {
+            $parties[] = $transfer->getPayer();
+            $parties[] = $transfer->getPayee();
+        }
+
+        return $parties;
+    }
+
+    /**
+     * @param array<int, PersonRef> $people
+     */
+    private function buildExpenseItem(?Expense $expense, User $user, ?User $counterpart, array $people): ?ActivityItem
     {
         if (null === $expense) {
             return null;
         }
+
+        $value = null === $counterpart
+            ? $this->userDebtService->calculateExpenseBalanceForUser($expense, $user)
+            : $this->userDebtService->calculateExpenseBalanceBetween($expense, $user, $counterpart);
 
         return new ActivityItem(
             type: ActivityType::Expense,
@@ -150,17 +191,18 @@ class ActivityFeedService
             occurredOn: $expense->getOccurredOn(),
             currency: $expense->getCurrency(),
             amount: $expense->getAmount(),
-            value: $this->userDebtService->calculateExpenseBalanceForUser($expense, $user),
+            value: $value,
             title: $expense->getTitle(),
             description: $expense->getDescription(),
-            payeeId: (int) $expense->getPayee()->getId(),
-            payeeEmail: $expense->getPayee()->getEmail(),
-            payerId: null,
-            payerEmail: null,
+            payee: $people[(int) $expense->getPayee()->getId()],
+            payer: null,
         );
     }
 
-    private function buildTransferItem(?Transfer $transfer, User $user): ?ActivityItem
+    /**
+     * @param array<int, PersonRef> $people
+     */
+    private function buildTransferItem(?Transfer $transfer, User $user, array $people): ?ActivityItem
     {
         if (null === $transfer) {
             return null;
@@ -180,10 +222,8 @@ class ActivityFeedService
             value: $value,
             title: $transfer->getDescription(),
             description: null,
-            payeeId: (int) $transfer->getPayee()->getId(),
-            payeeEmail: $transfer->getPayee()->getEmail(),
-            payerId: (int) $transfer->getPayer()->getId(),
-            payerEmail: $transfer->getPayer()->getEmail(),
+            payee: $people[(int) $transfer->getPayee()->getId()],
+            payer: $people[(int) $transfer->getPayer()->getId()],
         );
     }
 }

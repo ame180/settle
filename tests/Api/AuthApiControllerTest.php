@@ -32,7 +32,49 @@ class AuthApiControllerTest extends ApiTestCase
         $client->request('GET', '/api/me');
 
         $this->assertJsonResponseIsSuccessful(200);
-        $this->assertSame(['id' => $user->getId(), 'email' => 'me@example.com'], $this->getJsonResponse());
+        $this->assertSame(['id' => $user->getId(), 'email' => 'me@example.com', 'name' => null], $this->getJsonResponse());
+    }
+
+    public function testUpdateMeSetsName(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::createUser('me@example.com');
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PATCH', '/api/me', ['name' => '  Ame  ']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['id' => $user->getId(), 'email' => 'me@example.com', 'name' => 'Ame'], $this->getJsonResponse());
+
+        $this->requestJson($client, 'PATCH', '/api/me', ['name' => '']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertNull($this->getJsonResponse()['name']);
+    }
+
+    public function testUpdateMeRejectsTooLongName(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::createUser('me@example.com');
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PATCH', '/api/me', ['name' => str_repeat('a', 65)]);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testUpdateMeNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $this->requestJson($client, 'PATCH', '/api/me', ['name' => 'Ame']);
+
+        $this->assertResponseStatusCodeSame(401);
     }
 
     public function testUnknownApiRouteRendersProblemDetailsJson(): void

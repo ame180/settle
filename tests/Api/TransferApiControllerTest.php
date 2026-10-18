@@ -45,11 +45,11 @@ class TransferApiControllerTest extends ApiTestCase
         ]);
 
         $this->assertJsonResponseIsSuccessful(201);
-        $this->assertJsonStructure(['id', 'payerId', 'payeeId', 'amount', 'currency', 'occurredOn', 'description']);
+        $this->assertJsonStructure(['id', 'payer' => ['id', 'displayName', 'email'], 'payee' => ['id', 'displayName', 'email'], 'amount', 'currency', 'occurredOn', 'description']);
 
         $response = $this->getJsonResponse();
-        $this->assertSame($payer->getId(), $response['payerId']);
-        $this->assertSame($payee->getId(), $response['payeeId']);
+        $this->assertSame($payer->getId(), $response['payer']['id']);
+        $this->assertSame($payee->getId(), $response['payee']['id']);
         $this->assertSame('25.00', $response['amount']);
         $this->assertSame('PLN', $response['currency']);
         $this->assertSame('Cash repayment', $response['description']);
@@ -230,8 +230,8 @@ class TransferApiControllerTest extends ApiTestCase
         $this->assertSame('Bank transfer', $response['description']);
         $this->assertStringStartsWith('2026-02-02', $response['occurredOn']);
         // Parties are not changeable through update.
-        $this->assertSame($payerId, $response['payerId']);
-        $this->assertSame($payeeId, $response['payeeId']);
+        $this->assertSame($payerId, $response['payer']['id']);
+        $this->assertSame($payeeId, $response['payee']['id']);
 
         $entityManager->clear();
 

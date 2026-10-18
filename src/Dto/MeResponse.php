@@ -11,6 +11,7 @@ readonly class MeResponse
     public function __construct(
         public ?int $id,
         public string $email,
+        public ?string $name,
     ) {
     }
 
@@ -19,6 +20,7 @@ readonly class MeResponse
         return new self(
             id: $user->getId(),
             email: $user->getEmail(),
+            name: $user->getName(),
         );
     }
 }

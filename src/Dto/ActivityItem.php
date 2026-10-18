@@ -17,10 +17,8 @@ readonly class ActivityItem
         public string $value,
         public ?string $title,
         public ?string $description,
-        public int $payeeId,
-        public string $payeeEmail,
-        public ?int $payerId,
-        public ?string $payerEmail,
+        public PersonRef $payee,
+        public ?PersonRef $payer,
     ) {
     }
 }

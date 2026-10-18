@@ -50,18 +50,18 @@ class ExpenseApiControllerTest extends ApiTestCase
         ]);
 
         $this->assertJsonResponseIsSuccessful(201);
-        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'currency', 'payeeId', 'occurredOn']);
+        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'currency', 'payee' => ['id', 'displayName', 'email'], 'occurredOn']);
 
         $response = $this->getJsonResponse();
         $this->assertSame('Dinner', $response['title']);
         $this->assertSame('Friday dinner', $response['description']);
         $this->assertSame('100.00', $response['amount']);
         $this->assertSame('PLN', $response['currency']);
-        $this->assertSame($creator->getId(), $response['payeeId']);
+        $this->assertSame($creator->getId(), $response['payee']['id']);
         $this->assertStringStartsWith('2026-01-01', $response['occurredOn']);
         $this->assertSame('exact', $response['splitType']);
         $this->assertCount(2, $response['debts']);
-        $this->assertJsonStructure([0 => ['payerId', 'amount', 'splitValue']], $response['debts']);
+        $this->assertJsonStructure([0 => ['payer' => ['id', 'displayName', 'email'], 'amount', 'splitValue']], $response['debts']);
 
         $entityManager->clear();
         $expenseRepository = $entityManager->getRepository(Expense::class);
@@ -309,7 +309,7 @@ class ExpenseApiControllerTest extends ApiTestCase
         ]);
 
         $this->assertJsonResponseIsSuccessful(200);
-        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'currency', 'payeeId', 'occurredOn']);
+        $this->assertJsonStructure(['id', 'title', 'description', 'amount', 'currency', 'payee' => ['id', 'displayName', 'email'], 'occurredOn']);
 
         $response = $this->getJsonResponse();
         $this->assertSame($expense->getId(), $response['id']);
@@ -317,7 +317,7 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('', $response['description']);
         $this->assertSame('120.00', $response['amount']);
         $this->assertSame('PLN', $response['currency']);
-        $this->assertSame($otherUser->getId(), $response['payeeId']);
+        $this->assertSame($otherUser->getId(), $response['payee']['id']);
         $this->assertStringStartsWith('2026-01-15', $response['occurredOn']);
 
         $entityManager->clear();
@@ -874,15 +874,15 @@ class ExpenseApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertJsonStructure([
-            'id', 'title', 'description', 'amount', 'currency', 'payeeId', 'occurredOn', 'splitType',
-            'debts' => [0 => ['payerId', 'amount', 'splitValue']],
+            'id', 'title', 'description', 'amount', 'currency', 'payee' => ['id', 'displayName', 'email'], 'occurredOn', 'splitType',
+            'debts' => [0 => ['payer' => ['id', 'displayName', 'email'], 'amount', 'splitValue']],
         ]);
 
         $response = $this->getJsonResponse();
         $this->assertSame('Dinner', $response['title']);
         $this->assertSame('exact', $response['splitType']);
         $this->assertCount(1, $response['debts']);
-        $this->assertSame($debtor->getId(), $response['debts'][0]['payerId']);
+        $this->assertSame($debtor->getId(), $response['debts'][0]['payer']['id']);
     }
 
     public function testShowFailsWhenExpenseDoesNotExist(): void
@@ -929,7 +929,7 @@ class ExpenseApiControllerTest extends ApiTestCase
     }
 
     /**
-     * @param list<array{payerId: int, amount: string, splitValue: ?string}> $debts
+     * @param list<array{payer: array{id: int}, amount: string, splitValue: ?string}> $debts
      *
      * @return array<int, array{amount: string, splitValue: ?string}>
      */
@@ -937,7 +937,7 @@ class ExpenseApiControllerTest extends ApiTestCase
     {
         $byPayer = [];
         foreach ($debts as $debt) {
-            $byPayer[$debt['payerId']] = ['amount' => $debt['amount'], 'splitValue' => $debt['splitValue']];
+            $byPayer[$debt['payer']['id']] = ['amount' => $debt['amount'], 'splitValue' => $debt['splitValue']];
         }
 
         return $byPayer;

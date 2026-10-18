@@ -9,28 +9,6 @@ use App\Entity\User;
 
 class UserDebtService
 {
-    public function getUserDebtAmount(User $user): string
-    {
-        $debtAmount = '0.00';
-        foreach ($user->getDebts() as $debt) {
-            $debtAmount = bcadd($debt->getAmount(), $debtAmount, 2);
-        }
-
-        foreach ($user->getExpenses() as $expense) {
-            $debtAmount = bcsub($debtAmount, $expense->getAmount(), 2);
-        }
-
-        foreach ($user->getTransfersSent() as $transfer) {
-            $debtAmount = bcsub($debtAmount, $transfer->getAmount(), 2);
-        }
-
-        foreach ($user->getTransfersReceived() as $transfer) {
-            $debtAmount = bcadd($debtAmount, $transfer->getAmount(), 2);
-        }
-
-        return $debtAmount;
-    }
-
     public function calculateExpenseBalanceForUser(Expense $expense, User $user): string
     {
         $balance = '0.00';
@@ -46,5 +24,27 @@ class UserDebtService
         }
 
         return $balance;
+    }
+
+    /**
+     * The part of an expense that is owed between the user and one counterpart, from the user's
+     * perspective (positive = the counterpart owes the user). Other participants are ignored.
+     */
+    public function calculateExpenseBalanceBetween(Expense $expense, User $user, User $counterpart): string
+    {
+        $payee = $expense->getPayee();
+        if (!$payee->isSameAs($user) && !$payee->isSameAs($counterpart)) {
+            return '0.00';
+        }
+
+        $debtor = $payee->isSameAs($user) ? $counterpart : $user;
+        $owed = '0.00';
+        foreach ($expense->getDebts() as $debt) {
+            if ($debt->getPayer()->isSameAs($debtor)) {
+                $owed = bcadd($owed, $debt->getAmount(), 2);
+            }
+        }
+
+        return $payee->isSameAs($user) ? $owed : bcsub('0', $owed, 2);
     }
 }

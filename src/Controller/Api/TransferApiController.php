@@ -11,6 +11,7 @@ use App\Entity\Transfer;
 use App\Entity\User;
 use App\Repository\TransferRepository;
 use App\Security\Voter\TransferVoter;
+use App\Services\PersonRefFactory;
 use App\Services\TransferService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +25,7 @@ class TransferApiController extends AbstractController
     public function __construct(
         private readonly TransferRepository $transferRepository,
         private readonly TransferService $transferService,
+        private readonly PersonRefFactory $personRefFactory,
     ) {
     }
 
@@ -38,7 +40,7 @@ class TransferApiController extends AbstractController
 
         $transfer = $this->transferService->create($user, $request);
 
-        return $this->json($this->toResponse($transfer), JsonResponse::HTTP_CREATED);
+        return $this->json($this->toResponse($user, $transfer), JsonResponse::HTTP_CREATED);
     }
 
     #[Route('/transfers/{id}', name: 'api_transfers_update', methods: ['PUT'])]
@@ -57,7 +59,10 @@ class TransferApiController extends AbstractController
 
         $transfer = $this->transferService->update($transfer, $request);
 
-        return $this->json($this->toResponse($transfer));
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->json($this->toResponse($user, $transfer));
     }
 
     #[Route('/transfers/{id}', name: 'api_transfers_delete', methods: ['DELETE'])]
@@ -76,12 +81,14 @@ class TransferApiController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    private function toResponse(Transfer $transfer): TransferResponse
+    private function toResponse(User $viewer, Transfer $transfer): TransferResponse
     {
+        $people = $this->personRefFactory->createMany($viewer, [$transfer->getPayer(), $transfer->getPayee()]);
+
         return new TransferResponse(
             id: $transfer->getId(),
-            payerId: $transfer->getPayer()->getId(),
-            payeeId: $transfer->getPayee()->getId(),
+            payer: $people[$transfer->getPayer()->getId()],
+            payee: $people[$transfer->getPayee()->getId()],
             amount: $transfer->getAmount(),
             currency: $transfer->getCurrency(),
             occurredOn: $transfer->getOccurredOn(),
