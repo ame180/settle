@@ -12,7 +12,6 @@ use App\Entity\Contact;
 use App\Entity\User;
 use App\Repository\ContactRepository;
 use App\Repository\UserRepository;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ContactService
@@ -131,18 +130,6 @@ class ContactService
         $user->setPassword(null);
 
         $this->entityManager->persist($user);
-
-        try {
-            $this->entityManager->flush();
-        } catch (UniqueConstraintViolationException $exception) {
-            $existingUser = $this->userRepository->findOneBy(['email' => $normalizedEmail]);
-
-            if (null === $existingUser) {
-                throw $exception;
-            }
-
-            return [$existingUser, false];
-        }
 
         return [$user, true];
     }
