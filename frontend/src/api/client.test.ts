@@ -54,8 +54,8 @@ describe('apiRequest', () => {
     expect((error as ApiError).message).toBe('Validation Failed')
   })
 
-  it('prefers the json_login error message', async () => {
-    mockFetch(401, { error: 'Invalid credentials.' })
+  it('prefers the problem detail as the message', async () => {
+    mockFetch(401, { status: 401, title: 'An error occurred', detail: 'Invalid credentials.' })
 
     const error = await apiRequest('/api/login', { method: 'POST', body: {} }).catch(
       (e: unknown) => e,

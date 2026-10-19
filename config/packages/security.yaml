@@ -19,11 +19,15 @@ security:
                 username_path: email
                 password_path: password
                 success_handler: App\Security\JsonLoginSuccessHandler
+                failure_handler: App\Security\JsonLoginFailureHandler
+            login_throttling:
+                max_attempts: 5
             logout:
                 path: api_logout
 
     access_control:
         - { path: ^/api/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: ROLE_USER }
 
 when@test:
