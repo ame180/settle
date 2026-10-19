@@ -30,6 +30,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?string $password = null;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $name = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -129,6 +132,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
 
         return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $name = null === $name ? null : trim($name);
+        $this->name = '' === $name ? null : $name;
+
+        return $this;
+    }
+
+    public function isRegistered(): bool
+    {
+        return null !== $this->password;
     }
 
     #[\Deprecated]

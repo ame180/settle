@@ -10,6 +10,7 @@ use App\Services\ActivityFeedService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -29,6 +30,10 @@ class ActivityApiController extends AbstractController
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
+
+        if (null !== $query->contactId && $query->contactId === $user->getId()) {
+            throw new BadRequestHttpException('contactId cannot be your own user id.');
+        }
 
         return $this->json($this->activityFeedService->fetch($user, $query));
     }

@@ -7,7 +7,7 @@ namespace App\Dto;
 readonly class ExpenseDebtResponse
 {
     public function __construct(
-        public int $payerId,
+        public PersonRef $payer,
         public string $amount,
         public ?string $splitValue,
     ) {

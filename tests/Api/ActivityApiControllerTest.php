@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Api;
 
+use App\Entity\Contact;
 use App\Entity\Debt;
 use App\Entity\Expense;
 use App\Entity\Transfer;
@@ -43,7 +44,7 @@ class ActivityApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful();
         $this->assertJsonStructure([
-            0 => ['type', 'id', 'occurredOn', 'currency', 'amount', 'value', 'title', 'description', 'payeeId', 'payeeEmail', 'payerId', 'payerEmail'],
+            0 => ['type', 'id', 'occurredOn', 'currency', 'amount', 'value', 'title', 'description', 'payee' => ['id', 'displayName', 'email'], 'payer'],
         ]);
 
         $response = $this->getJsonResponse();
@@ -55,10 +56,9 @@ class ActivityApiControllerTest extends ApiTestCase
         $this->assertSame('Friday dinner', $expenseItem['description']);
         $this->assertSame('100.00', $expenseItem['amount']);
         $this->assertSame('PLN', $expenseItem['currency']);
-        $this->assertSame($payee->getId(), $expenseItem['payeeId']);
-        $this->assertSame($payee->getEmail(), $expenseItem['payeeEmail']);
-        $this->assertNull($expenseItem['payerId']);
-        $this->assertNull($expenseItem['payerEmail']);
+        $this->assertSame($payee->getId(), $expenseItem['payee']['id']);
+        $this->assertSame($payee->getEmail(), $expenseItem['payee']['email']);
+        $this->assertNull($expenseItem['payer']);
         $this->assertStringStartsWith('2026-02-02', $expenseItem['occurredOn']);
 
         $transferItem = $response[1];
@@ -66,10 +66,10 @@ class ActivityApiControllerTest extends ApiTestCase
         $this->assertSame('Partial repayment', $transferItem['title']);
         $this->assertNull($transferItem['description']);
         $this->assertSame('40.00', $transferItem['amount']);
-        $this->assertSame($payee->getId(), $transferItem['payeeId']);
-        $this->assertSame($payee->getEmail(), $transferItem['payeeEmail']);
-        $this->assertSame($debtor->getId(), $transferItem['payerId']);
-        $this->assertSame($debtor->getEmail(), $transferItem['payerEmail']);
+        $this->assertSame($payee->getId(), $transferItem['payee']['id']);
+        $this->assertSame($payee->getEmail(), $transferItem['payee']['email']);
+        $this->assertSame($debtor->getId(), $transferItem['payer']['id']);
+        $this->assertSame($debtor->getEmail(), $transferItem['payer']['email']);
     }
 
     public function testActivityInterleavesExpensesAndTransfersByOccurredOnDesc(): void
@@ -379,6 +379,115 @@ class ActivityApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful();
         $this->assertSame([], $this->getJsonResponse());
+    }
+
+    public function testActivityContactFilterShowsPairwiseValue(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $user = UserFactory::createUser();
+        $contact = UserFactory::createUser();
+        $otherDebtor = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->persist($contact);
+        $entityManager->persist($otherDebtor);
+
+        $myExpense = new Expense($user, 'Split three ways', null, '90.00', new \DateTimeImmutable('2026-09-02'));
+        $entityManager->persist($myExpense);
+        $this->addDebt($myExpense, $user, '30.00');
+        $this->addDebt($myExpense, $contact, '30.00');
+        $this->addDebt($myExpense, $otherDebtor, '30.00');
+
+        $contactExpense = new Expense($contact, 'Their dinner', null, '60.00', new \DateTimeImmutable('2026-09-01'));
+        $entityManager->persist($contactExpense);
+        $this->addDebt($contactExpense, $user, '25.00');
+        $this->addDebt($contactExpense, $otherDebtor, '35.00');
+
+        $entityManager->flush();
+
+        $client->loginUser($user);
+
+        $client->request('GET', '/api/activity');
+        $this->assertJsonResponseIsSuccessful();
+        $this->assertSame(['60.00', '-25.00'], array_column($this->getJsonResponse(), 'value'));
+
+        $client->request('GET', '/api/activity', ['contactId' => $contact->getId()]);
+        $this->assertJsonResponseIsSuccessful();
+        $this->assertSame(['30.00', '-25.00'], array_column($this->getJsonResponse(), 'value'));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function invalidQueryProvider(): array
+    {
+        return [
+            'zero contactId' => ['contactId=0'],
+            'negative contactId' => ['contactId=-1'],
+            'non-numeric contactId' => ['contactId=abc'],
+            'zero limit' => ['limit=0'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidQueryProvider
+     */
+    public function testActivityRejectsInvalidQuery(string $queryString): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/api/activity?'.$queryString);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testActivityRejectsOwnIdAsContact(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/api/activity', ['contactId' => $user->getId()]);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testActivityUsesViewerNicknameAsDisplayName(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $user = UserFactory::createUser();
+        $named = UserFactory::createUser('named@example.com')->setName('Anna');
+        $nicknamed = UserFactory::createUser('nicknamed@example.com')->setName('Robert');
+        $entityManager->persist($user);
+        $entityManager->persist($named);
+        $entityManager->persist($nicknamed);
+        $entityManager->persist(new Contact($user, $nicknamed, 'Bob'));
+
+        $this->createExpense($named, $user, '10.00', '2026-10-02', 'From Anna');
+        $this->createExpense($nicknamed, $user, '10.00', '2026-10-01', 'From Bob');
+
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/api/activity');
+
+        $this->assertJsonResponseIsSuccessful();
+        $response = $this->getJsonResponse();
+        $this->assertSame('Anna', $response[0]['payee']['displayName']);
+        $this->assertSame('Bob', $response[1]['payee']['displayName']);
     }
 
     private function getEntityManager(): EntityManagerInterface
