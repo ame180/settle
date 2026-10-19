@@ -19,6 +19,9 @@ security:
                 username_path: email
                 password_path: password
                 success_handler: App\Security\JsonLoginSuccessHandler
+                failure_handler: App\Security\JsonLoginFailureHandler
+            login_throttling:
+                max_attempts: 5
             logout:
                 path: api_logout
 

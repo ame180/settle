@@ -68,7 +68,45 @@ class LoginLogoutTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(401);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
-        $this->assertArrayHasKey('error', $this->getJsonResponse());
+        $this->assertJsonStructure(['type', 'title', 'status', 'detail']);
+        $this->assertSame(401, $this->getJsonResponse()['status']);
+        $this->assertSame('Invalid credentials.', $this->getJsonResponse()['detail']);
+    }
+
+    public function testLoginIsThrottledAfterFiveFailedAttempts(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $passwordHasher = $container->get(UserPasswordHasherInterface::class);
+
+        $user = new User();
+        $user->setEmail('test@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password123'));
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        for ($i = 0; $i < 5; ++$i) {
+            $this->requestJson($client, 'POST', '/api/login', [
+                'email' => 'test@example.com',
+                'password' => 'wrong',
+            ]);
+            $this->assertResponseStatusCodeSame(401);
+        }
+
+        $this->requestJson($client, 'POST', '/api/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123',
+        ]);
+
+        $this->assertResponseStatusCodeSame(429);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertSame(429, $this->getJsonResponse()['status']);
+
+        $client->request('GET', '/api/me');
+        $this->assertResponseStatusCodeSame(401);
     }
 
     public function testShadowUserCannotLogin(): void
