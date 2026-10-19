@@ -14,6 +14,20 @@ use Symfony\Component\HttpFoundation\Test\Constraint\ResponseStatusCodeSame;
 abstract class ApiTestCase extends WebTestCase
 {
     /**
+     * Rate limiter state lives in the filesystem cache, so it would leak between tests.
+     *
+     * @param array<string, mixed> $options
+     * @param array<string, mixed> $server
+     */
+    protected static function createClient(array $options = [], array $server = []): KernelBrowser
+    {
+        $client = parent::createClient($options, $server);
+        static::getContainer()->get('cache.rate_limiter')->clear();
+
+        return $client;
+    }
+
+    /**
      * @return array<mixed>
      */
     protected function getJsonResponse(): array
