@@ -6,12 +6,14 @@ namespace App\Controller\Api;
 
 use App\Dto\ExpenseRequest;
 use App\Dto\ExpenseResponse;
+use App\Entity\Expense;
 use App\Entity\User;
 use App\Repository\ExpenseRepository;
 use App\Security\Voter\ExpenseVoter;
 use App\Services\ExpenseCreateService;
 use App\Services\ExpenseDeleteService;
 use App\Services\ExpenseUpdateService;
+use App\Services\PersonRefFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -26,6 +28,7 @@ class ExpenseApiController extends AbstractController
         private readonly ExpenseCreateService $expenseCreateService,
         private readonly ExpenseUpdateService $expenseUpdateService,
         private readonly ExpenseDeleteService $expenseDeleteService,
+        private readonly PersonRefFactory $personRefFactory,
     ) {
     }
 
@@ -40,7 +43,7 @@ class ExpenseApiController extends AbstractController
 
         $expense = $this->expenseCreateService->create($user, $request);
 
-        return $this->json(ExpenseResponse::fromExpense($expense), JsonResponse::HTTP_CREATED);
+        return $this->json($this->toResponse($user, $expense), JsonResponse::HTTP_CREATED);
     }
 
     #[Route('/expenses/{id}', name: 'api_expenses_show', methods: ['GET'])]
@@ -54,7 +57,10 @@ class ExpenseApiController extends AbstractController
 
         $this->denyAccessUnlessGranted(ExpenseVoter::VIEW, $expense);
 
-        return $this->json(ExpenseResponse::fromExpense($expense));
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->json($this->toResponse($user, $expense));
     }
 
     #[Route('/expenses/{id}', name: 'api_expenses_update', methods: ['PUT'])]
@@ -76,7 +82,7 @@ class ExpenseApiController extends AbstractController
 
         $expense = $this->expenseUpdateService->update($user, $expense, $request);
 
-        return $this->json(ExpenseResponse::fromExpense($expense));
+        return $this->json($this->toResponse($user, $expense));
     }
 
     #[Route('/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'])]
@@ -93,5 +99,15 @@ class ExpenseApiController extends AbstractController
         $this->expenseDeleteService->delete($expense);
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    private function toResponse(User $viewer, Expense $expense): ExpenseResponse
+    {
+        $participants = [$expense->getPayee()];
+        foreach ($expense->getDebts() as $debt) {
+            $participants[] = $debt->getPayer();
+        }
+
+        return ExpenseResponse::fromExpense($expense, $this->personRefFactory->createMany($viewer, $participants));
     }
 }

@@ -6,9 +6,15 @@ namespace App\Dto;
 
 readonly class ContactListItem
 {
+    /**
+     * @param list<CurrencyAmount> $balances
+     */
     public function __construct(
-        public ?int $id,
-        public string $email,
+        public PersonRef $person,
+        public ?string $nickname,
+        public ?string $name,
+        public bool $isRegistered,
+        public array $balances,
     ) {
     }
 }

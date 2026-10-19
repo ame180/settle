@@ -18,18 +18,21 @@ readonly class ExpenseResponse
         public ?string $description,
         public string $amount,
         public string $currency,
-        public int $payeeId,
+        public PersonRef $payee,
         public \DateTimeImmutable $occurredOn,
         public SplitType $splitType,
         public array $debts,
     ) {
     }
 
-    public static function fromExpense(Expense $expense): self
+    /**
+     * @param array<int, PersonRef> $people keyed by user id, must cover the payee and every debtor
+     */
+    public static function fromExpense(Expense $expense, array $people): self
     {
         $debts = array_map(
             fn ($debt) => new ExpenseDebtResponse(
-                payerId: $debt->getPayer()->getId(),
+                payer: $people[$debt->getPayer()->getId()],
                 amount: $debt->getAmount(),
                 splitValue: $debt->getSplitValue(),
             ),
@@ -42,7 +45,7 @@ readonly class ExpenseResponse
             description: $expense->getDescription(),
             amount: $expense->getAmount(),
             currency: $expense->getCurrency(),
-            payeeId: $expense->getPayee()->getId(),
+            payee: $people[$expense->getPayee()->getId()],
             occurredOn: $expense->getOccurredOn(),
             splitType: $expense->getSplitType(),
             debts: array_values($debts),

@@ -12,6 +12,9 @@ readonly class ContactRequest
         #[Assert\NotBlank(normalizer: 'trim')]
         #[Assert\Email(normalizer: 'trim')]
         public string $email,
+
+        #[Assert\Length(max: 64, normalizer: 'trim')]
+        public ?string $nickname = null,
     ) {
     }
 }
