@@ -80,6 +80,5 @@ export type ApiProblem = {
   status: number
   title?: string
   detail?: string
-  error?: string
   violations?: ApiViolation[]
 }

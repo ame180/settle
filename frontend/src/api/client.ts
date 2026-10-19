@@ -6,9 +6,7 @@ export class ApiError extends Error {
   readonly violations: ApiViolation[]
 
   constructor(status: number, problem: Partial<ApiProblem>) {
-    super(
-      problem.error ?? problem.detail ?? problem.title ?? `Request failed with status ${status}`,
-    )
+    super(problem.detail ?? problem.title ?? `Request failed with status ${status}`)
     this.name = 'ApiError'
     this.status = status
     this.detail = problem.detail
