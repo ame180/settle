@@ -15,6 +15,7 @@ readonly class ContactListItem
         public ?string $name,
         public bool $isRegistered,
         public array $balances,
+        public \DateTimeImmutable $lastActivityAt,
     ) {
     }
 }
