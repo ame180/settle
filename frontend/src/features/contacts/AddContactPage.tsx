@@ -76,6 +76,20 @@ export function AddContactPage() {
         leading={
           <Link
             to="/"
+            onClick={(event) => {
+              const isPlainClick =
+                event.button === 0 &&
+                !event.metaKey &&
+                !event.ctrlKey &&
+                !event.shiftKey &&
+                !event.altKey
+              const hasInAppHistory = (window.history.state?.idx ?? 0) > 0
+              if (!isPlainClick || !hasInAppHistory) {
+                return
+              }
+              event.preventDefault()
+              navigate(-1)
+            }}
             aria-label="Back to contacts"
             className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
