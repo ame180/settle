@@ -64,6 +64,7 @@ export type ContactListItem = {
   name: string | null
   isRegistered: boolean
   balances: CurrencyAmount[]
+  lastActivityAt: string
 }
 
 export type ContactListResponse = {
