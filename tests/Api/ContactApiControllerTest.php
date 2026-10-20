@@ -15,7 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ContactApiControllerTest extends ApiTestCase
 {
-    private const array ITEM_STRUCTURE = ['person' => ['id', 'displayName', 'email'], 'nickname', 'name', 'isRegistered', 'balances'];
+    private const array ITEM_STRUCTURE = ['person' => ['id', 'displayName', 'email'], 'nickname', 'name', 'isRegistered', 'balances', 'lastActivityAt'];
 
     public function testCreateNotLoggedIn(): void
     {
@@ -275,6 +275,144 @@ class ContactApiControllerTest extends ApiTestCase
         );
     }
 
+    public function testListReturnsLatestExpenseOrTransferAsLastActivity(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $alice = UserFactory::createUser('alice@example.com');
+        $bob = UserFactory::createUser('bob@example.com');
+        $carol = UserFactory::createUser('carol@example.com');
+        $coDebtor = UserFactory::createUser('codebtor@example.com');
+        $dave = UserFactory::createUser('dave@example.com');
+        foreach ([$currentUser, $alice, $bob, $carol, $coDebtor, $dave] as $user) {
+            $entityManager->persist($user);
+        }
+
+        $aliceExpense = $this->createExpense($currentUser, '20.00', [$alice], ['20.00']);
+        $aliceTransfer = new Transfer($alice, $currentUser, '20.00', new \DateTimeImmutable('2026-01-02'));
+        $bobExpense = $this->createExpense($bob, '20.00', [$currentUser], ['20.00']);
+        $bobTransfer = new Transfer($currentUser, $bob, '20.00', new \DateTimeImmutable('2026-01-02'));
+        $carolExpense = $this->createExpense($currentUser, '20.00', [$carol], ['20.00']);
+        $carolTransfer = new Transfer($carol, $currentUser, '10.00', new \DateTimeImmutable('2026-01-02'));
+        $coDebtorExpense = $this->createExpense($currentUser, '20.00', [$coDebtor], ['20.00']);
+        // dave paid for me and the co-debtor: that expense is not activity between us
+        $sharedExpense = $this->createExpense($dave, '40.00', [$currentUser, $coDebtor], ['20.00', '20.00']);
+        foreach ([$aliceTransfer, $bobTransfer, $carolTransfer] as $transfer) {
+            $entityManager->persist($transfer);
+        }
+        $entityManager->flush();
+
+        $this->setCreatedAt($aliceExpense, '2026-03-01 10:00:00');
+        $this->setCreatedAt($aliceTransfer, '2026-04-01 10:00:00');
+        $this->setCreatedAt($bobExpense, '2026-02-01 10:00:00');
+        $this->setCreatedAt($bobTransfer, '2026-05-01 10:00:00');
+        $this->setCreatedAt($carolExpense, '2026-06-01 10:00:00');
+        $this->setCreatedAt($carolTransfer, '2026-01-15 10:00:00');
+        $this->setCreatedAt($coDebtorExpense, '2026-01-20 10:00:00');
+        $this->setCreatedAt($sharedExpense, '2026-07-01 10:00:00');
+
+        $client->loginUser($currentUser);
+        $client->request('GET', '/api/contacts');
+
+        $this->assertJsonResponseIsSuccessful();
+
+        $lastActivity = $this->getLastActivityByEmail();
+        $this->assertEquals(new \DateTimeImmutable('2026-04-01 10:00:00'), $lastActivity['alice@example.com']);
+        $this->assertEquals(new \DateTimeImmutable('2026-05-01 10:00:00'), $lastActivity['bob@example.com']);
+        $this->assertEquals(new \DateTimeImmutable('2026-06-01 10:00:00'), $lastActivity['carol@example.com']);
+        $this->assertEquals(new \DateTimeImmutable('2026-01-20 10:00:00'), $lastActivity['codebtor@example.com']);
+        $this->assertEquals(new \DateTimeImmutable('2026-07-01 10:00:00'), $lastActivity['dave@example.com']);
+    }
+
+    public function testListCountsContactCreationAsLastActivity(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $carol = UserFactory::createUser('carol@example.com');
+        $dave = UserFactory::createUser('dave@example.com', null);
+        foreach ([$currentUser, $carol, $dave] as $user) {
+            $entityManager->persist($user);
+        }
+
+        $carolExpense = $this->createExpense($currentUser, '20.00', [$carol], ['20.00']);
+        $carolContact = new Contact($currentUser, $carol);
+        $daveContact = new Contact($currentUser, $dave);
+        $entityManager->persist($carolContact);
+        $entityManager->persist($daveContact);
+        $entityManager->flush();
+
+        $this->setCreatedAt($carolExpense, '2026-01-10 10:00:00');
+        $this->setCreatedAt($carolContact, '2026-06-01 10:00:00');
+        $this->setCreatedAt($daveContact, '2026-02-02 10:00:00');
+
+        $client->loginUser($currentUser);
+        $client->request('GET', '/api/contacts');
+
+        $this->assertJsonResponseIsSuccessful();
+
+        $lastActivity = $this->getLastActivityByEmail();
+        $this->assertEquals(new \DateTimeImmutable('2026-06-01 10:00:00'), $lastActivity['carol@example.com']);
+        $this->assertEquals(new \DateTimeImmutable('2026-02-02 10:00:00'), $lastActivity['dave@example.com']);
+    }
+
+    public function testExpenseEditDoesNotMoveLastActivity(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $alice = UserFactory::createUser('alice@example.com');
+        $entityManager->persist($currentUser);
+        $entityManager->persist($alice);
+
+        $expense = $this->createExpense($currentUser, '20.00', [$alice], ['20.00']);
+        $entityManager->flush();
+        $this->setCreatedAt($expense, '2026-03-01 10:00:00');
+
+        $client->loginUser($currentUser);
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Edited',
+            'description' => '',
+            'amount' => '30.00',
+            'payeeId' => $currentUser->getId(),
+            'occurredOn' => '2026-01-15',
+            'debts' => [
+                ['payerId' => $alice->getId(), 'value' => '30.00'],
+            ],
+        ]);
+        $this->assertJsonResponseIsSuccessful();
+
+        $client->request('GET', '/api/contacts');
+
+        $this->assertJsonResponseIsSuccessful();
+        $this->assertEquals(new \DateTimeImmutable('2026-03-01 10:00:00'), $this->getLastActivityByEmail()['alice@example.com']);
+    }
+
+    public function testUpdateReturnsLastActivityAndNicknameEditDoesNotMoveIt(): void
+    {
+        $client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $currentUser = UserFactory::createUser('me@example.com');
+        $friend = UserFactory::createUser('friend@example.com', null);
+        $contact = new Contact($currentUser, $friend);
+        $entityManager->persist($currentUser);
+        $entityManager->persist($friend);
+        $entityManager->persist($contact);
+        $entityManager->flush();
+        $this->setCreatedAt($contact, '2026-02-02 10:00:00');
+
+        $client->loginUser($currentUser);
+        $this->requestJson($client, 'PUT', sprintf('/api/contacts/%d', $friend->getId()), ['nickname' => 'Grandma']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertEquals(new \DateTimeImmutable('2026-02-02 10:00:00'), new \DateTimeImmutable($this->getJsonResponse()['lastActivityAt']));
+    }
+
     public function testListMirrorsBalanceForCounterpart(): void
     {
         $client = static::createClient();
@@ -509,6 +647,33 @@ class ContactApiControllerTest extends ApiTestCase
     private function findContact(User $owner, User $user): ?Contact
     {
         return $this->getEntityManager()->getRepository(Contact::class)->findOneBy(['owner' => $owner, 'user' => $user]);
+    }
+
+    private function setCreatedAt(Expense|Transfer|Contact $entity, string $createdAt): void
+    {
+        $this->getEntityManager()->createQueryBuilder()
+            ->update($entity::class, 'entity')
+            ->set('entity.createdAt', ':createdAt')
+            ->where('entity.id = :id')
+            ->setParameter('createdAt', new \DateTimeImmutable($createdAt), 'datetime_immutable')
+            ->setParameter('id', $entity->getId())
+            ->getQuery()
+            ->execute();
+
+        $this->getEntityManager()->clear();
+    }
+
+    /**
+     * @return array<string, \DateTimeImmutable>
+     */
+    private function getLastActivityByEmail(): array
+    {
+        $lastActivity = [];
+        foreach ($this->getJsonResponse()['items'] as $item) {
+            $lastActivity[$item['person']['email']] = new \DateTimeImmutable($item['lastActivityAt']);
+        }
+
+        return $lastActivity;
     }
 
     /**
