@@ -99,6 +99,17 @@ describe('ContactsPage', () => {
     expect(screen.getByText('Kasia')).toBeInTheDocument()
   })
 
+  it('says the user is even when PLN balances net to zero', async () => {
+    stubContacts({
+      totals: [],
+      items: [contact(1, 'Anna Kowalska', '10.00'), contact(2, 'Bartek', '-10.00')],
+    })
+    renderContacts()
+
+    expect(await screen.findByText('Overall, you are even')).toBeInTheDocument()
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(2)
+  })
+
   it('shows the empty state for a user without contacts', async () => {
     stubContacts({ totals: [], items: [] })
     renderContacts()
@@ -131,9 +142,13 @@ describe('ContactsPage', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     renderContacts({ addedContactName: 'Jan' })
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Jan added to your contacts')
+    expect(
+      (await screen.findByText('Jan added to your contacts')).closest('[role="status"]'),
+    ).not.toBeNull()
 
     await vi.advanceTimersByTimeAsync(4000)
-    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.queryByText('Jan added to your contacts')).not.toBeInTheDocument(),
+    )
   })
 })

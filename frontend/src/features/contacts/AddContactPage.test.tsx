@@ -83,6 +83,31 @@ describe('AddContactPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't add contact. Try again.")
   })
 
+  it('shows a generic error for non-validation API failures', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse(409, { status: 409, title: 'Conflict' })),
+    )
+    renderAddContact()
+
+    await userEvent.type(screen.getByLabelText('Email'), 'jan@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Add contact' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't add contact. Try again.")
+    expect(screen.getByLabelText('Email')).not.toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('locks the form while the request is in flight', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})))
+    renderAddContact()
+
+    await userEvent.type(screen.getByLabelText('Email'), 'jan@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Add contact' }))
+
+    expect(await screen.findByRole('button', { name: 'Adding…' })).toBeDisabled()
+    expect(screen.getByLabelText('Email')).toHaveAttribute('readonly')
+  })
+
   it('sends a trimmed payload and returns to contacts with a confirmation', async () => {
     const fetchMock = vi.fn().mockImplementation((_path: string, init: RequestInit) => {
       if (init.method === 'POST') {
@@ -106,7 +131,9 @@ describe('AddContactPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add contact' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
-    expect(await screen.findByRole('status')).toHaveTextContent('Jan added to your contacts')
+    expect(
+      (await screen.findByText('Jan added to your contacts')).closest('[role="status"]'),
+    ).not.toBeNull()
 
     const [path, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(path).toBe('/api/contacts')

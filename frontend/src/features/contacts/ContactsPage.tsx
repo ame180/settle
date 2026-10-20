@@ -20,9 +20,10 @@ export function ContactsPage() {
   const contactsQuery = useContacts()
   const location = useLocation()
   const navigate = useNavigate()
-  const [addedContactName, setAddedContactName] = useState(
+  const [addedContactName] = useState(
     () => (location.state as ContactsLocationState)?.addedContactName ?? null,
   )
+  const [isToastVisible, setIsToastVisible] = useState(false)
 
   useEffect(() => {
     if (location.state === null) {
@@ -35,8 +36,13 @@ export function ContactsPage() {
     if (addedContactName === null) {
       return
     }
-    const timeoutId = setTimeout(() => setAddedContactName(null), TOAST_DURATION_MS)
-    return () => clearTimeout(timeoutId)
+    // Shown after mount so the text lands in an already rendered live region and gets announced.
+    const showTimeoutId = setTimeout(() => setIsToastVisible(true), 0)
+    const hideTimeoutId = setTimeout(() => setIsToastVisible(false), TOAST_DURATION_MS)
+    return () => {
+      clearTimeout(showTimeoutId)
+      clearTimeout(hideTimeoutId)
+    }
   }, [addedContactName])
 
   return (
@@ -57,7 +63,7 @@ export function ContactsPage() {
       <div className="pb-32">
         {contactsQuery.isPending ? (
           <ContactsSkeleton />
-        ) : contactsQuery.isError ? (
+        ) : contactsQuery.data === undefined ? (
           <StateMessage
             role="alert"
             icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
@@ -96,15 +102,17 @@ export function ContactsPage() {
 
       <AddExpenseButton />
 
-      {addedContactName !== null && (
-        <div
-          role="status"
-          className="fixed right-4 bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-4 z-20 flex items-center gap-2.5 rounded-xl bg-primary px-4 py-3.5 text-[15px] text-primary-foreground shadow-[0_6px_20px_rgb(0_0_0/0.2)]"
-        >
-          <CircleCheck className="size-5 shrink-0 text-emerald-300" aria-hidden="true" />
-          {addedContactName} added to your contacts
-        </div>
-      )}
+      <div
+        role="status"
+        className="fixed right-4 bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-4 z-20"
+      >
+        {isToastVisible && (
+          <div className="flex items-center gap-2.5 rounded-xl bg-primary px-4 py-3.5 text-[15px] text-primary-foreground shadow-[0_6px_20px_rgb(0_0_0/0.2)]">
+            <CircleCheck className="size-5 shrink-0 text-emerald-300" aria-hidden="true" />
+            {addedContactName} added to your contacts
+          </div>
+        )}
+      </div>
     </>
   )
 }
@@ -271,7 +279,8 @@ const skeletonNameWidths = ['62%', '38%', '54%', '70%', '46%', '58%']
 
 function ContactsSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading contacts">
+    <div role="status">
+      <span className="sr-only">Loading contacts</span>
       <div className="px-4 pt-6 pb-4">
         <div className="h-4.5 w-60 motion-safe:animate-pulse rounded-md bg-muted" />
       </div>
