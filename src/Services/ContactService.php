@@ -11,6 +11,8 @@ use App\Dto\PersonRef;
 use App\Entity\Contact;
 use App\Entity\User;
 use App\Repository\ContactRepository;
+use App\Repository\ExpenseRepository;
+use App\Repository\TransferRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -20,6 +22,8 @@ class ContactService
         private readonly BalanceService $balanceService,
         private readonly PersonRefFactory $personRefFactory,
         private readonly ContactRepository $contactRepository,
+        private readonly ExpenseRepository $expenseRepository,
+        private readonly TransferRepository $transferRepository,
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
@@ -32,6 +36,7 @@ class ContactService
     {
         $balancesByCounterpart = $this->balanceService->getBalancesByCounterpart($owner);
         $contacts = $this->contactRepository->findByOwnerIndexedByUserId($owner);
+        $lastActivityByCounterpart = $this->getLastActivityByCounterpart($owner, $contacts);
 
         $userIds = array_values(array_unique([...array_keys($balancesByCounterpart), ...array_keys($contacts)]));
         $users = [] === $userIds ? [] : $this->userRepository->findBy(['id' => $userIds]);
@@ -40,7 +45,13 @@ class ContactService
         $items = [];
         foreach ($users as $user) {
             $userId = (int) $user->getId();
-            $items[] = $this->buildItem($user, $people[$userId], $contacts[$userId] ?? null, $balancesByCounterpart[$userId] ?? []);
+            $items[] = $this->buildItem(
+                $user,
+                $people[$userId],
+                $contacts[$userId] ?? null,
+                $balancesByCounterpart[$userId] ?? [],
+                $lastActivityByCounterpart[$userId] ?? throw new \LogicException('A contact must have a Contact row or shared activity.'),
+            );
         }
 
         usort($items, static fn (ContactListItem $a, ContactListItem $b): int => [mb_strtolower($a->person->displayName), $a->person->id]
@@ -56,12 +67,20 @@ class ContactService
     {
         $balancesByCounterpart = $this->balanceService->getBalancesByCounterpart($owner);
         $userId = (int) $user->getId();
+        $contact = $this->contactRepository->findOneByOwnerAndUser($owner, $user);
+        $lastActivityByCounterpart = $this->getLastActivityByCounterpart($owner, null === $contact ? [] : [$userId => $contact]);
+
+        $lastActivityAt = $lastActivityByCounterpart[$userId] ?? null;
+        if (null === $lastActivityAt) {
+            throw new \LogicException('A contact must have a Contact row or shared activity.');
+        }
 
         return $this->buildItem(
             $user,
             $this->personRefFactory->create($owner, $user),
-            $this->contactRepository->findOneByOwnerAndUser($owner, $user),
+            $contact,
             $balancesByCounterpart[$userId] ?? [],
+            $lastActivityAt,
         );
     }
 
@@ -135,9 +154,35 @@ class ContactService
     }
 
     /**
+     * Latest of: expense or transfer created between the pair, or the owner's Contact row created.
+     * Only creations count: edits and deletions do not move the date, and someone added to an
+     * existing expense gets that expense's original creation time.
+     *
+     * @param array<int, Contact> $contacts keyed by contact user id
+     *
+     * @return array<int, \DateTimeImmutable> keyed by counterpart user id
+     */
+    private function getLastActivityByCounterpart(User $owner, array $contacts): array
+    {
+        $lastActivity = $this->expenseRepository->findLastCreatedAtByCounterpart($owner);
+        $otherSources = [
+            $this->transferRepository->findLastCreatedAtByCounterpart($owner),
+            array_map(static fn (Contact $contact): \DateTimeImmutable => $contact->getCreatedAt(), $contacts),
+        ];
+
+        foreach ($otherSources as $createdAtByCounterpart) {
+            foreach ($createdAtByCounterpart as $userId => $createdAt) {
+                $lastActivity[$userId] = max($lastActivity[$userId] ?? $createdAt, $createdAt);
+            }
+        }
+
+        return $lastActivity;
+    }
+
+    /**
      * @param list<CurrencyAmount> $balances
      */
-    private function buildItem(User $user, PersonRef $person, ?Contact $contact, array $balances): ContactListItem
+    private function buildItem(User $user, PersonRef $person, ?Contact $contact, array $balances, \DateTimeImmutable $lastActivityAt): ContactListItem
     {
         return new ContactListItem(
             person: $person,
@@ -145,6 +190,7 @@ class ContactService
             name: $user->getName(),
             isRegistered: $user->isRegistered(),
             balances: $balances,
+            lastActivityAt: $lastActivityAt,
         );
     }
 }
