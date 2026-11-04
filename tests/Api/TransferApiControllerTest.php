@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Api;
 
+use App\Entity\Contact;
 use App\Entity\Transfer;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
@@ -193,6 +194,126 @@ class TransferApiControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testShowNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/transfers/1');
+
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
+    public function testShowSuccess(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $payer = UserFactory::createUser();
+        $entityManager->persist($payer);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $transfer = new Transfer($payer, $payee, '25.00', new \DateTimeImmutable('2026-01-01'), 'Cash repayment', 'EUR');
+        $entityManager->persist($transfer);
+
+        $entityManager->flush();
+
+        $client->loginUser($payee);
+        $client->request('GET', sprintf('/api/transfers/%d', $transfer->getId()));
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertJsonStructure(['id', 'payer' => ['id', 'displayName', 'email'], 'payee' => ['id', 'displayName', 'email'], 'amount', 'currency', 'occurredOn', 'description']);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame($transfer->getId(), $response['id']);
+        $this->assertSame($payer->getId(), $response['payer']['id']);
+        $this->assertSame($payee->getId(), $response['payee']['id']);
+        $this->assertSame('25.00', $response['amount']);
+        $this->assertSame('EUR', $response['currency']);
+        $this->assertSame('Cash repayment', $response['description']);
+        $this->assertStringStartsWith('2026-01-01', $response['occurredOn']);
+    }
+
+    public function testShowResolvesDisplayNamesForViewer(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $payer = UserFactory::createUser('payer@example.com');
+        $payee = UserFactory::createUser('payee@example.com')->setName('Paula');
+        $entityManager->persist($payer);
+        $entityManager->persist($payee);
+        $entityManager->persist(new Contact($payer, $payee, 'Paulie'));
+
+        $transfer = new Transfer($payer, $payee, '25.00', new \DateTimeImmutable('2026-01-01'));
+        $entityManager->persist($transfer);
+        $entityManager->flush();
+        $transferUrl = sprintf('/api/transfers/%d', $transfer->getId());
+
+        $client->loginUser($payer);
+        $client->request('GET', $transferUrl);
+
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame('payer@example.com', $response['payer']['displayName']);
+        $this->assertSame('Paulie', $response['payee']['displayName']);
+
+        // The payer's nickname for the payee is private to the payer.
+        $client->loginUser($payee);
+        $client->request('GET', $transferUrl);
+
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame('payer@example.com', $response['payer']['displayName']);
+        $this->assertSame('Paula', $response['payee']['displayName']);
+    }
+
+    public function testShowForbiddenWhenNotInvolved(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $payer = UserFactory::createUser();
+        $entityManager->persist($payer);
+
+        $payee = UserFactory::createUser();
+        $entityManager->persist($payee);
+
+        $outsider = UserFactory::createUser();
+        $entityManager->persist($outsider);
+
+        $transfer = new Transfer($payer, $payee, '25.00', new \DateTimeImmutable('2026-01-01'));
+        $entityManager->persist($transfer);
+
+        $entityManager->flush();
+
+        $client->loginUser($outsider);
+        $client->request('GET', sprintf('/api/transfers/%d', $transfer->getId()));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    public function testShowNotFound(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/api/transfers/999999');
+
+        $this->assertResponseStatusCodeSame(404);
     }
 
     public function testUpdateSuccess(): void

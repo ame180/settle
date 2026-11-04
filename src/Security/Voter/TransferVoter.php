@@ -15,12 +15,13 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 class TransferVoter extends Voter
 {
+    public const VIEW = 'TRANSFER_VIEW';
     public const EDIT = 'TRANSFER_EDIT';
     public const DELETE = 'TRANSFER_DELETE';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::EDIT, self::DELETE], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true)
             && $subject instanceof Transfer;
     }
 

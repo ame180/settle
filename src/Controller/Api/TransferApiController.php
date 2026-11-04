@@ -43,6 +43,23 @@ class TransferApiController extends AbstractController
         return $this->json($this->toResponse($user, $transfer), JsonResponse::HTTP_CREATED);
     }
 
+    #[Route('/transfers/{id}', name: 'api_transfers_show', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function show(int $id): JsonResponse
+    {
+        $transfer = $this->transferRepository->find($id);
+        if (null === $transfer) {
+            throw $this->createNotFoundException('Transfer not found.');
+        }
+
+        $this->denyAccessUnlessGranted(TransferVoter::VIEW, $transfer);
+
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->json($this->toResponse($user, $transfer));
+    }
+
     #[Route('/transfers/{id}', name: 'api_transfers_update', methods: ['PUT'])]
     #[IsGranted('ROLE_USER')]
     public function update(
