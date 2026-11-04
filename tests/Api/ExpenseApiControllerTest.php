@@ -122,6 +122,44 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertNull($response['description']);
     }
 
+    public function testCreateFailsValidationForUnknownSplitType(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'amount' => '100.00',
+            'payeeId' => $creator->getId(),
+            'occurredOn' => '2026-01-01',
+            'splitType' => 'halves',
+            'debts' => [
+                ['payerId' => $creator->getId(), 'value' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertContains('splitType', array_column($this->getJsonResponse()['violations'], 'propertyPath'));
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function invalidCategoryProvider(): iterable
+    {
+        yield 'unknown value' => ['restaurants'];
+        yield 'wrong case' => ['Groceries'];
+        yield 'empty string' => [''];
+        yield 'null' => [null];
+        yield 'number' => [1];
+    }
+
     public function testCreateFailsWhenDebtsSumDoesNotMatchAmount(): void
     {
         $client = static::createClient();
