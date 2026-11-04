@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Dto;
 
 use App\Entity\Expense;
+use App\Enum\ExpenseCategory;
 use App\Enum\SplitType;
 
 readonly class ExpenseResponse
@@ -21,6 +22,7 @@ readonly class ExpenseResponse
         public PersonRef $payee,
         public \DateTimeImmutable $occurredOn,
         public SplitType $splitType,
+        public ExpenseCategory $category,
         public array $debts,
     ) {
     }
@@ -48,6 +50,7 @@ readonly class ExpenseResponse
             payee: $people[$expense->getPayee()->getId()],
             occurredOn: $expense->getOccurredOn(),
             splitType: $expense->getSplitType(),
+            category: $expense->getCategory(),
             debts: array_values($debts),
         );
     }

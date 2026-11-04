@@ -17,6 +17,16 @@ export type CurrencyAmount = {
 
 export type SplitType = 'exact' | 'percentage' | 'shares' | 'equal'
 
+export type ExpenseCategory =
+  | 'groceries'
+  | 'food_and_drink'
+  | 'transport'
+  | 'home_and_bills'
+  | 'entertainment'
+  | 'gifts'
+  | 'health'
+  | 'general'
+
 export type ExpenseDebtResponse = {
   payer: PersonRef
   amount: string
@@ -32,6 +42,7 @@ export type ExpenseResponse = {
   payee: PersonRef
   occurredOn: string
   splitType: SplitType
+  category: ExpenseCategory
   debts: ExpenseDebtResponse[]
 }
 
@@ -56,6 +67,7 @@ export type ActivityItem = {
   description: string | null
   payee: PersonRef
   payer: PersonRef | null
+  category: ExpenseCategory | null
 }
 
 export type ContactListItem = {

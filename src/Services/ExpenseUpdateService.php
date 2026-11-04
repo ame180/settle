@@ -59,7 +59,8 @@ class ExpenseUpdateService
             ->setDescription($request->description)
             ->setAmount($request->amount)
             ->setOccurredOn($request->occurredOn)
-            ->setSplitType($request->splitType);
+            ->setSplitType($request->splitType)
+            ->setCategory($request->category);
 
         foreach ($splits as $split) {
             $debt = new Debt($usersById[$split['payerId']], $expense, $split['amount'], $expense->getCurrency(), $split['splitValue']);

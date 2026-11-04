@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Dto;
 
 use App\Enum\ActivityType;
+use App\Enum\ExpenseCategory;
 
 readonly class ActivityItem
 {
@@ -19,6 +20,7 @@ readonly class ActivityItem
         public ?string $description,
         public PersonRef $payee,
         public ?PersonRef $payer,
+        public ?ExpenseCategory $category,
     ) {
     }
 }
