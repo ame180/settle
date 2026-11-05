@@ -16,9 +16,19 @@ describe('guessCategory', () => {
     ['Apteka', 'health'],
     ['Coffee', 'food_and_drink'],
     ['Weekly groceries', 'groceries'],
+    ['Kawa', 'food_and_drink'],
+    ['Bus do Krakowa', 'transport'],
+    ['Taxi z lotniska', 'transport'],
   ])('guesses %j as %s', (title, expected) => {
     expect(guessCategory(title)).toBe(expected)
   })
+
+  it.each(['Business', 'Lekcja', 'Winda', 'Training', 'Światło'])(
+    'does not read %j as a short stem',
+    (title) => {
+      expect(guessCategory(title)).toBeNull()
+    },
+  )
 
   it('returns null when nothing matches', () => {
     expect(guessCategory('Xyz 123')).toBeNull()

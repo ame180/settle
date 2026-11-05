@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/
 import {
   formatGrosze,
   formatPln,
+  formatPlnNumber,
   fromGrosze,
   parseAmountInput,
   sanitizeAmountInput,
@@ -24,7 +25,7 @@ import { CloseIcon, IconButton } from './formParts'
 import {
   checkSplit,
   convertSplit,
-  formatPlain,
+  MAX_SHARES,
   splitDebts,
   trimDecimal,
   type SplitCheck,
@@ -37,8 +38,6 @@ const tabs: { type: SplitType; label: string; hint: string }[] = [
   { type: 'percentage', label: '%', hint: 'Percentages have to add up to 100.' },
   { type: 'shares', label: 'Shares', hint: 'Whole numbers. 2 nights = 2 shares.' },
 ]
-
-const MAX_SHARES = 99
 
 type Person = { id: number; name: string; avatarName: string }
 
@@ -68,11 +67,22 @@ export function SplitEditorSheet({
   payerListOpen,
   onDone,
 }: SplitEditorSheetProps) {
+  // A fresh editor (and copy of the split) on every open; kept mounted while the sheet closes.
+  const [session, setSession] = useState(open ? 1 : 0)
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setSession((value) => value + 1)
+    }
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} repositionInputs={false}>
-      <SheetContent className="h-[92dvh]">
-        {open && (
+      <SheetContent className="h-[90dvh]">
+        {session > 0 && (
           <SplitEditor
+            key={session}
             me={me}
             others={others}
             total={total}
@@ -197,6 +207,8 @@ function SplitEditor({
               key={candidate.type}
               type="button"
               role="tab"
+              id={`split-tab-${candidate.type}`}
+              aria-controls="split-tab-panel"
               aria-selected={candidate.type === split.type}
               aria-label={candidate.type === 'percentage' ? 'Percentages' : undefined}
               onClick={() =>
@@ -227,7 +239,12 @@ function SplitEditor({
           </p>
         )}
 
-        <ul className="-mt-1">
+        <ul
+          id="split-tab-panel"
+          role="tabpanel"
+          aria-labelledby={`split-tab-${split.type}`}
+          className="-mt-1"
+        >
           {people.map((person) => (
             <li
               key={person.id}
@@ -319,15 +336,20 @@ function RowControl({
   }
 
   if (split.type === 'shares') {
-    const shares = Number(value === '' ? '0' : value) || 0
-    const step = (delta: number) =>
-      onValue(String(Math.min(MAX_SHARES, Math.max(0, shares + delta))))
+    // Loaded expenses may carry fractional shares ("1.50"); stepping lands on whole numbers.
+    const parsed = parseAmountInput(value) ?? '0.00'
+    const shares = Number.parseInt(parsed, 10)
+    const fractional = !parsed.endsWith('.00')
+    const step = (delta: number) => {
+      const next = delta > 0 ? shares + 1 : fractional ? shares : shares - 1
+      onValue(String(Math.min(MAX_SHARES, Math.max(0, next))))
+    }
     return (
       <span className="flex h-11 shrink-0 items-center rounded-full border border-border-strong">
         <button
           type="button"
           aria-label={`One share less for ${person.name}`}
-          disabled={shares === 0}
+          disabled={shares === 0 && !fractional}
           onClick={() => step(-1)}
           className="flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:text-muted-foreground/50"
         >
@@ -335,7 +357,7 @@ function RowControl({
         </button>
         <span aria-live="polite" className="w-6 text-center font-semibold tabular-nums">
           <span className="sr-only">{person.name}: </span>
-          {shares}
+          {trimDecimal(parsed)}
           <span className="sr-only"> shares</span>
         </span>
         <button
@@ -402,7 +424,7 @@ function RowNote({
         type="button"
         // Keep the amount field focused so the link stays put while it's tapped.
         onPointerDown={(event) => event.preventDefault()}
-        onClick={() => onFill(formatPlain(current + left))}
+        onClick={() => onFill(fromGrosze(current + left))}
         className="self-start text-[13px] font-semibold underline underline-offset-2"
       >
         Fill the {formatGrosze(left)} left
@@ -486,13 +508,15 @@ function describeStatus(
     const shares = [...check.shares.values()]
     const min = shares.reduce((a, b) => (b < a ? b : a))
     const max = shares.reduce((a, b) => (b > a ? b : a))
-    const each = min === max ? formatGrosze(min) : `${fromGrosze(min)}–${formatGrosze(max)}`
+    const each =
+      min === max ? formatGrosze(min) : `${formatPlnNumber(fromGrosze(min))}–${formatGrosze(max)}`
     return { tone: 'ok', main: `${each} each`, sub: people }
   }
 
   if (split.type === 'shares') {
-    const count = debtList.reduce((sum, debt) => sum + toGrosze(debt.value ?? '0'), 0n) / 100n
-    const label = `${count} ${count === 1n ? 'share' : 'shares'}`
+    // In hundredths of a share, since loaded expenses may have fractional shares.
+    const count = debtList.reduce((sum, debt) => sum + toGrosze(debt.value ?? '0'), 0n)
+    const label = `${trimDecimal(fromGrosze(count))} ${count === 100n ? 'share' : 'shares'}`
     if (count === 0n) {
       return { tone: 'warn', main: 'No shares yet', sub: 'Add at least one share' }
     }
@@ -500,8 +524,8 @@ function describeStatus(
       return { tone: 'plain', main: label, sub: 'Enter the amount to see each share' }
     }
     const totalGrosze = toGrosze(total)
-    const perShare = totalGrosze / count
-    const exact = perShare * count === totalGrosze
+    const perShare = (totalGrosze * 100n) / count
+    const exact = (totalGrosze * 100n) % count === 0n
     return {
       tone: 'ok',
       main: label,
@@ -548,7 +572,7 @@ function describeStatus(
   const difference = totalGrosze - assigned
   return {
     tone: 'warn',
-    main: `${fromGrosze(assigned)} of ${formatGrosze(totalGrosze)}`,
+    main: `${formatPlnNumber(fromGrosze(assigned))} of ${formatGrosze(totalGrosze)}`,
     sub:
       difference > 0n
         ? `${formatGrosze(difference)} left to assign`

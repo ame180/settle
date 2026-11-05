@@ -152,16 +152,29 @@ function gcd(a: bigint, b: bigint): bigint {
   return b === 0n ? a : gcd(b, a % b)
 }
 
-const MAX_SHARES = 99n
+/** The shares stepper's ceiling. */
+export const MAX_SHARES = 99
 
-/** Whole-number shares in the same proportion, or 1 each when that would take silly numbers. */
+/**
+ * Whole-number shares in the same proportion. When the exact ratio needs more than MAX_SHARES,
+ * the smallest weight becomes 1 share and the rest round to the nearest whole share.
+ */
 function toWholeShares(weights: Map<number, string>): Map<number, bigint> {
+  const max = BigInt(MAX_SHARES)
   const scaled = new Map([...weights].map(([id, value]) => [id, toGrosze(value)]))
   const divisor = [...scaled.values()].reduce(gcd, 0n)
-  const shares = new Map([...scaled].map(([id, value]) => [id, value / divisor]))
-  const fits = [...shares.values()].every((share) => share <= MAX_SHARES)
+  const exact = new Map([...scaled].map(([id, value]) => [id, value / divisor]))
+  if ([...exact.values()].every((share) => share <= max)) {
+    return exact
+  }
 
-  return fits ? shares : new Map([...weights.keys()].map((id) => [id, 1n]))
+  const smallest = [...scaled.values()].reduce((a, b) => (b < a ? b : a))
+  return new Map(
+    [...scaled].map(([id, value]) => {
+      const rounded = (value * 2n + smallest) / (smallest * 2n)
+      return [id, rounded > max ? max : rounded]
+    }),
+  )
 }
 
 /**
@@ -195,7 +208,7 @@ export function convertSplit(
     const percents = distribute('100.00', weights)
     return {
       ...base,
-      values: Object.fromEntries([...percents].map(([id, p]) => [id, trimDecimal(formatPlain(p))])),
+      values: Object.fromEntries([...percents].map(([id, p]) => [id, trimDecimal(fromGrosze(p))])),
     }
   }
   if (total === null || toGrosze(total) === 0n) {
@@ -205,13 +218,8 @@ export function convertSplit(
   const amounts = distribute(total, weights)
   return {
     ...base,
-    values: Object.fromEntries([...amounts].map(([id, amount]) => [id, formatPlain(amount)])),
+    values: Object.fromEntries([...amounts].map(([id, amount]) => [id, fromGrosze(amount)])),
   }
-}
-
-/** "1234.50", for input fields (no grouping, no currency). */
-export function formatPlain(grosze: bigint): string {
-  return fromGrosze(grosze)
 }
 
 /** 1:1 "Switch": the other person paid, and the shares swap with the roles. */

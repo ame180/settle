@@ -4,10 +4,15 @@ import { fromScaled, toScaled } from './decimal'
 const NO_BREAK_SPACE = ' '
 
 export function formatPln(amount: string): string {
+  return `${formatPlnNumber(amount)}${NO_BREAK_SPACE}zł`
+}
+
+/** "1 535.64": grouped, 2 decimals, no sign and no currency. */
+export function formatPlnNumber(amount: string): string {
   const [integerPart, fractionPart = ''] = amount.replace(/^-/, '').split('.')
   const groupedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, NO_BREAK_SPACE)
 
-  return `${groupedIntegerPart}.${fractionPart.padEnd(2, '0')}${NO_BREAK_SPACE}zł`
+  return `${groupedIntegerPart}.${fractionPart.padEnd(2, '0')}`
 }
 
 export function isNegativeAmount(amount: string): boolean {

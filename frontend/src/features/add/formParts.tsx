@@ -46,7 +46,7 @@ export function IconButton({
     <button
       type={type}
       className={cn(
-        'flex size-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        'flex size-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-40',
         className,
       )}
       {...props}

@@ -1,4 +1,4 @@
-import { useId, type ReactNode, type RefObject } from 'react'
+import { useId, useRef, type ReactNode, type RefObject } from 'react'
 import { parseAmountInput, sanitizeAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { FieldError } from './formParts'
@@ -25,10 +25,11 @@ export function AmountField({
   readOnly,
 }: AmountFieldProps) {
   const id = useId()
+  const blockRef = useRef<HTMLDivElement>(null)
   const width = Math.max(value.length, 4)
 
   return (
-    <div id={`${id}-block`} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
+    <div ref={blockRef} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
       <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
         {label}
       </label>
@@ -56,11 +57,10 @@ export function AmountField({
               onChange(parsed)
             }
           }}
-          onFocus={(event) => {
+          onFocus={() => {
             // Keep the whole block, outcome line included, above the keyboard.
-            const block = event.currentTarget.closest(`[id="${id}-block"]`)
             window.setTimeout(
-              () => block?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+              () => blockRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
               300,
             )
           }}

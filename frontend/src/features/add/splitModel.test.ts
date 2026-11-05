@@ -160,15 +160,15 @@ describe('convertSplit', () => {
     })
   })
 
-  it('falls back to one share each when the proportion needs huge numbers', () => {
+  it('rounds to whole shares when the exact ratio needs huge numbers', () => {
     const amounts: SplitDraft = {
       payerId: ME,
       type: 'exact',
       excluded: [],
-      values: { [ME]: '100.01', [ANNA]: '99.99' },
+      values: { [ME]: '66.67', [ANNA]: '33.33' },
     }
-    expect(convertSplit(amounts, 'shares', ids, '200.00').values).toEqual({
-      [ME]: '1',
+    expect(convertSplit(amounts, 'shares', ids, '100.00').values).toEqual({
+      [ME]: '2',
       [ANNA]: '1',
     })
   })

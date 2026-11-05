@@ -102,8 +102,15 @@ export function ExpenseForm({
   function update(field: ExpenseField | null, change: (draft: ExpenseDraft) => ExpenseDraft) {
     onDraftChange(change)
     setServerError(null)
-    if (field && errors[field]) {
-      setErrors(({ [field]: _cleared, ...rest }) => rest)
+    // A split error can go stale when the amount or the people change, not only the split.
+    const cleared: ExpenseField[] =
+      field === null ? [] : field === 'amount' || field === 'people' ? [field, 'split'] : [field]
+    if (cleared.some((name) => errors[name])) {
+      setErrors((current) => {
+        const next = { ...current }
+        cleared.forEach((name) => delete next[name])
+        return next
+      })
     }
   }
 

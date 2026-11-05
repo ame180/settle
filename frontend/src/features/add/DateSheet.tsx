@@ -21,6 +21,14 @@ type DateSheetProps = {
 export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProps) {
   const today = todayIso()
   const [month, setMonth] = useState(() => startOfMonth(value))
+  // Each time it opens, show the month of the picked date.
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setMonth(startOfMonth(value))
+    }
+  }
   const isFuture = value > today
 
   function pick(isoDate: string) {
@@ -39,15 +47,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
   const monthLabel = first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(next) => {
-        if (next) {
-          setMonth(startOfMonth(value))
-        }
-        onOpenChange(next)
-      }}
-    >
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <div className="flex flex-col gap-3 overflow-y-auto px-4 pt-2 pb-5">
           <SheetTitle>Date</SheetTitle>

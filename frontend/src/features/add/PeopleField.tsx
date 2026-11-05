@@ -69,7 +69,13 @@ export function PeopleField({
   const exactEmailMatch = available.some(
     (contact) => contact.person.email.toLowerCase() === trimmedQuery.toLowerCase(),
   )
-  const offerEmail = looksLikeEmail(trimmedQuery) && !exactEmailMatch
+  const isOwnEmail = trimmedQuery.toLowerCase() === me.email.toLowerCase()
+  const offerEmail = looksLikeEmail(trimmedQuery) && !exactEmailMatch && !isOwnEmail
+  // The add-by-email request can finish after more people were picked; add to the latest list.
+  const othersRef = useRef(others)
+  useEffect(() => {
+    othersRef.current = others
+  }, [others])
 
   function toggle(person: PersonRef) {
     onChange(
@@ -82,22 +88,26 @@ export function PeopleField({
   }
 
   function addByEmail() {
+    if (addContact.isPending) {
+      return
+    }
     setAddError(null)
     addContact.mutate(
       { email: trimmedQuery },
       {
         onSuccess: (contact) => {
-          if (!pickedIds.has(contact.person.id)) {
-            onChange([...others, contact.person])
+          const latest = othersRef.current
+          if (!latest.some((person) => person.id === contact.person.id)) {
+            onChange([...latest, contact.person])
           }
           setQuery('')
           inputRef.current?.focus()
         },
         onError: (mutationError) => {
           setAddError(
-            mutationError instanceof ApiError && mutationError.violations.length > 0
-              ? mutationError.violations[0].title
-              : "Couldn't add this contact. Try again.",
+            (mutationError instanceof ApiError &&
+              (mutationError.violations[0]?.title ?? mutationError.detail)) ||
+              'Couldn’t add this contact. Try again.',
           )
         },
       },
@@ -156,7 +166,6 @@ export function PeopleField({
           spellCheck={false}
           placeholder="Name or email"
           value={query}
-          role="combobox"
           aria-expanded={open}
           aria-controls={listId}
           aria-invalid={!!error}
@@ -204,37 +213,32 @@ export function PeopleField({
               Done
             </button>
           </div>
-          <ul
-            id={listId}
-            role="listbox"
-            aria-multiselectable="true"
-            aria-label="Contacts"
-            className="border-t"
-          >
+          <ul id={listId} aria-label="Contacts" className="border-t">
             {contacts === undefined && (
               <li className="px-3 py-3 text-sm text-muted-foreground">Loading contacts…</li>
             )}
             {rows.map((contact) => {
               const picked = pickedIds.has(contact.person.id)
               return (
-                <li
-                  key={contact.person.id}
-                  role="option"
-                  aria-selected={picked}
-                  onClick={() => toggle(contact.person)}
-                  className={cn(
-                    'flex min-h-15 cursor-pointer items-center gap-3 border-b px-3 py-2 last:border-b-0',
-                    picked && 'bg-subtle',
-                  )}
-                >
-                  <PersonAvatar id={contact.person.id} name={contact.person.displayName} />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate">{contact.person.displayName}</span>
-                    <span className="truncate text-[13px] text-muted-foreground">
-                      {balanceLine(contact)}
+                <li key={contact.person.id} className="border-b last:border-b-0">
+                  <button
+                    type="button"
+                    aria-pressed={picked}
+                    onClick={() => toggle(contact.person)}
+                    className={cn(
+                      'flex min-h-15 w-full items-center gap-3 px-3 py-2 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
+                      picked && 'bg-subtle',
+                    )}
+                  >
+                    <PersonAvatar id={contact.person.id} name={contact.person.displayName} />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate">{contact.person.displayName}</span>
+                      <span className="truncate text-[13px] text-muted-foreground">
+                        {balanceLine(contact)}
+                      </span>
                     </span>
-                  </span>
-                  {picked && <Check className="size-5.5 shrink-0" aria-hidden="true" />}
+                    {picked && <Check className="size-5.5 shrink-0" aria-hidden="true" />}
+                  </button>
                 </li>
               )
             })}

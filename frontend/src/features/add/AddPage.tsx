@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { useMe } from '@/api/auth'
 import { useContacts } from '@/api/contacts'
-import type { MeResponse } from '@/api/types'
+import type { MeResponse, PersonRef } from '@/api/types'
 import { todayIso } from '@/lib/dates'
 import { DiscardSheet } from './DiscardSheet'
 import { emptyDraft, type ExpenseDraft } from './expenseDraft'
@@ -32,15 +32,16 @@ function AddScreen({ me }: { me: MeResponse }) {
   }
 
   const contact = contacts?.items.find((item) => item.person.id === contactId)
-  const initialDraft = {
-    ...emptyDraft(me.id, todayIso()),
-    others: contact ? [contact.person] : [],
-  }
 
-  return <AddExpenseScreen me={me} initialDraft={initialDraft} />
+  return <AddExpenseScreen me={me} prefilled={contact?.person ?? null} />
 }
 
-function AddExpenseScreen({ me, initialDraft }: { me: MeResponse; initialDraft: ExpenseDraft }) {
+function AddExpenseScreen({ me, prefilled }: { me: MeResponse; prefilled: PersonRef | null }) {
+  // Frozen on mount: later contact refetches or a new day mustn't count as the user's input.
+  const [initialDraft] = useState<ExpenseDraft>(() => ({
+    ...emptyDraft(me.id, todayIso()),
+    others: prefilled ? [prefilled] : [],
+  }))
   const [draft, setDraft] = useState(initialDraft)
   // The prefilled person isn't the user's input, so it doesn't make the form dirty.
   const dirty = JSON.stringify(draft) !== JSON.stringify(initialDraft)

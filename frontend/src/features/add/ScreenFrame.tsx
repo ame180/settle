@@ -1,14 +1,19 @@
 import type { ReactNode } from 'react'
+import { useIsMutating } from '@tanstack/react-query'
 import { PageHeader } from '@/components/PageHeader'
 import { CloseIcon, IconButton } from './formParts'
 
-/** Full-screen form header: a close button, no bottom nav. */
+/**
+ * Full-screen form header: a close button, no bottom nav. Close waits while anything is saving,
+ * so a save can't land after the user was told their input was discarded.
+ */
 export function Header({ title, onClose }: { title: string; onClose: () => void }) {
+  const saving = useIsMutating() > 0
   return (
     <PageHeader
       title={title}
       leading={
-        <IconButton aria-label="Close" onClick={onClose}>
+        <IconButton aria-label="Close" onClick={onClose} disabled={saving}>
           <CloseIcon />
         </IconButton>
       }
