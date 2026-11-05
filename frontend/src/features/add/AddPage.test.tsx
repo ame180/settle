@@ -21,7 +21,10 @@ function contact(id: number, displayName: string, email: string): ContactListIte
 const contacts: ContactListResponse = {
   totals: [],
   items: [
-    contact(2, 'Anna Kowalska', 'anna@example.com'),
+    {
+      ...contact(2, 'Anna Kowalska', 'anna@example.com'),
+      balances: [{ currency: 'PLN', amount: '192.92' }],
+    },
     contact(3, 'Ewa Nowak', 'ewa@example.com'),
   ],
 }
@@ -135,5 +138,50 @@ describe('AddPage', () => {
     expect(calls.find((call) => call.key === 'POST /api/contacts')?.body).toEqual({
       email: 'jan@example.com',
     })
+  })
+
+  it('opens the Payment tab prefilled from Settle up and records the payment', async () => {
+    const calls = mockApi({ 'POST /api/transfers': () => jsonResponse(201, { id: 4 }) })
+    renderAdd('/add?tab=payment&contact=2&amount=192.92&payer=them')
+
+    expect(await screen.findByRole('tab', { name: 'Payment' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(screen.getByText('You and Anna will be settled up')).toBeInTheDocument()
+
+    await userEvent.clear(screen.getByLabelText('Amount'))
+    await userEvent.type(screen.getByLabelText('Amount'), '100')
+    expect(screen.getByText(/Anna will still owe you/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Swap who paid' }))
+    expect(screen.getByText(/This adds to what Anna already owes you/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Swap who paid' }))
+
+    await userEvent.click(screen.getByRole('button', { name: /Record 100.00/ }))
+
+    expect(await screen.findByText('Contacts page')).toBeInTheDocument()
+    expect(calls.find((call) => call.key === 'POST /api/transfers')?.body).toEqual({
+      payerId: 2,
+      payeeId: 1,
+      amount: '100.00',
+      occurredOn: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      description: null,
+    })
+  })
+
+  it('keeps person and amount when switching between tabs', async () => {
+    mockApi({})
+    renderAdd('/add?contact=2')
+
+    await userEvent.type(await screen.findByLabelText('Amount'), '42')
+    await userEvent.click(screen.getByRole('tab', { name: 'Payment' }))
+
+    expect(screen.getByLabelText('Amount')).toHaveValue('42.00')
+    expect(screen.getByRole('button', { name: /Anna Kowalska. Change person/ })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Expense' }))
+    expect(screen.getByLabelText('Amount')).toHaveValue('42.00')
+    expect(screen.getByRole('button', { name: 'Remove Anna Kowalska' })).toBeInTheDocument()
   })
 })
