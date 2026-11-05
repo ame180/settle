@@ -236,7 +236,7 @@ export function ExpenseForm({
                     autoComplete="off"
                     enterKeyHint="next"
                     maxLength={255}
-                    placeholder="e.g. Pizza, Uber, Zakupy"
+                    placeholder="e.g. Pizza, Uber, Groceries"
                     value={draft.title}
                     aria-invalid={!!errors.title}
                     aria-describedby={errors.title ? 'expense-title-error' : undefined}
