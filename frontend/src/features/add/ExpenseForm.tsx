@@ -326,21 +326,24 @@ export function ExpenseForm({
         </fieldset>
       </div>
 
-      <FormFooter serverError={serverError}>
-        {mode.kind === 'edit' && draft.others.length > 0 && (
-          <p className="text-center text-[13px] text-muted-foreground">
-            {joinNames(draft.others.map((person) => getShortName(person.displayName)))} will see
-            your changes.
-          </p>
-        )}
-        <PrimaryButton
-          type="submit"
-          pending={pending}
-          pendingLabel={mode.kind === 'edit' ? 'Saving…' : 'Adding…'}
-        >
-          {submitLabel}
-        </PrimaryButton>
-      </FormFooter>
+      {/* While picking people the list gets all the room above the keyboard. */}
+      {!peopleOpen && (
+        <FormFooter serverError={serverError}>
+          {mode.kind === 'edit' && draft.others.length > 0 && (
+            <p className="text-center text-[13px] text-muted-foreground">
+              {joinNames(draft.others.map((person) => getShortName(person.displayName)))} will see
+              your changes.
+            </p>
+          )}
+          <PrimaryButton
+            type="submit"
+            pending={pending}
+            pendingLabel={mode.kind === 'edit' ? 'Saving…' : 'Adding…'}
+          >
+            {submitLabel}
+          </PrimaryButton>
+        </FormFooter>
+      )}
 
       <CategorySheet
         open={openSheet === 'category'}
