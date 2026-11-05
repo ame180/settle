@@ -18,7 +18,7 @@ import { ActivityListFooter } from '@/features/activity/ActivityListFooter'
 import { ActivityRow } from '@/features/activity/ActivityRows'
 import { activityItemKey, flattenActivityPages } from '@/features/activity/activityItems'
 import { ContactNotFound, ContactNotFoundMessage } from './ContactNotFound'
-import { parseUserId } from './parseUserId'
+import { parseUserId } from '@/lib/parseUserId'
 
 const pillClassName = 'rounded-full px-5 text-[15px]'
 

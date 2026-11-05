@@ -18,7 +18,7 @@ import { getShortName } from '@/lib/person'
 import { hasInAppHistory } from '@/lib/history'
 import { cn } from '@/lib/utils'
 import { ContactNotFound } from './ContactNotFound'
-import { parseUserId } from './parseUserId'
+import { parseUserId } from '@/lib/parseUserId'
 
 const editContactSchema = z.object({
   nickname: z.string().trim().max(64, 'Nickname can be at most 64 characters.'),
