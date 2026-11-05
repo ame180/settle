@@ -165,9 +165,9 @@ describe('ContactsPage', () => {
     renderContacts({ addedContactName: 'Jan' })
 
     expect(
-      (await screen.findByText('Jan added to your contacts')).closest('[role="status"]'),
+      (await screen.findByText('Jan added to your contacts')).closest('[aria-live]'),
     ).not.toBeNull()
-    expect(screen.getByRole('list')).toHaveTextContent('Not on Settle yetno balance')
+    expect(screen.getByText('Not on Settle yet').closest('li')).toHaveTextContent('no balance')
 
     await vi.advanceTimersByTimeAsync(4000)
     await waitFor(() =>

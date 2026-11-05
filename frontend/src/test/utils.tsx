@@ -6,6 +6,7 @@ import {
   type InitialEntry,
   type RouteObject,
 } from 'react-router'
+import { Toaster } from '@/components/ui/toast'
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -22,6 +23,7 @@ export function renderRoutes(routes: RouteObject[], initialEntry: InitialEntry) 
   render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>,
   )
   return router
