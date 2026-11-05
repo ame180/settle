@@ -4,13 +4,12 @@ import { toast } from 'sonner'
 import { useMe } from '@/api/auth'
 import { useContacts } from '@/api/contacts'
 import type { MeResponse } from '@/api/types'
-import { PageHeader } from '@/components/PageHeader'
 import { todayIso } from '@/lib/dates'
 import { DiscardSheet } from './DiscardSheet'
 import { emptyDraft, type ExpenseDraft } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
-import { CloseIcon, IconButton } from './formParts'
 import { useGoBack, useLeaveGuard } from './navigation'
+import { Header, Loading } from './ScreenFrame'
 
 /**
  * /add, full screen. `?contact=<userId>` (opened from a contact) prefills that person and
@@ -29,7 +28,7 @@ function AddScreen({ me }: { me: MeResponse }) {
 
   // Wait for contacts before prefilling, so the form mounts with its starting state.
   if (contactId !== null && !contacts && !isError) {
-    return <p className="p-4 text-muted-foreground">Loading…</p>
+    return <Loading />
   }
 
   const contact = contacts?.items.find((item) => item.person.id === contactId)
@@ -50,14 +49,7 @@ function AddExpenseScreen({ me, initialDraft }: { me: MeResponse; initialDraft: 
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader
-        title="Add expense"
-        leading={
-          <IconButton aria-label="Close" onClick={goBack}>
-            <CloseIcon />
-          </IconButton>
-        }
-      />
+      <Header title="Add expense" onClose={goBack} />
       <ExpenseForm
         me={me}
         draft={draft}
