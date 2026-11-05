@@ -55,7 +55,7 @@ export function SplitCard({
       <div className="flex min-h-11 items-center gap-2.5 pl-1">
         <PersonAvatar id={payer.id} name={payer.name} size="sm" />
         <span className="flex min-w-0 flex-1 whitespace-nowrap">
-          <span className="truncate">{payerName}</span>
+          <span className="min-w-0 truncate">{payerName}</span>
           <span className="shrink-0">&nbsp;paid</span>
         </span>
         <button

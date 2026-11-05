@@ -183,7 +183,7 @@ export function ExpenseForm({
   return (
     <form onSubmit={onSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <fieldset disabled={pending} className="flex flex-col gap-5 px-4 pt-4 pb-8">
+        <fieldset disabled={pending} className="flex min-w-0 flex-col gap-5 px-4 pt-4 pb-8">
           {top}
 
           <div ref={peopleBlockRef} className="scroll-mt-4">
