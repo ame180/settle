@@ -92,6 +92,7 @@ export function SplitCard({
           <PieChart className="size-6 shrink-0 p-px" aria-hidden="true" />
           <span className="flex flex-1 flex-col gap-0.5">
             <span>{split.label}</span>
+            {warning && <span className="sr-only">. </span>}
             {warning && <Warning message={warning} />}
           </span>
           <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -104,12 +105,8 @@ export function SplitCard({
           onClick={onOpenSplit}
           className="-mb-1.5 flex min-h-11 flex-col justify-center gap-1 rounded-md px-1 text-left text-[13px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          {split.summary && (
-            <span className="text-muted-foreground">
-              <span className="sr-only">Edit split: </span>
-              {split.summary}
-            </span>
-          )}
+          <span className="sr-only">Edit split: </span>
+          {split.summary && <span className="text-muted-foreground">{split.summary}</span>}
           {warning && <Warning message={warning} />}
         </button>
       )}
