@@ -1,10 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router'
-import { ArrowLeft, CircleAlert, LoaderCircle } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { CircleAlert, LoaderCircle } from 'lucide-react'
 import { useAddContact } from '@/api/contacts'
 import { ApiError } from '@/api/client'
+import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,32 +72,7 @@ export function AddContactPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader
-        title="Add contact"
-        leading={
-          <Link
-            to="/"
-            onClick={(event) => {
-              const isPlainClick =
-                event.button === 0 &&
-                !event.metaKey &&
-                !event.ctrlKey &&
-                !event.shiftKey &&
-                !event.altKey
-              const hasInAppHistory = (window.history.state?.idx ?? 0) > 0
-              if (!isPlainClick || !hasInAppHistory) {
-                return
-              }
-              event.preventDefault()
-              navigate(-1)
-            }}
-            aria-label="Back to contacts"
-            className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <ArrowLeft className="size-6" aria-hidden="true" />
-          </Link>
-        }
-      />
+      <PageHeader title="Add contact" leading={<BackLink to="/" label="Back to contacts" />} />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <p className="text-[15px] text-muted-foreground">
