@@ -87,7 +87,7 @@ export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorPro
       <StateMessage
         icon={<Lock className="size-7.5" aria-hidden="true" />}
         title={`You can’t see this ${noun}`}
-        description={`Only the people in a ${noun} can open it.`}
+        description="Only the people in it can open it."
       >
         <BackToActivity />
       </StateMessage>
