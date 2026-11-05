@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findPlnAmount, formatPln, isNegativeAmount } from './money'
+import { findPlnAmount, formatGrosze, formatPln, isNegativeAmount, parseAmountInput } from './money'
 
 describe('formatPln', () => {
   it.each([
@@ -30,5 +30,30 @@ describe('findPlnAmount', () => {
       ]),
     ).toBe('-12.50')
     expect(findPlnAmount([{ currency: 'EUR', amount: '5.00' }])).toBeNull()
+  })
+})
+
+describe('parseAmountInput', () => {
+  it.each([
+    ['99', '99.00'],
+    ['99,5', '99.50'],
+    ['99.05', '99.05'],
+    ['1 535,64', '1535.64'],
+    ['007', '7.00'],
+    [',5', '0.50'],
+    ['12.', '12.00'],
+  ])('reads %j as %s', (input, expected) => {
+    expect(parseAmountInput(input)).toBe(expected)
+  })
+
+  it.each(['', 'abc', '1.234', '1,2,3', '-5', '.'])('rejects %j', (input) => {
+    expect(parseAmountInput(input)).toBeNull()
+  })
+})
+
+describe('formatGrosze', () => {
+  it('formats integer grosze, signless', () => {
+    expect(formatGrosze(4950n)).toBe(formatPln('49.50'))
+    expect(formatGrosze(-153564n)).toBe(formatPln('1535.64'))
   })
 })
