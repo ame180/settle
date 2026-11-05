@@ -1,13 +1,5 @@
 import { useState } from 'react'
-import {
-  Check,
-  ChevronDown,
-  CircleAlert,
-  CircleCheck,
-  Minus,
-  Plus,
-  TriangleAlert,
-} from 'lucide-react'
+import { Check, ChevronDown, CircleCheck, Minus, Plus, TriangleAlert } from 'lucide-react'
 import type { MeResponse, PersonRef, SplitType } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
@@ -21,7 +13,7 @@ import {
   toGrosze,
 } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { CloseIcon, IconButton } from './formParts'
+import { AlertLine, CloseIcon, IconButton } from './formParts'
 import {
   checkSplit,
   editSplit,
@@ -229,15 +221,7 @@ function SplitEditor({
         <p className="-mt-1 text-[13px] text-muted-foreground">{tab.hint}</p>
 
         {!check.ok && check.problem.kind === 'not-involved' && (
-          <p
-            role="alert"
-            className="flex items-start gap-2.5 rounded-xl bg-destructive/8 px-3.5 py-3 text-[15px] text-destructive"
-          >
-            <CircleAlert className="mt-0.5 size-4.5 shrink-0" aria-hidden="true" />
-            <span>
-              You need to pay or share in this expense. Tick yourself, or make yourself the payer.
-            </span>
-          </p>
+          <AlertLine message="You need to pay or share in this expense. Tick yourself, or make yourself the payer." />
         )}
 
         <ul

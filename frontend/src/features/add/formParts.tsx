@@ -19,6 +19,19 @@ export function FieldError({
   )
 }
 
+/** A problem with the whole form or sheet, as a line of red text under what it's about. */
+export function AlertLine({ message, className }: { message: string; className?: string }) {
+  return (
+    <p
+      role="alert"
+      className={cn('flex items-start gap-2 text-[15px] text-destructive', className)}
+    >
+      <CircleAlert className="mt-0.5 size-4.5 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+      <span>{message}</span>
+    </p>
+  )
+}
+
 /** Rounded secondary button used for the date and note chips and sheet options. */
 export function PillButton({
   className,
@@ -97,15 +110,7 @@ export function FormFooter({
 }) {
   return (
     <div className="flex flex-col gap-3 border-t px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-      {serverError && (
-        <p
-          role="alert"
-          className="flex items-start gap-2.5 rounded-xl bg-destructive/8 px-3.5 py-3 text-[15px] text-destructive"
-        >
-          <CircleAlert className="mt-0.5 size-4.5 shrink-0" aria-hidden="true" />
-          <span>{serverError}</span>
-        </p>
-      )}
+      {serverError && <AlertLine message={serverError} />}
       {children}
     </div>
   )

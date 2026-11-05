@@ -115,11 +115,8 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
           </div>
           {isFuture && (
             <>
-              <p
-                role="status"
-                className="flex items-start gap-2.5 rounded-[10px] bg-subtle px-3.5 py-3 text-[13px] text-foreground/80"
-              >
-                <Info className="mt-px size-4.5 shrink-0" aria-hidden="true" />
+              <p role="status" className="flex items-start gap-2 text-[13px] text-foreground/80">
+                <Info className="mt-px size-4 shrink-0" aria-hidden="true" />
                 <span>
                   {formatLongDate(value)} is in the future. It still counts towards your balances
                   straight away.
