@@ -1,13 +1,14 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Navigate, useLocation, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useLogin, useMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FieldError } from '@/components/FieldError'
+import { SubmitButton } from '@/components/SubmitButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AuthLayout, authLinkClassName } from './AuthLayout'
 
 const loginSchema = z.object({
   email: z.email('Enter a valid email address'),
@@ -16,17 +17,21 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>
 
+export type LoginLocationState = { from?: string; email?: string } | null
+
 export function LoginPage() {
   const { data: me } = useMe()
   const loginMutation = useLogin()
   const navigate = useNavigate()
   const location = useLocation()
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/'
+  const locationState = location.state as LoginLocationState
+  const redirectTo = locationState?.from ?? '/'
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: locationState?.email ?? '', password: '' },
   })
+  const { errors } = form.formState
 
   if (me) {
     return <Navigate to={redirectTo} replace />
@@ -39,61 +44,62 @@ export function LoginPage() {
   })
 
   const serverError =
-    loginMutation.error instanceof ApiError
-      ? loginMutation.error.status === 401
-        ? 'Invalid email or password.'
-        : loginMutation.error.message
+    loginMutation.error instanceof ApiError && loginMutation.error.status === 401
+      ? 'Invalid email or password.'
       : loginMutation.error
         ? 'Something went wrong. Please try again.'
         : null
 
   return (
-    <div className="flex min-h-full items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Sign in to Settle</CardTitle>
-          <CardDescription>Use the email and password of your account.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} noValidate className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                inputMode="email"
-                aria-invalid={!!form.formState.errors.email}
-                {...form.register('email')}
-              />
-              {form.formState.errors.email && (
-                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={!!form.formState.errors.password}
-                {...form.register('password')}
-              />
-              {form.formState.errors.password && (
-                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
-              )}
-            </div>
-            {serverError && (
-              <p role="alert" className="text-sm text-destructive">
-                {serverError}
-              </p>
-            )}
-            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-              {loginMutation.isPending ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Sign in"
+      description="Use the email and password of your account."
+      footer={
+        <>
+          New to Settle?{' '}
+          <Link to="/signup" className={authLinkClassName}>
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="signin-email">Email</Label>
+          <Input
+            id="signin-email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? 'signin-email-error' : undefined}
+            {...form.register('email')}
+          />
+          {errors.email && <FieldError id="signin-email-error" message={errors.email.message} />}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="signin-password">Password</Label>
+          <Input
+            id="signin-password"
+            type="password"
+            autoComplete="current-password"
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? 'signin-password-error' : undefined}
+            {...form.register('password')}
+          />
+          {errors.password && (
+            <FieldError id="signin-password-error" message={errors.password.message} />
+          )}
+        </div>
+        {serverError && (
+          <p role="alert" className="text-sm text-destructive">
+            {serverError}
+          </p>
+        )}
+        <SubmitButton isPending={loginMutation.isPending} pendingLabel="Signing in…">
+          Sign in
+        </SubmitButton>
+      </form>
+    </AuthLayout>
   )
 }

@@ -2,9 +2,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router'
-import { ArrowLeft, CircleAlert, LoaderCircle } from 'lucide-react'
+import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { useAddContact } from '@/api/contacts'
 import { ApiError } from '@/api/client'
+import { FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -167,14 +168,5 @@ export function AddContactPage() {
         </form>
       </div>
     </div>
-  )
-}
-
-function FieldError({ id, message }: { id: string; message: string | undefined }) {
-  return (
-    <p id={id} className="flex items-center gap-1.5 text-[13px] text-destructive">
-      <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
-      {message}
-    </p>
   )
 }
