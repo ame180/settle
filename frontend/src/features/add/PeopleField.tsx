@@ -260,7 +260,7 @@ export function PeopleField({
                 <UserPlus className="size-5" aria-hidden="true" />
               </span>
               <span className="flex min-w-0 flex-col">
-                <span className="break-all">
+                <span className="[overflow-wrap:anywhere]">
                   {addContact.isPending ? 'Adding…' : `Add ${trimmedQuery} as a new contact`}
                 </span>
                 <span className="text-[13px] text-muted-foreground">
