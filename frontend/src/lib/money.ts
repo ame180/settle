@@ -24,6 +24,12 @@ export function findPlnAmount(amounts: CurrencyAmount[]): string | null {
   return amounts.find((currencyAmount) => currencyAmount.currency === 'PLN')?.amount ?? null
 }
 
+/** PLN reads "12.00 zł"; other currencies keep their code: "12.00 EUR". Drops the sign. */
+export function formatMoney(amount: string, currency: string): string {
+  const formatted = formatPln(amount)
+  return currency === 'PLN' ? formatted : formatted.replace(/zł$/, currency)
+}
+
 /** Integer digits the API's Decimal(precision: 10, scale: 2) allows before the point. */
 export const MAX_AMOUNT_INTEGER_DIGITS = 8
 

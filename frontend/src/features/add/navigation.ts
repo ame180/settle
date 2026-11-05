@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useIsMutating } from '@tanstack/react-query'
 import { useBlocker, useNavigate } from 'react-router'
 import { saveMutationKey } from '@/api/expenses'
+import { hasInAppHistory } from '@/lib/history'
 
 /** Back to wherever the user came from, or `fallback` when the app was opened on this page. */
 export function useGoBack(fallback: string) {
   const navigate = useNavigate()
   return useCallback(() => {
-    const hasInAppHistory = (window.history.state?.idx ?? 0) > 0
-    if (hasInAppHistory) {
+    if (hasInAppHistory()) {
       navigate(-1)
     } else {
       navigate(fallback, { replace: true })

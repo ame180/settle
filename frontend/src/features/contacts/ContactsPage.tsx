@@ -1,10 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { CircleAlert, CircleCheck, RefreshCw, UserPlus, Users } from 'lucide-react'
+import { toast } from 'sonner'
 import { useContacts } from '@/api/contacts'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { AddExpenseButton } from '@/components/AddExpenseButton'
 import { PageHeader } from '@/components/PageHeader'
+import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 import { cn } from '@/lib/utils'
@@ -13,38 +15,26 @@ import { isHiddenAsSettled } from './contactVisibility'
 
 export type ContactsLocationState = { addedContactName?: string } | null
 
-const TOAST_DURATION_MS = 4000
-
 const pillClassName = 'rounded-full px-5 text-[15px]'
 
 export function ContactsPage() {
   const contactsQuery = useContacts()
   const location = useLocation()
   const navigate = useNavigate()
-  const [addedContactName] = useState(
-    () => (location.state as ContactsLocationState)?.addedContactName ?? null,
-  )
-  const [isToastVisible, setIsToastVisible] = useState(false)
 
   useEffect(() => {
     if (location.state === null) {
       return
     }
+    const addedContactName = (location.state as ContactsLocationState)?.addedContactName
+    if (addedContactName) {
+      // Keyed by navigation so StrictMode's double effect run doesn't stack two toasts.
+      toast.success(`${addedContactName} added to your contacts`, {
+        id: `contact-added-${location.key}`,
+      })
+    }
     navigate(location.pathname, { replace: true, state: null })
-  }, [location.state, location.pathname, navigate])
-
-  useEffect(() => {
-    if (addedContactName === null) {
-      return
-    }
-    // Shown after mount so the text lands in an already rendered live region and gets announced.
-    const showTimeoutId = setTimeout(() => setIsToastVisible(true), 0)
-    const hideTimeoutId = setTimeout(() => setIsToastVisible(false), TOAST_DURATION_MS)
-    return () => {
-      clearTimeout(showTimeoutId)
-      clearTimeout(hideTimeoutId)
-    }
-  }, [addedContactName])
+  }, [location.state, location.key, location.pathname, navigate])
 
   return (
     <>
@@ -102,18 +92,6 @@ export function ContactsPage() {
       </div>
 
       <AddExpenseButton />
-
-      <div
-        role="status"
-        className="fixed right-[calc(var(--app-inset-x)+1rem)] bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-[calc(var(--app-inset-x)+1rem)] z-20"
-      >
-        {isToastVisible && (
-          <div className="flex items-center gap-2.5 rounded-xl bg-primary px-4 py-3.5 text-[15px] text-primary-foreground shadow-[0_6px_20px_rgb(0_0_0/0.2)]">
-            <CircleCheck className="size-5 shrink-0 text-emerald-300" aria-hidden="true" />
-            {addedContactName} added to your contacts
-          </div>
-        )}
-      </div>
     </>
   )
 }
@@ -232,48 +210,6 @@ function BalanceSummary({
         {formatPln(total)}
       </span>
     </p>
-  )
-}
-
-type StateMessageProps = {
-  icon: ReactNode
-  iconClassName?: string
-  title: string
-  description: string
-  role?: 'alert'
-  compact?: boolean
-  children: ReactNode
-}
-
-function StateMessage({
-  icon,
-  iconClassName,
-  title,
-  description,
-  role,
-  compact = false,
-  children,
-}: StateMessageProps) {
-  return (
-    <div
-      role={role}
-      className={cn(
-        'flex flex-col items-center gap-3 px-8 text-center',
-        compact ? 'pt-24' : 'pt-40',
-      )}
-    >
-      <span
-        className={cn(
-          'flex size-16 items-center justify-center rounded-full bg-muted text-foreground/80',
-          iconClassName,
-        )}
-      >
-        {icon}
-      </span>
-      <h2 className="mt-1 text-lg font-semibold">{title}</h2>
-      <p className="text-[15px] text-muted-foreground">{description}</p>
-      <div className="mt-3">{children}</div>
-    </div>
   )
 }
 

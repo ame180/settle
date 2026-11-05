@@ -1,4 +1,6 @@
-// Calendar dates as the API takes them: "YYYY-MM-DD" in the user's local time zone.
+// API dates are calendar days. The API takes "YYYY-MM-DD" and sends midnight UTC
+// (`2026-10-22T00:00:00+00:00`); reading only the date part keeps them on the same day in every
+// time zone. Days are handled as local-time `Date`s at midnight.
 
 export function toIsoDate(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -21,22 +23,51 @@ export function addDays(isoDate: string, days: number): string {
   return toIsoDate(date)
 }
 
-/** "Today", "Yesterday", "20 Oct", or "20 Oct 2025" outside the current year. */
-export function formatDateLabel(isoDate: string, today = todayIso()): string {
-  if (isoDate === today) {
+/** The `YYYY-MM-DD` part of an API date, for grouping by day. */
+export function calendarDayKey(isoDate: string): string {
+  return isoDate.slice(0, 10)
+}
+
+const weekdayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short' })
+const monthFormat = new Intl.DateTimeFormat('en-US', { month: 'short' })
+
+function formatDate(isoDate: string, today: string, withWeekday: boolean): string {
+  const day = fromIsoDate(isoDate)
+  const parts = [`${day.getDate()} ${monthFormat.format(day)}`]
+  if (withWeekday) {
+    parts.unshift(`${weekdayFormat.format(day)},`)
+  }
+  if (day.getFullYear() !== fromIsoDate(today).getFullYear()) {
+    parts.push(String(day.getFullYear()))
+  }
+  return parts.join(' ')
+}
+
+function relativeDayLabel(isoDate: string, today: string): string | null {
+  const day = calendarDayKey(isoDate)
+  if (day === today) {
     return 'Today'
   }
-  if (isoDate === addDays(today, -1)) {
+  if (day === addDays(today, -1)) {
     return 'Yesterday'
   }
+  return null
+}
 
-  const date = fromIsoDate(isoDate)
-  const sameYear = date.getFullYear() === fromIsoDate(today).getFullYear()
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    ...(sameYear ? {} : { year: 'numeric' }),
-  })
+/** Day header label: "Today", "Yesterday", "Thu, 22 Oct", or "Wed, 31 Dec 2025" in other years. */
+export function formatDayLabel(isoDate: string, now: Date = new Date()): string {
+  const today = todayIso(now)
+  return relativeDayLabel(isoDate, today) ?? formatDate(isoDate, today, true)
+}
+
+/** Short date for row sublines: "22 Oct", or "31 Dec 2025" in other years. */
+export function formatShortDate(isoDate: string, now: Date = new Date()): string {
+  return formatDate(isoDate, todayIso(now), false)
+}
+
+/** "Today", "Yesterday", "20 Oct", or "20 Oct 2025" outside the current year. */
+export function formatDateLabel(isoDate: string, today = todayIso()): string {
+  return relativeDayLabel(isoDate, today) ?? formatDate(isoDate, today, false)
 }
 
 /** "12 November". */

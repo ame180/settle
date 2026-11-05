@@ -63,6 +63,7 @@ describe('ContactsPage', () => {
     expect(rows).toHaveLength(3)
     expect(rows[0]).toHaveTextContent('Anna Kowalska')
     expect(rows[0]).toHaveTextContent('owes you192.92 zł')
+    expect(within(rows[0]).getByRole('link')).toHaveAttribute('href', '/contacts/1')
     expect(rows[1]).toHaveTextContent('Not on Settle yet')
     expect(rows[2]).toHaveTextContent('you owe120.00 zł')
     expect(screen.queryByText('Julia Mazur')).not.toBeInTheDocument()
@@ -165,9 +166,9 @@ describe('ContactsPage', () => {
     renderContacts({ addedContactName: 'Jan' })
 
     expect(
-      (await screen.findByText('Jan added to your contacts')).closest('[role="status"]'),
+      (await screen.findByText('Jan added to your contacts')).closest('[aria-live]'),
     ).not.toBeNull()
-    expect(screen.getByRole('list')).toHaveTextContent('Not on Settle yetno balance')
+    expect(screen.getByText('Not on Settle yet').closest('li')).toHaveTextContent('no balance')
 
     await vi.advanceTimersByTimeAsync(4000)
     await waitFor(() =>
