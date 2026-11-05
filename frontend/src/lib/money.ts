@@ -9,6 +9,11 @@ export function formatPln(amount: string): string {
   return `${groupedIntegerPart}.${fractionPart.padEnd(2, '0')}${NO_BREAK_SPACE}zł`
 }
 
+/** True for '0', '0.00', '-0.00' and the like. */
+export function isZeroAmount(amount: string): boolean {
+  return /^-?0*(\.0*)?$/.test(amount)
+}
+
 export function isNegativeAmount(amount: string): boolean {
   return amount.startsWith('-')
 }

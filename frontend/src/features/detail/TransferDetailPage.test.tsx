@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { anna, viewer } from '@/test/activity'
 import { transferResponse } from '@/test/detail'
@@ -27,6 +28,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   vi.clearAllMocks()
 })
 
@@ -59,6 +61,7 @@ describe('TransferDetailPage', () => {
   })
 
   it('deletes after confirming and goes back', async () => {
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries')
     stubDetailApi({
       'GET /api/transfers/3': { status: 200, body: transferResponse() },
       'DELETE /api/transfers/3': { status: 204 },
@@ -72,14 +75,17 @@ describe('TransferDetailPage', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/activity'))
     expect(toast.success).toHaveBeenCalledWith('Payment deleted')
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['activity'] })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['contacts'] })
   })
 
-  it('explains a missing payment', async () => {
-    stubDetailApi({})
+  it.each([
+    [404, 'This payment doesn’t exist'],
+    [403, 'You can’t see this payment'],
+  ])('explains a %i', async (status, title) => {
+    stubDetailApi({ 'GET /api/transfers/3': { status, body: { status } } })
     renderTransfer()
 
-    expect(
-      await screen.findByRole('heading', { name: 'This payment doesn’t exist' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument()
   })
 })

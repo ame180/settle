@@ -1,6 +1,6 @@
 import type { ExpenseResponse, PersonRef, SplitType } from '@/api/types'
 import type { BalanceDirection } from '@/features/activity/activityItems'
-import { sumAmounts } from '@/lib/money'
+import { isZeroAmount, sumAmounts } from '@/lib/money'
 
 export type ExpensePosition = {
   direction: BalanceDirection
@@ -14,19 +14,15 @@ export function expensePosition(expense: ExpenseResponse, viewerId: number): Exp
     const othersOwe = sumAmounts(
       expense.debts.filter((debt) => debt.payer.id !== viewerId).map((debt) => debt.amount),
     )
-    return isZero(othersOwe)
+    return isZeroAmount(othersOwe)
       ? { direction: 'none', label: 'No balance', amount: othersOwe }
       : { direction: 'owed', label: 'You lent', amount: othersOwe }
   }
 
   const ownShare = expense.debts.find((debt) => debt.payer.id === viewerId)?.amount ?? '0.00'
-  return isZero(ownShare)
+  return isZeroAmount(ownShare)
     ? { direction: 'none', label: 'No balance', amount: ownShare }
     : { direction: 'owe', label: 'You borrowed', amount: ownShare }
-}
-
-function isZero(amount: string): boolean {
-  return /^-?0*(\.0*)?$/.test(amount)
 }
 
 const splitHeadings: Record<Exclude<SplitType, 'equal'>, string> = {

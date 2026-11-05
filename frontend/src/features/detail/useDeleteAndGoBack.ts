@@ -1,8 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useRef, useState } from 'react'
 import { useQueryClient, type UseMutationResult } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { navigateBack } from '@/lib/navigation'
+import { useGoBack } from '@/lib/useGoBack'
 import { detailBackFallback } from './DetailParts'
 
 type Options = {
@@ -20,19 +19,31 @@ export function useDeleteAndGoBack({
   errorMessage,
 }: Options) {
   const [isConfirmOpen, setConfirmOpen] = useState(false)
-  const navigate = useNavigate()
+  const { goBack } = useGoBack(detailBackFallback)
   const queryClient = useQueryClient()
+  const isSending = useRef(false)
 
-  const confirm = () =>
+  const leave = () => {
+    setConfirmOpen(false)
+    goBack()
+    queryClient.removeQueries({ queryKey: detailQueryKey, exact: true })
+    toast.success(successMessage)
+  }
+
+  const confirm = () => {
+    // The button disables a render later; a quick second tap must not send a second DELETE.
+    if (isSending.current) {
+      return
+    }
+    isSending.current = true
     mutation.mutate(undefined, {
-      onSuccess: () => {
-        setConfirmOpen(false)
-        navigateBack(navigate, detailBackFallback)
-        queryClient.removeQueries({ queryKey: detailQueryKey, exact: true })
-        toast.success(successMessage)
-      },
+      onSuccess: leave,
       onError: () => toast.error(errorMessage),
+      onSettled: () => {
+        isSending.current = false
+      },
     })
+  }
 
   return { isConfirmOpen, setConfirmOpen, confirm, isPending: mutation.isPending }
 }

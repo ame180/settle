@@ -11,14 +11,15 @@ import { ExpenseDetailPage } from './ExpenseDetailPage'
 
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }))
 
-function renderExpense() {
+function renderExpense(history: string[] = []) {
   return renderRoutes(
     [
       { path: '/expenses/:id', element: <ExpenseDetailPage /> },
       { path: '/expenses/:id/edit', element: <p>Edit form</p> },
       { path: '/activity', element: <p>Activity feed</p> },
+      { path: '/contacts/:userId', element: <p>Contact view</p> },
     ],
-    '/expenses/7',
+    [...history, '/expenses/7'],
   )
 }
 
@@ -34,6 +35,7 @@ afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
+  vi.clearAllMocks()
 })
 
 describe('ExpenseDetailPage', () => {
@@ -140,6 +142,44 @@ describe('ExpenseDetailPage', () => {
     )
     expect(router.state.location.pathname).toBe('/expenses/7')
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('goes back to the contact view it came from after deleting', async () => {
+    stubDetailApi({
+      'GET /api/expenses/7': { status: 200, body: expenseResponse() },
+      'DELETE /api/expenses/7': { status: 204 },
+    })
+    const router = renderExpense(['/contacts/2'])
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete expense' }))
+    const sheet = await screen.findByRole('dialog')
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Delete expense' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/contacts/2'))
+  })
+
+  it('treats an expense someone else already deleted as deleted', async () => {
+    stubDetailApi({
+      'GET /api/expenses/7': { status: 200, body: expenseResponse() },
+      'DELETE /api/expenses/7': { status: 404, body: { status: 404 } },
+    })
+    const router = renderExpense()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete expense' }))
+    const sheet = await screen.findByRole('dialog')
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Delete expense' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/activity'))
+    expect(toast.success).toHaveBeenCalledWith('Expense deleted')
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('goes back with the header arrow', async () => {
+    stubDetailApi({ 'GET /api/expenses/7': { status: 200, body: expenseResponse() } })
+    const router = renderExpense(['/contacts/2'])
+
+    await userEvent.click(await screen.findByRole('link', { name: 'Back' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/contacts/2'))
   })
 
   it('cancels without deleting', async () => {

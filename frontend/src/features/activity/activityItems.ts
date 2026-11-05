@@ -1,5 +1,6 @@
 import type { ActivityItem } from '@/api/types'
 import { calendarDayKey } from '@/lib/dates'
+import { isZeroAmount } from '@/lib/money'
 
 export type ActivityDay = {
   /** `YYYY-MM-DD` */
@@ -52,7 +53,7 @@ export type BalanceDirection = 'owed' | 'owe' | 'none'
 
 /** How an item moved the viewer's balance: `owed` = others owe the viewer more. */
 export function balanceDirection(value: string): BalanceDirection {
-  if (/^-?0*(\.0*)?$/.test(value)) {
+  if (isZeroAmount(value)) {
     return 'none'
   }
   return value.startsWith('-') ? 'owe' : 'owed'
