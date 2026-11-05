@@ -219,7 +219,7 @@ export function PeopleField({
               event.stopPropagation()
               openList()
             }}
-            className="relative flex h-8 items-center gap-1 rounded-full px-2.5 text-[15px] font-medium after:absolute after:-inset-x-1 after:-inset-y-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="relative flex h-8 items-center gap-1 rounded-full border border-dashed border-border-strong pr-3 pl-2 text-[15px] font-medium after:absolute after:-inset-x-1 after:-inset-y-1.5 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:bg-secondary"
           >
             <Plus className="size-4.5" aria-hidden="true" />
             Add person
