@@ -51,3 +51,11 @@ export function fromGrosze(grosze: bigint): string {
 export function formatGrosze(grosze: bigint): string {
   return formatPln(fromGrosze(grosze))
 }
+
+const allowedInput = new RegExp(`^\\d{0,${MAX_AMOUNT_INTEGER_DIGITS}}(?:[.,]\\d{0,2})?$`)
+
+/** Keeps the field to something that can become an amount: digits, one separator, 2 decimals. */
+export function sanitizeAmountInput(next: string, previous: string): string {
+  const compact = next.replace(/\s/g, '')
+  return allowedInput.test(compact) ? compact : previous
+}

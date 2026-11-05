@@ -1,15 +1,7 @@
 import { useId, type ReactNode, type RefObject } from 'react'
-import { MAX_AMOUNT_INTEGER_DIGITS, parseAmountInput } from '@/lib/money'
+import { parseAmountInput, sanitizeAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { FieldError } from './formParts'
-
-const allowedInput = new RegExp(`^\\d{0,${MAX_AMOUNT_INTEGER_DIGITS}}(?:[.,]\\d{0,2})?$`)
-
-/** Keeps the field to something that can become an amount: digits, one separator, 2 decimals. */
-export function sanitizeAmountInput(next: string, previous: string): string {
-  const compact = next.replace(/\s/g, '')
-  return allowedInput.test(compact) ? compact : previous
-}
 
 type AmountFieldProps = {
   value: string
