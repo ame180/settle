@@ -28,7 +28,7 @@ export const MAX_AMOUNT_INTEGER_DIGITS = 8
  * two decimals.
  */
 export function parseAmountInput(input: string): string | null {
-  const compact = input.replace(/[\s ]/g, '').replace(',', '.')
+  const compact = input.replace(/\s/g, '').replace(',', '.')
   const match = /^(\d+)(?:\.(\d{0,2}))?$/.exec(compact) ?? /^()\.(\d{1,2})$/.exec(compact)
   if (!match) {
     return null

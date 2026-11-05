@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getInitials } from './person'
+import { getInitials, getShortName } from './person'
 
 describe('getInitials', () => {
   it.each([
@@ -17,5 +17,16 @@ describe('getInitials', () => {
     ['', '?'],
   ])('derives %j -> %s', (displayName, expected) => {
     expect(getInitials(displayName)).toBe(expected)
+  })
+})
+
+describe('getShortName', () => {
+  it.each([
+    ['Anna Kowalska', 'Anna'],
+    ['Kuba', 'Kuba'],
+    ['jan.nowak@gmail.com', 'jan.nowak'],
+    ['  Ewa  Nowak ', 'Ewa'],
+  ])('shortens %j to %s', (displayName, expected) => {
+    expect(getShortName(displayName)).toBe(expected)
   })
 })
