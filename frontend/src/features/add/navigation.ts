@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useIsMutating } from '@tanstack/react-query'
 import { useBlocker, useNavigate } from 'react-router'
 import { saveMutationKey } from '@/api/expenses'
+import { closeTopLayer, hasOpenLayer } from '@/lib/backLayers'
 import { hasInAppHistory } from '@/lib/history'
 
 /** Back to wherever the user came from, or `fallback` when the app was opened on this page. */
@@ -24,25 +25,35 @@ export function useIsSaving(): boolean {
  * Holds any navigation away from a form with unsaved input (close button, back gesture, links)
  * until the user confirms. While a save is in flight, leaving is refused outright, so a save
  * can't land after the user chose to discard. Call `allowLeave()` before leaving after a save.
+ * Back with a sheet or the people list open closes that instead, like back does in native apps.
  */
 export function useLeaveGuard(dirty: boolean) {
   const leavingRef = useRef(false)
+  const [closingLayer, setClosingLayer] = useState(false)
   const saving = useIsSaving()
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      !leavingRef.current &&
-      (saving || dirty) &&
-      currentLocation.pathname !== nextLocation.pathname,
-  )
+  const blocker = useBlocker(({ currentLocation, nextLocation, historyAction }) => {
+    if (leavingRef.current) {
+      return false
+    }
+    const layerOpen = historyAction === 'POP' && hasOpenLayer()
+    setClosingLayer(layerOpen)
+    return layerOpen || ((saving || dirty) && currentLocation.pathname !== nextLocation.pathname)
+  })
 
   useEffect(() => {
-    if (saving && blocker.state === 'blocked') {
+    if (blocker.state !== 'blocked') {
+      return
+    }
+    if (closingLayer) {
+      closeTopLayer()
+      blocker.reset()
+    } else if (saving) {
       blocker.reset()
     }
-  }, [saving, blocker])
+  }, [saving, closingLayer, blocker])
 
   return {
-    blocked: blocker.state === 'blocked' && !saving,
+    blocked: blocker.state === 'blocked' && !saving && !closingLayer,
     discard: () => blocker.proceed?.(),
     keepEditing: () => blocker.reset?.(),
     allowLeave: () => {

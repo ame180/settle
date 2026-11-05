@@ -1,13 +1,16 @@
 import * as React from 'react'
 import { Drawer } from 'vaul'
+import { useCloseOnBack } from '@/lib/backLayers'
 import { cn } from '@/lib/utils'
 
 // Bottom sheet: swipe down, tap outside or Escape dismisses. Built on vaul (Radix Dialog inside),
 // so focus is trapped and returned to the trigger. Give each sheet a SheetTitle and a
-// SheetDescription; Radix warns when either is missing.
+// SheetDescription; Radix warns when either is missing. On a form screen the device back button
+// closes an open sheet first (see lib/backLayers).
 
-function Sheet(props: React.ComponentProps<typeof Drawer.Root>) {
-  return <Drawer.Root {...props} />
+function Sheet({ open, onOpenChange, ...props }: React.ComponentProps<typeof Drawer.Root>) {
+  useCloseOnBack(open ?? false, () => onOpenChange?.(false))
+  return <Drawer.Root open={open} onOpenChange={onOpenChange} {...props} />
 }
 
 const SheetTrigger = Drawer.Trigger

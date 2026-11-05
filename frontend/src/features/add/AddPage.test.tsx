@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { jsonResponse, renderRoutes } from '@/test/utils'
@@ -120,7 +120,7 @@ describe('AddPage', () => {
     expect(screen.getByLabelText('What was it for?')).toHaveAttribute('aria-invalid', 'true')
   })
 
-  it('closes the people list after each pick and reopens it from Add person', async () => {
+  it('closes the people list after each pick and reopens it from the field', async () => {
     mockApi({})
     renderAdd()
 
@@ -131,19 +131,68 @@ describe('AddPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: /Anna Kowalska/ }))
 
     expect(screen.queryByText('Recent')).not.toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+    // A tap drops the on-screen keyboard but keeps focus in the people field.
+    expect(screen.getByRole('group', { name: 'With' })).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Remove Anna Kowalska' })).toBeInTheDocument()
     expect(screen.getByLabelText('What was it for?')).not.toHaveFocus()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Add person' }))
+    await userEvent.click(search)
+    expect(screen.getByText('Recent')).toBeInTheDocument()
     const reopened = screen.getByPlaceholderText('Name or email')
     expect(reopened).toHaveFocus()
     await userEvent.type(reopened, 'ewa')
     await userEvent.click(screen.getByRole('button', { name: /Ewa Nowak/ }))
 
-    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+    expect(screen.queryByText('Contacts')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Remove Ewa Nowak' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add person' })).toHaveFocus()
+    expect(reopened).not.toHaveFocus()
+  })
+
+  it('keeps focus in the search after a pick with the keyboard, so Tab moves on', async () => {
+    mockApi({})
+    renderAdd()
+
+    const search = await screen.findByPlaceholderText('Name or email')
+    await waitFor(() => expect(search).toHaveFocus())
+    screen.getByRole('button', { name: /Anna Kowalska/ }).focus()
+    await userEvent.keyboard('{Enter}')
+
+    expect(screen.queryByText('Recent')).not.toBeInTheDocument()
+    expect(search).toHaveFocus()
+    await userEvent.tab()
+    expect(screen.getByRole('button', { name: /Category/ })).toHaveFocus()
+
+    await userEvent.click(search)
+    await userEvent.type(search, 'ewa{Enter}')
+    expect(screen.getByRole('button', { name: 'Remove Ewa Nowak' })).toBeInTheDocument()
+    expect(screen.queryByText('Contacts')).not.toBeInTheDocument()
+    expect(search).toHaveFocus()
+  })
+
+  it('closes the people list, then a sheet, on back before leaving', async () => {
+    mockApi({})
+    const router = renderAdd('/')
+    await act(() => router.navigate('/add'))
+    await screen.findByText('Recent')
+
+    await act(() => router.navigate(-1))
+    expect(screen.queryByText('Recent')).not.toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/add')
+
+    await userEvent.click(screen.getByPlaceholderText('Name or email'))
+    await userEvent.click(screen.getByRole('button', { name: /Anna Kowalska/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Split equally/ }))
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+
+    await act(() => router.navigate(-1))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(router.state.location.pathname).toBe('/add')
+
+    await act(() => router.navigate(-1))
+    expect(await screen.findByText('Discard this expense?')).toBeInTheDocument()
+    await act(() => router.navigate(-1))
+    await waitFor(() => expect(screen.queryByText('Discard this expense?')).not.toBeInTheDocument())
+    expect(router.state.location.pathname).toBe('/add')
   })
 
   it('starts on the title with the list closed when opened from a contact', async () => {
@@ -152,7 +201,7 @@ describe('AddPage', () => {
 
     await waitFor(() => expect(screen.getByLabelText('What was it for?')).toHaveFocus())
     expect(screen.getByRole('button', { name: 'Remove Anna Kowalska' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add person' })).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Name or email')).not.toHaveFocus()
     expect(screen.queryByText('Recent')).not.toBeInTheDocument()
   })
 
@@ -175,7 +224,7 @@ describe('AddPage', () => {
       await screen.findByRole('button', { name: 'Remove jan@example.com' }),
     ).toBeInTheDocument()
     expect(screen.getByLabelText('What was it for?')).not.toHaveFocus()
-    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Recent|Contacts/)).not.toBeInTheDocument()
   })
 
   it('shows a late add-by-email error as a toast once the list is closed', async () => {
@@ -194,7 +243,7 @@ describe('AddPage', () => {
     finish(jsonResponse(503, { status: 503, title: 'Service Unavailable' }))
 
     expect(await screen.findByText('Couldn’t add this contact. Try again.')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Add person' }))
+    await userEvent.click(screen.getByPlaceholderText('Name or email'))
     expect(screen.queryAllByText('Couldn’t add this contact. Try again.')).toHaveLength(1)
   })
 
@@ -214,7 +263,7 @@ describe('AddPage', () => {
     expect(
       await screen.findByRole('button', { name: 'Remove jan@example.com' }),
     ).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Recent|Contacts/)).not.toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/contacts')?.body).toEqual({
       email: 'jan@example.com',
     })

@@ -1,10 +1,11 @@
 import { useEffect, useId, useRef, useState, type RefObject } from 'react'
 import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
-import { Check, Plus, UserPlus, X } from 'lucide-react'
+import { Check, UserPlus, X } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { useAddContact } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
+import { useCloseOnBack } from '@/lib/backLayers'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { getShortName } from '@/lib/person'
 import { cn } from '@/lib/utils'
@@ -12,6 +13,23 @@ import { balanceLine, looksLikeEmail, recentContacts, searchContacts } from './c
 import { FieldError } from './formParts'
 
 const RECENT_LIMIT = 6
+
+/**
+ * Where focus goes when the list closes. 'input' keeps it in the search field (a keyboard user
+ * carries on with Tab). 'field' moves it to the field's box: the on-screen keyboard drops, but
+ * a screen reader and Tab still continue from the people field.
+ */
+type FocusAfter = 'input' | 'field'
+
+/** A click from Enter or Space has no pointer position, so `detail` is 0. */
+function focusAfterClick(event: React.MouseEvent): FocusAfter {
+  return event.detail === 0 ? 'input' : 'field'
+}
+
+/** Enter in the search field: on a touch screen it's the on-screen keyboard's, so drop it. */
+function focusAfterEnter(): FocusAfter {
+  return window.matchMedia('(pointer: coarse)').matches ? 'field' : 'input'
+}
 
 type PeopleFieldProps = {
   me: MeResponse
@@ -27,7 +45,7 @@ type PeopleFieldProps = {
 /**
  * "With": the user is a fixed chip, everyone else is picked from contacts or added by email.
  * Picking someone closes the list and the keyboard, so the rest of the form is back in view;
- * "Add person" reopens it with search for the next one.
+ * tapping the field again reopens it with search for the next one.
  */
 export function PeopleField({
   me,
@@ -42,7 +60,7 @@ export function PeopleField({
   const [query, setQuery] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const addButtonRef = useRef<HTMLButtonElement>(null)
+  const fieldRef = useRef<HTMLDivElement>(null)
   const listId = useId()
   const errorId = useId()
   const addContact = useAddContact()
@@ -90,25 +108,29 @@ export function PeopleField({
     inputRef.current?.focus()
   }
 
-  /** Closes the list and drops the keyboard; focus lands on "Add person" for the next one. */
-  function close() {
+  function close(focusAfter: FocusAfter) {
     setQuery('')
     setAddError(null)
-    inputRef.current?.blur()
-    flushSync(() => onOpenChange(false))
-    addButtonRef.current?.focus({ preventScroll: true })
+    if (focusAfter === 'field') {
+      fieldRef.current?.focus({ preventScroll: true })
+    } else {
+      inputRef.current?.focus({ preventScroll: true })
+    }
+    onOpenChange(false)
   }
 
-  function toggle(person: PersonRef) {
+  useCloseOnBack(open, () => close('field'))
+
+  function toggle(person: PersonRef, focusAfter: FocusAfter) {
     onChange(
       pickedIds.has(person.id)
         ? others.filter((other) => other.id !== person.id)
         : [...others, person],
     )
-    close()
+    close(focusAfter)
   }
 
-  function addByEmail() {
+  function addByEmail(focusAfter: FocusAfter) {
     if (addContact.isPending) {
       return
     }
@@ -124,7 +146,7 @@ export function PeopleField({
           }
           // Only close the list the user added from, not one they closed or reopened since.
           if (visitRef.current === visit) {
-            close()
+            close(focusAfter)
           }
         },
         onError: (mutationError) => {
@@ -149,16 +171,20 @@ export function PeopleField({
       className="flex flex-col gap-1.5"
       onKeyDown={(event) => {
         if (open && event.key === 'Escape') {
-          close()
+          close('input')
         }
       }}
     >
-      <label htmlFor={`${listId}-input`} className="text-sm font-medium">
+      <label id={`${listId}-label`} htmlFor={`${listId}-input`} className="text-sm font-medium">
         With
       </label>
       <div
+        ref={fieldRef}
+        role="group"
+        aria-labelledby={`${listId}-label`}
+        tabIndex={-1}
         className={cn(
-          'flex min-h-11 flex-wrap items-center gap-1.5 rounded-[10px] border border-border-strong bg-background p-1.5',
+          'flex min-h-11 flex-wrap items-center gap-1.5 rounded-[10px] border border-border-strong bg-background p-1.5 outline-none',
           open && 'border-foreground ring-[3px] ring-foreground/10',
           error && 'border-destructive ring-[3px] ring-destructive/15',
         )}
@@ -188,56 +214,41 @@ export function PeopleField({
             </button>
           </span>
         ))}
-        {open ? (
-          <input
-            ref={inputRef}
-            id={`${listId}-input`}
-            type="text"
-            inputMode="email"
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            placeholder="Name or email"
-            value={query}
-            aria-invalid={!!error}
-            aria-describedby={error ? errorId : undefined}
-            onChange={(event) => {
-              setQuery(event.target.value)
-              setAddError(null)
-              onOpenChange(true)
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Backspace' && query === '' && others.length > 0) {
-                onChange(others.slice(0, -1))
+        <input
+          ref={inputRef}
+          id={`${listId}-input`}
+          type="text"
+          inputMode="email"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          placeholder="Name or email"
+          value={query}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
+          onFocus={() => onOpenChange(true)}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setAddError(null)
+            onOpenChange(true)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Backspace' && query === '' && others.length > 0) {
+              onChange(others.slice(0, -1))
+            }
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              if (offerEmail) {
+                addByEmail(focusAfterEnter())
+              } else if (trimmedQuery !== '' && rows.length === 1) {
+                toggle(rows[0].person, focusAfterEnter())
+              } else if (trimmedQuery === '') {
+                close(focusAfterEnter())
               }
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                if (offerEmail) {
-                  addByEmail()
-                } else if (trimmedQuery !== '' && rows.length === 1) {
-                  toggle(rows[0].person)
-                } else if (trimmedQuery === '') {
-                  close()
-                }
-              }
-            }}
-            className="h-8 min-w-32 flex-1 bg-transparent px-1.5 text-base outline-none placeholder:text-muted-foreground"
-          />
-        ) : (
-          <button
-            ref={addButtonRef}
-            type="button"
-            aria-describedby={error ? errorId : undefined}
-            onClick={(event) => {
-              event.stopPropagation()
-              openList()
-            }}
-            className="relative flex h-8 items-center gap-1 rounded-full border border-dashed border-border-strong pr-3 pl-2 text-[15px] font-medium after:absolute after:-inset-x-1 after:-inset-y-1.5 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:bg-secondary"
-          >
-            <Plus className="size-4.5" aria-hidden="true" />
-            Add person
-          </button>
-        )}
+            }
+          }}
+          className="h-8 min-w-32 flex-1 bg-transparent px-1.5 text-base outline-none placeholder:text-muted-foreground"
+        />
       </div>
       {error && !open && <FieldError id={errorId} message={error} />}
 
@@ -257,7 +268,7 @@ export function PeopleField({
                   <button
                     type="button"
                     aria-pressed={picked}
-                    onClick={() => toggle(contact.person)}
+                    onClick={(event) => toggle(contact.person, focusAfterClick(event))}
                     className={cn(
                       'flex min-h-15 w-full items-center gap-3 px-3 py-2 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
                       picked && 'bg-subtle',
@@ -289,7 +300,7 @@ export function PeopleField({
           {offerEmail && (
             <button
               type="button"
-              onClick={addByEmail}
+              onClick={(event) => addByEmail(focusAfterClick(event))}
               disabled={addContact.isPending}
               className="flex w-full items-center gap-3 border-t px-3 py-2.5 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset disabled:opacity-60"
             >
