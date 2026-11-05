@@ -196,6 +196,7 @@ class ActivityFeedService
             description: $expense->getDescription(),
             payee: $people[(int) $expense->getPayee()->getId()],
             payer: null,
+            category: $expense->getCategory(),
         );
     }
 
@@ -224,6 +225,7 @@ class ActivityFeedService
             description: null,
             payee: $people[(int) $transfer->getPayee()->getId()],
             payer: $people[(int) $transfer->getPayer()->getId()],
+            category: null,
         );
     }
 }

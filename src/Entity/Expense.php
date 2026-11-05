@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\ExpenseCategory;
 use App\Enum\SplitType;
 use App\Repository\ExpenseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -39,6 +40,9 @@ class Expense
     #[ORM\Column(length: 16, enumType: SplitType::class, options: ['default' => SplitType::Exact->value])]
     private SplitType $splitType;
 
+    #[ORM\Column(length: 32, enumType: ExpenseCategory::class, options: ['default' => ExpenseCategory::General->value])]
+    private ExpenseCategory $category;
+
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private \DateTimeImmutable $occurredOn;
 
@@ -54,7 +58,7 @@ class Expense
     #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'expense', orphanRemoval: true)]
     private Collection $debts;
 
-    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn, string $currency = 'PLN', SplitType $splitType = SplitType::Exact)
+    public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn, string $currency = 'PLN', SplitType $splitType = SplitType::Exact, ExpenseCategory $category = ExpenseCategory::General)
     {
         $this->payee = $payee;
         $this->title = $title;
@@ -65,6 +69,7 @@ class Expense
         $this->occurredOn = $occurredOn;
         $this->setCurrency($currency);
         $this->splitType = $splitType;
+        $this->category = $category;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->debts = new ArrayCollection();
@@ -159,6 +164,18 @@ class Expense
     public function setSplitType(SplitType $splitType): static
     {
         $this->splitType = $splitType;
+
+        return $this;
+    }
+
+    public function getCategory(): ExpenseCategory
+    {
+        return $this->category;
+    }
+
+    public function setCategory(ExpenseCategory $category): static
+    {
+        $this->category = $category;
 
         return $this;
     }

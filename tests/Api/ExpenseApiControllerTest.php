@@ -7,6 +7,7 @@ namespace App\Tests\Api;
 use App\Entity\Contact;
 use App\Entity\Debt;
 use App\Entity\Expense;
+use App\Enum\ExpenseCategory;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -61,6 +62,7 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame($creator->getId(), $response['payee']['id']);
         $this->assertStringStartsWith('2026-01-01', $response['occurredOn']);
         $this->assertSame('exact', $response['splitType']);
+        $this->assertSame('general', $response['category']);
         $this->assertCount(2, $response['debts']);
         $this->assertJsonStructure([0 => ['payer' => ['id', 'displayName', 'email'], 'amount', 'splitValue']], $response['debts']);
 
@@ -76,6 +78,7 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame($response['amount'], $expense->getAmount());
         $this->assertSame($creator->getId(), $expense->getPayee()->getId());
         $this->assertSame('2026-01-01', $expense->getOccurredOn()->format('Y-m-d'));
+        $this->assertSame(ExpenseCategory::General, $expense->getCategory());
 
         $debts = $expense->getDebts();
         $this->assertCount(2, $debts);
@@ -120,6 +123,113 @@ class ExpenseApiControllerTest extends ApiTestCase
 
         $response = $this->getJsonResponse();
         $this->assertNull($response['description']);
+    }
+
+    public function testCreateWithCategory(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Weekly shop',
+            'amount' => '100.00',
+            'payeeId' => $creator->getId(),
+            'occurredOn' => '2026-01-01',
+            'category' => 'groceries',
+            'debts' => [
+                ['payerId' => $creator->getId(), 'value' => '100.00'],
+            ],
+        ]);
+
+        $this->assertJsonResponseIsSuccessful(201);
+
+        $response = $this->getJsonResponse();
+        $this->assertSame('groceries', $response['category']);
+
+        $entityManager->clear();
+
+        /** @var Expense|null $expense */
+        $expense = $entityManager->getRepository(Expense::class)->find($response['id']);
+        $this->assertInstanceOf(Expense::class, $expense);
+        $this->assertSame(ExpenseCategory::Groceries, $expense->getCategory());
+    }
+
+    /**
+     * @dataProvider invalidCategoryProvider
+     */
+    public function testCreateFailsValidationForInvalidCategory(mixed $category): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'amount' => '100.00',
+            'payeeId' => $creator->getId(),
+            'occurredOn' => '2026-01-01',
+            'category' => $category,
+            'debts' => [
+                ['payerId' => $creator->getId(), 'value' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+
+        $violations = $this->getJsonResponse()['violations'];
+        $this->assertCount(1, $violations);
+        $this->assertSame('category', $violations[0]['propertyPath']);
+        $this->assertStringContainsString('groceries|food_and_drink|transport|home_and_bills|entertainment|gifts|health|general', $violations[0]['title']);
+        $this->assertSame(0, $entityManager->getRepository(Expense::class)->count([]));
+    }
+
+    public function testCreateFailsValidationForUnknownSplitType(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => 'Dinner',
+            'amount' => '100.00',
+            'payeeId' => $creator->getId(),
+            'occurredOn' => '2026-01-01',
+            'splitType' => 'halves',
+            'debts' => [
+                ['payerId' => $creator->getId(), 'value' => '100.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertContains('splitType', array_column($this->getJsonResponse()['violations'], 'propertyPath'));
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function invalidCategoryProvider(): iterable
+    {
+        yield 'unknown value' => ['restaurants'];
+        yield 'wrong case' => ['Groceries'];
+        yield 'empty string' => [''];
+        yield 'null' => [null];
+        yield 'number' => [1];
     }
 
     public function testCreateFailsWhenDebtsSumDoesNotMatchAmount(): void
@@ -303,6 +413,7 @@ class ExpenseApiControllerTest extends ApiTestCase
             'amount' => '120.00',
             'payeeId' => $otherUser->getId(),
             'occurredOn' => '2026-01-15',
+            'category' => 'food_and_drink',
             'debts' => [
                 ['payerId' => $editor->getId(), 'value' => '60.00'],
                 ['payerId' => $newPayer->getId(), 'value' => '60.00'],
@@ -320,6 +431,7 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('PLN', $response['currency']);
         $this->assertSame($otherUser->getId(), $response['payee']['id']);
         $this->assertStringStartsWith('2026-01-15', $response['occurredOn']);
+        $this->assertSame('food_and_drink', $response['category']);
 
         $entityManager->clear();
         $expenseRepository = $entityManager->getRepository(Expense::class);
@@ -332,6 +444,7 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertSame('120.00', $updatedExpense->getAmount());
         $this->assertSame($otherUser->getId(), $updatedExpense->getPayee()->getId());
         $this->assertSame('2026-01-15', $updatedExpense->getOccurredOn()->format('Y-m-d'));
+        $this->assertSame(ExpenseCategory::FoodAndDrink, $updatedExpense->getCategory());
 
         $debtsByPayerId = [];
         foreach ($updatedExpense->getDebts() as $debt) {
@@ -375,6 +488,71 @@ class ExpenseApiControllerTest extends ApiTestCase
 
         $response = $this->getJsonResponse();
         $this->assertNull($response['description']);
+    }
+
+    public function testUpdateResetsCategoryToGeneralWhenOmitted(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $expense = new Expense($editor, 'Taxi', null, '50.00', new \DateTimeImmutable('2026-01-01'), category: ExpenseCategory::Transport);
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($editor, $expense, '50.00'));
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Taxi',
+            'amount' => '50.00',
+            'payeeId' => $editor->getId(),
+            'occurredOn' => '2026-01-01',
+            'debts' => [
+                ['payerId' => $editor->getId(), 'value' => '50.00'],
+            ],
+        ]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame('general', $this->getJsonResponse()['category']);
+    }
+
+    public function testUpdateFailsValidationForInvalidCategory(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $editor = UserFactory::createUser();
+        $entityManager->persist($editor);
+
+        $expense = new Expense($editor, 'Taxi', null, '50.00', new \DateTimeImmutable('2026-01-01'), category: ExpenseCategory::Transport);
+        $entityManager->persist($expense);
+        $entityManager->persist(new Debt($editor, $expense, '50.00'));
+        $entityManager->flush();
+
+        $client->loginUser($editor);
+
+        $this->requestJson($client, 'PUT', sprintf('/api/expenses/%d', $expense->getId()), [
+            'title' => 'Taxi',
+            'amount' => '50.00',
+            'payeeId' => $editor->getId(),
+            'occurredOn' => '2026-01-01',
+            'category' => 'restaurants',
+            'debts' => [
+                ['payerId' => $editor->getId(), 'value' => '50.00'],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(400);
+
+        $entityManager->clear();
+
+        /** @var Expense|null $unchanged */
+        $unchanged = $entityManager->getRepository(Expense::class)->find($expense->getId());
+        $this->assertInstanceOf(Expense::class, $unchanged);
+        $this->assertSame(ExpenseCategory::Transport, $unchanged->getCategory());
     }
 
     public function testUpdateFailsWhenExpenseDoesNotExist(): void
@@ -875,13 +1053,14 @@ class ExpenseApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertJsonStructure([
-            'id', 'title', 'description', 'amount', 'currency', 'payee' => ['id', 'displayName', 'email'], 'occurredOn', 'splitType',
+            'id', 'title', 'description', 'amount', 'currency', 'payee' => ['id', 'displayName', 'email'], 'occurredOn', 'splitType', 'category',
             'debts' => [0 => ['payer' => ['id', 'displayName', 'email'], 'amount', 'splitValue']],
         ]);
 
         $response = $this->getJsonResponse();
         $this->assertSame('Dinner', $response['title']);
         $this->assertSame('exact', $response['splitType']);
+        $this->assertSame('general', $response['category']);
         $this->assertCount(1, $response['debts']);
         $this->assertSame($debtor->getId(), $response['debts'][0]['payer']['id']);
     }

@@ -46,7 +46,7 @@ class ExpenseCreateService
         }
 
         $payee = $usersById[$request->payeeId];
-        $expense = new Expense($payee, $request->title, $request->description, $request->amount, $request->occurredOn, splitType: $request->splitType);
+        $expense = new Expense($payee, $request->title, $request->description, $request->amount, $request->occurredOn, splitType: $request->splitType, category: $request->category);
 
         $this->entityManager->persist($expense);
 

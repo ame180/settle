@@ -9,6 +9,7 @@ use App\Entity\Debt;
 use App\Entity\Expense;
 use App\Entity\Transfer;
 use App\Entity\User;
+use App\Enum\ExpenseCategory;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,7 +35,8 @@ class ActivityApiControllerTest extends ApiTestCase
         $entityManager->persist($payee);
         $entityManager->persist($debtor);
 
-        $this->createExpense($payee, $debtor, '100.00', '2026-02-02', 'Dinner', 'Friday dinner');
+        $expense = $this->createExpense($payee, $debtor, '100.00', '2026-02-02', 'Dinner', 'Friday dinner');
+        $expense->setCategory(ExpenseCategory::FoodAndDrink);
         $this->createTransfer($debtor, $payee, '40.00', '2026-02-01', 'Partial repayment');
 
         $entityManager->flush();
@@ -44,7 +46,7 @@ class ActivityApiControllerTest extends ApiTestCase
 
         $this->assertJsonResponseIsSuccessful();
         $this->assertJsonStructure([
-            0 => ['type', 'id', 'occurredOn', 'currency', 'amount', 'value', 'title', 'description', 'payee' => ['id', 'displayName', 'email'], 'payer'],
+            0 => ['type', 'id', 'occurredOn', 'currency', 'amount', 'value', 'title', 'description', 'payee' => ['id', 'displayName', 'email'], 'payer', 'category'],
         ]);
 
         $response = $this->getJsonResponse();
@@ -59,6 +61,7 @@ class ActivityApiControllerTest extends ApiTestCase
         $this->assertSame($payee->getId(), $expenseItem['payee']['id']);
         $this->assertSame($payee->getEmail(), $expenseItem['payee']['email']);
         $this->assertNull($expenseItem['payer']);
+        $this->assertSame('food_and_drink', $expenseItem['category']);
         $this->assertStringStartsWith('2026-02-02', $expenseItem['occurredOn']);
 
         $transferItem = $response[1];
@@ -70,6 +73,8 @@ class ActivityApiControllerTest extends ApiTestCase
         $this->assertSame($payee->getEmail(), $transferItem['payee']['email']);
         $this->assertSame($debtor->getId(), $transferItem['payer']['id']);
         $this->assertSame($debtor->getEmail(), $transferItem['payer']['email']);
+        $this->assertArrayHasKey('category', $transferItem);
+        $this->assertNull($transferItem['category']);
     }
 
     public function testActivityInterleavesExpensesAndTransfersByOccurredOnDesc(): void
