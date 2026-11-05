@@ -76,7 +76,7 @@ describe('EditNamePage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save name' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/profile'))
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Name saved'))
+    expect((await screen.findByText('Name saved')).closest('[aria-live]')).not.toBeNull()
     expect(screen.getByRole('heading', { name: 'Ame Nowak' })).toBeInTheDocument()
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')
     expect(JSON.parse(patch?.[1]?.body as string)).toEqual({ name: 'Ame Nowak' })

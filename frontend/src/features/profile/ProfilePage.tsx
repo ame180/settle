@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { ChevronRight, LogOut } from 'lucide-react'
+import { toast } from 'sonner'
 import { useLogout, useMe } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { Toast } from '@/components/Toast'
 import { cn } from '@/lib/utils'
 
 export type ProfileLocationState = { nameSaved?: boolean } | null
@@ -18,16 +18,16 @@ export function ProfilePage() {
   const logoutMutation = useLogout()
   const navigate = useNavigate()
   const location = useLocation()
-  const [toastMessage] = useState(() =>
-    (location.state as ProfileLocationState)?.nameSaved ? 'Name saved' : null,
-  )
-
   useEffect(() => {
     if (location.state === null) {
       return
     }
+    if ((location.state as ProfileLocationState)?.nameSaved) {
+      // Keyed by navigation so StrictMode's double effect run doesn't stack two toasts.
+      toast.success('Name saved', { id: `name-saved-${location.key}` })
+    }
     navigate(location.pathname, { replace: true, state: null })
-  }, [location.state, location.pathname, navigate])
+  }, [location.state, location.key, location.pathname, navigate])
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, { onSuccess: () => navigate('/login', { replace: true }) })
@@ -88,10 +88,6 @@ export function ProfilePage() {
           Log out
         </Button>
       </div>
-      <Toast
-        message={toastMessage}
-        className="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 z-20"
-      />
     </>
   )
 }
