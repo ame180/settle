@@ -124,7 +124,12 @@ export function peopleIds(draft: ExpenseDraft, meId: number): number[] {
 
 /** The amount as a canonical decimal, or null while it isn't a usable amount. */
 export function draftTotal(draft: ExpenseDraft): string | null {
-  const parsed = parseAmountInput(draft.amount)
+  return amountTotal(draft.amount)
+}
+
+/** A typed amount as a canonical decimal, or null while it isn't a usable amount. */
+export function amountTotal(amount: string): string | null {
+  const parsed = parseAmountInput(amount)
   return parsed !== null && toGrosze(parsed) > 0n ? parsed : null
 }
 
@@ -151,7 +156,8 @@ export function splitError(draft: ExpenseDraft, meId: number): string | null {
   }
 }
 
-function amountError(amount: string): string | null {
+/** What's wrong with a typed amount, by the API's rules, or null when it's fine. */
+export function amountError(amount: string): string | null {
   if (amount.trim() === '') {
     return 'Enter an amount above 0'
   }
