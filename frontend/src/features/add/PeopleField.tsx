@@ -166,8 +166,6 @@ export function PeopleField({
           spellCheck={false}
           placeholder="Name or email"
           value={query}
-          aria-expanded={open}
-          aria-controls={listId}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
           onFocus={() => onOpenChange(true)}
@@ -245,7 +243,7 @@ export function PeopleField({
           </ul>
           {contacts !== undefined && trimmedQuery !== '' && rows.length === 0 && (
             <p className="border-t px-3 py-3 text-[15px] text-muted-foreground">
-              No contacts match.
+              {isOwnEmail ? 'That’s your email. You’re always in it.' : 'No contacts match.'}
             </p>
           )}
           {contacts !== undefined && trimmedQuery === '' && rows.length === 0 && (

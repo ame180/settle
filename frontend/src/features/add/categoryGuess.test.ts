@@ -19,6 +19,8 @@ describe('guessCategory', () => {
     ['Kawa', 'food_and_drink'],
     ['Bus do Krakowa', 'transport'],
     ['Taxi z lotniska', 'transport'],
+    ['Piwo w barze', 'food_and_drink'],
+    ['Rachunek za gazu', 'home_and_bills'],
   ])('guesses %j as %s', (title, expected) => {
     expect(guessCategory(title)).toBe(expected)
   })

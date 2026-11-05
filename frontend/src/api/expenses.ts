@@ -5,6 +5,9 @@ import type { ExpenseRequest, ExpenseResponse } from './types'
 
 export const activityQueryKey = ['activity'] as const
 
+/** Tags expense and payment saves, so screens can tell when one is in flight. */
+export const saveMutationKey = ['save'] as const
+
 export function expenseQueryKey(id: number) {
   return ['expenses', id] as const
 }
@@ -32,6 +35,7 @@ export function invalidateAfterSave(queryClient: QueryClient, detailKey?: readon
 export function useCreateExpense() {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: saveMutationKey,
     mutationFn: (request: ExpenseRequest) =>
       apiRequest<ExpenseResponse>('/api/expenses', { method: 'POST', body: request }),
     onSuccess: () => invalidateAfterSave(queryClient),
@@ -41,6 +45,7 @@ export function useCreateExpense() {
 export function useUpdateExpense(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: saveMutationKey,
     mutationFn: (request: ExpenseRequest) =>
       apiRequest<ExpenseResponse>(`/api/expenses/${id}`, { method: 'PUT', body: request }),
     onSuccess: () => invalidateAfterSave(queryClient, expenseQueryKey(id)),

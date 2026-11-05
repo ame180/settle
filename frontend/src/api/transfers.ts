@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiRequest } from './client'
-import { invalidateAfterSave } from './expenses'
+import { invalidateAfterSave, saveMutationKey } from './expenses'
 import type { TransferRequest, TransferResponse, TransferUpdateRequest } from './types'
 
 export function transferQueryKey(id: number) {
@@ -17,6 +17,7 @@ export function useTransfer(id: number) {
 export function useCreateTransfer() {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: saveMutationKey,
     mutationFn: (request: TransferRequest) =>
       apiRequest<TransferResponse>('/api/transfers', { method: 'POST', body: request }),
     onSuccess: () => invalidateAfterSave(queryClient),
@@ -26,6 +27,7 @@ export function useCreateTransfer() {
 export function useUpdateTransfer(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: saveMutationKey,
     mutationFn: (request: TransferUpdateRequest) =>
       apiRequest<TransferResponse>(`/api/transfers/${id}`, { method: 'PUT', body: request }),
     onSuccess: () => invalidateAfterSave(queryClient, transferQueryKey(id)),

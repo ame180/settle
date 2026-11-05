@@ -355,7 +355,7 @@ function RowControl({
         >
           <Minus className="size-4.5" aria-hidden="true" />
         </button>
-        <span aria-live="polite" className="w-6 text-center font-semibold tabular-nums">
+        <span aria-live="polite" className="min-w-6 px-0.5 text-center font-semibold tabular-nums">
           <span className="sr-only">{person.name}: </span>
           {trimDecimal(parsed)}
           <span className="sr-only"> shares</span>

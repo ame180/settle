@@ -13,28 +13,28 @@ const keywords: [ExpenseCategory, string][] = [
   [
     'food_and_drink',
     'pizz obiad kolac sniadan lunch dinner breakfast brunch kawa kawy kawe kawk kawiarn coffee piwo piwa piwk beer wino wina wine drink ' +
-      'restaur bar pub kebab sushi burger mcdonald kfc pyszne glovo wolt eats lody ciast cafe. ' +
+      'restaur bar baru barze pub kebab sushi burger mcdonald kfc pyszne glovo wolt eats lody ciast cafe. ' +
       'jedzeni food takeaway pierog ramen',
   ],
   [
     'transport',
     'uber bolt taxi taks paliw benzyn fuel petrol orlen shell bilet ticket pkp pociag train. trains ' +
-      'autobus bus tramwaj metro parking flight lot lotnisk samolot ryanair wizz flixbus car auto ' +
+      'autobus bus tramwaj metro parking flight lot loty lotu lotnisk samolot ryanair wizz flixbus car auto. samochod ' +
       'myjni toll autostrad',
   ],
   [
     'home_and_bills',
-    'czynsz rent. prad electric gaz gas woda water internet wifi rachun bill. bills oplat media ikea ' +
+    'czynsz rent. prad electric gaz gazu gas woda water internet wifi rachun bill. bills oplat media ikea ' +
       'castorama leroy mebl sprzat clean netflix spotify abonament subscription telefon phone ' +
-      'home. dom mieszkan flat.',
+      'home. dom domu mieszkan flat.',
   ],
   [
     'entertainment',
-    'kino cinema movie film teatr theatre theater koncert concert muzeum museum gra gry game ' +
+    'kino cinema movie film teatr theatre theater koncert concert muzeum museum gra gry gre game ' +
       'bowling escape festiwal festival impreza party karaoke basen pool silown gym wycieczk ' +
       'trip. trips hotel nocleg airbnb booking wakacj holiday',
   ],
-  ['gifts', 'prezent gift urodzin birthday imienin swiet swiateczn christmas kwiat flower'],
+  ['gifts', 'prezent gift urodzin birthday imienin swieta swiat. swiateczn christmas kwiat flower'],
   [
     'health',
     'aptek pharmac leki lekow lekarz medic doctor dentyst dentist szpital hospital witamin vitamin fizjo ' +
