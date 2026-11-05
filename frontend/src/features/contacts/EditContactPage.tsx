@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { shortName } from '@/lib/contact'
 import { hasInAppHistory } from '@/lib/history'
 import { cn } from '@/lib/utils'
-import { ContactNotFound } from './ContactPage'
+import { ContactNotFound } from './ContactNotFound'
 import { parseUserId } from './parseUserId'
 
 const editContactSchema = z.object({

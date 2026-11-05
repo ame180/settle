@@ -151,6 +151,7 @@ describe('ContactPage', () => {
     renderContact()
 
     expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't load activity")
+    expect(screen.getByText('No balance')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
   })
 

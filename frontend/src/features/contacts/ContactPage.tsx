@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { Activity, CircleAlert, CircleCheck, Pencil, RefreshCw, UserX } from 'lucide-react'
+import { Activity, CircleAlert, CircleCheck, Pencil, RefreshCw } from 'lucide-react'
 import { useActivity } from '@/api/activity'
 import { useMe } from '@/api/auth'
 import { useContact } from '@/api/contacts'
@@ -17,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { ActivityListFooter } from '@/features/activity/ActivityListFooter'
 import { ActivityRow } from '@/features/activity/ActivityRows'
 import { activityItemKey, flattenActivityPages } from '@/features/activity/activityItems'
+import { ContactNotFound, ContactNotFoundMessage } from './ContactNotFound'
 import { parseUserId } from './parseUserId'
 
 const pillClassName = 'rounded-full px-5 text-[15px]'
@@ -83,23 +83,31 @@ function ContactView({ userId }: { userId: number }) {
 
 function ContactDetails({ contact }: { contact: ContactListItem }) {
   const activityQuery = useActivity(contact.person.id)
-  const items = activityQuery.data ? flattenActivityPages(activityQuery.data.pages) : null
+  const sharedActivity: SharedActivity = activityQuery.isPending
+    ? 'loading'
+    : activityQuery.data === undefined
+      ? 'failed'
+      : flattenActivityPages(activityQuery.data.pages).length > 0
+        ? 'some'
+        : 'none'
 
   return (
     <>
-      <ContactHeader contact={contact} hasActivity={items === null ? null : items.length > 0} />
+      <ContactHeader contact={contact} sharedActivity={sharedActivity} />
       <ContactActivity contact={contact} activityQuery={activityQuery} />
     </>
   )
 }
 
+/** Whether there is any activity with the contact, which tells settled up from never shared. */
+type SharedActivity = 'loading' | 'failed' | 'none' | 'some'
+
 type ContactHeaderProps = {
   contact: ContactListItem
-  /** Null while the activity is still loading. */
-  hasActivity: boolean | null
+  sharedActivity: SharedActivity
 }
 
-export function ContactHeader({ contact, hasActivity }: ContactHeaderProps) {
+function ContactHeader({ contact, sharedActivity }: ContactHeaderProps) {
   const { person } = contact
   const secondaryLine = contactSecondaryLine(contact)
 
@@ -121,12 +129,12 @@ export function ContactHeader({ contact, hasActivity }: ContactHeaderProps) {
           )}
         </div>
       </div>
-      <ContactBalance contact={contact} hasActivity={hasActivity} />
+      <ContactBalance contact={contact} sharedActivity={sharedActivity} />
     </section>
   )
 }
 
-function ContactBalance({ contact, hasActivity }: ContactHeaderProps) {
+function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
   const name = shortName(contact.person.displayName)
   const balance = findPlnAmount(contact.balances)
 
@@ -161,10 +169,13 @@ function ContactBalance({ contact, hasActivity }: ContactHeaderProps) {
   if (contact.balances.length > 0) {
     return <p className="text-[15px] text-muted-foreground">No PLN balance</p>
   }
-  if (hasActivity === null) {
+  if (sharedActivity === 'loading') {
     return null
   }
-  if (!hasActivity) {
+  if (sharedActivity === 'failed') {
+    return <p className="text-[15px] text-muted-foreground">No balance</p>
+  }
+  if (sharedActivity === 'none') {
     return <p className="text-[15px] text-muted-foreground">No shared expenses yet</p>
   }
   return (
@@ -182,8 +193,6 @@ type ContactActivityProps = {
 
 function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
   const { data: me } = useMe()
-  // Row dates drop the year only within the current one; pinned per mount like the list itself.
-  const [now] = useState(() => new Date())
   const name = shortName(contact.person.displayName)
 
   if (activityQuery.isPending) {
@@ -213,6 +222,8 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
   }
 
   const items = flattenActivityPages(activityQuery.data.pages)
+  // Rows drop the year within the current one; following the last fetch relabels them on refetch.
+  const now = new Date(activityQuery.dataUpdatedAt)
   if (items.length === 0) {
     return (
       <StateMessage
@@ -245,32 +256,6 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
         fetchNextPage={() => activityQuery.fetchNextPage({ cancelRefetch: false })}
       />
     </section>
-  )
-}
-
-export function ContactNotFound() {
-  return (
-    <>
-      <PageHeader leading={<BackLink to="/" label="Back to contacts" />} />
-      <ContactNotFoundMessage />
-    </>
-  )
-}
-
-function ContactNotFoundMessage() {
-  return (
-    <StateMessage
-      icon={<UserX className="size-7.5" aria-hidden="true" />}
-      title="Contact not found"
-      description="They may not be one of your contacts."
-    >
-      <Link
-        to="/"
-        className="inline-flex h-11 items-center rounded-full border border-input bg-background px-5 text-[15px] font-medium hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-      >
-        Go to contacts
-      </Link>
-    </StateMessage>
   )
 }
 
