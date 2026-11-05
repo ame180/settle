@@ -71,7 +71,7 @@ export function SignUpPage() {
           }
           if (error.status === 429) {
             form.setError('root', {
-              message: 'Too many sign-up attempts from this network. Try again in an hour.',
+              message: 'Too many sign-up attempts from this network. Try again later.',
             })
             return
           }
@@ -83,8 +83,8 @@ export function SignUpPage() {
             form.setError('root', { message: "Couldn't create your account. Try again." })
             return
           }
-          for (const field of fields) {
-            form.setError(field, { message: fieldMessages[field] })
+          for (const [index, field] of fields.entries()) {
+            form.setError(field, { message: fieldMessages[field] }, { shouldFocus: index === 0 })
           }
         },
       },
@@ -92,7 +92,7 @@ export function SignUpPage() {
   })
 
   const inputClassName = cn(isPending && 'border-border bg-muted text-muted-foreground')
-  const loginState: LoginLocationState = { email: form.getValues('email') }
+  const loginState: LoginLocationState = { email: form.getValues('email').trim() }
 
   return (
     <AuthLayout

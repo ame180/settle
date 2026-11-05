@@ -107,6 +107,23 @@ describe('EditNamePage', () => {
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'PATCH')).toBe(false)
   })
 
+  it('maps a name violation onto the field', async () => {
+    stubApi(
+      { id: 1, email: 'ame@example.com', name: null },
+      {
+        status: 400,
+        body: { status: 400, violations: [{ propertyPath: 'name', title: 'Too long.' }] },
+      },
+    )
+    renderProfile('/profile/name')
+
+    await userEvent.type(await screen.findByLabelText('Name'), 'Ame')
+    await userEvent.click(screen.getByRole('button', { name: 'Save name' }))
+
+    expect(await screen.findByText('Use at most 64 characters.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveAttribute('aria-invalid', 'true')
+  })
+
   it('shows a generic error when saving fails', async () => {
     stubApi({ id: 1, email: 'ame@example.com', name: null }, { status: 500 })
     renderProfile('/profile/name')

@@ -136,7 +136,7 @@ describe('SignUpPage', () => {
     const router = renderSignUp()
 
     await screen.findByRole('heading', { name: 'Create an account' })
-    await fillForm({ name: 'Ame' })
+    await fillForm({ name: 'Ame', email: ' ame@example.com ' })
 
     expect(
       await screen.findByText('An account with this email already exists.'),
@@ -156,7 +156,7 @@ describe('SignUpPage', () => {
     await fillForm()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Too many sign-up attempts from this network. Try again in an hour.',
+      'Too many sign-up attempts from this network. Try again later.',
     )
   })
 
@@ -179,6 +179,7 @@ describe('SignUpPage', () => {
 
     expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument()
     expect(screen.getByText('Use 8 to 64 characters.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Email')).toHaveFocus()
     expect(screen.queryByText('This value is too short.')).not.toBeInTheDocument()
   })
 

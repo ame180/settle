@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { AuthLayout, authLinkClassName } from './AuthLayout'
 
 const loginSchema = z.object({
-  email: z.email('Enter a valid email address'),
+  email: z.string().trim().pipe(z.email('Enter a valid email address')),
   password: z.string().min(1, 'Password is required'),
 })
 
@@ -43,12 +43,7 @@ export function LoginPage() {
     })
   })
 
-  const serverError =
-    loginMutation.error instanceof ApiError && loginMutation.error.status === 401
-      ? 'Invalid email or password.'
-      : loginMutation.error
-        ? 'Something went wrong. Please try again.'
-        : null
+  const serverError = getLoginErrorMessage(loginMutation.error)
 
   return (
     <AuthLayout
@@ -102,4 +97,17 @@ export function LoginPage() {
       </form>
     </AuthLayout>
   )
+}
+
+function getLoginErrorMessage(error: Error | null): string | null {
+  if (error === null) {
+    return null
+  }
+  if (error instanceof ApiError && error.status === 401) {
+    return 'Invalid email or password.'
+  }
+  if (error instanceof ApiError && error.status === 429) {
+    return 'Too many sign-in attempts. Wait a few minutes and try again.'
+  }
+  return 'Something went wrong. Please try again.'
 }

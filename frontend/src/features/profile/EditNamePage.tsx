@@ -45,7 +45,10 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
         navigate('/profile', { replace: true, state })
       },
       onError: (error) => {
-        if (error instanceof ApiError && error.status === 400) {
+        const isNameViolation =
+          error instanceof ApiError &&
+          error.violations.some((violation) => violation.propertyPath === 'name')
+        if (isNameViolation) {
           form.setError('name', { message: nameTooLongMessage }, { shouldFocus: true })
           return
         }
