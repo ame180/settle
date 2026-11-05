@@ -49,15 +49,6 @@ export function ProfilePage() {
             </div>
           </section>
 
-          {!me.name && (
-            <div className="mx-4 mb-4 flex flex-col gap-1 rounded-xl border bg-muted/50 px-4 py-3.5">
-              <p className="text-[15px] font-semibold">Add your name</p>
-              <p className="text-[13px] leading-[1.45] text-muted-foreground">
-                Your contacts see your email until you set a name.
-              </p>
-            </div>
-          )}
-
           <div className="border-t border-border/60">
             <Link to="/profile/name" className={cn(rowClassName, 'hover:bg-secondary')}>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -65,6 +56,11 @@ export function ProfilePage() {
                 <span className={cn('truncate', !me.name && 'font-semibold text-primary')}>
                   {me.name ?? 'Add your name'}
                 </span>
+                {!me.name && (
+                  <span className="text-[13px] leading-[1.4] text-muted-foreground">
+                    Contacts see your email until you add one.
+                  </span>
+                )}
               </span>
               <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </Link>
