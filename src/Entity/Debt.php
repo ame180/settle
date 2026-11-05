@@ -27,7 +27,7 @@ class Debt
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $splitValue = null;
 
-    #[ORM\Column(length: 3)]
+    #[ORM\Column(length: 3, options: ['default' => 'PLN'])]
     private string $currency;
 
     #[ORM\ManyToOne(inversedBy: 'debts')]

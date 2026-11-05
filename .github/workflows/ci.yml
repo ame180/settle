@@ -51,6 +51,9 @@ jobs:
 
       - name: Create database schema
         run: php bin/console --env=test doctrine:migrations:migrate --no-interaction
+
+      - name: Check Doctrine mapping matches migrated schema
+        run: php bin/console --env=test doctrine:schema:validate
       
       - name: Run PHPUnit tests
         run: vendor/bin/phpunit --testdox

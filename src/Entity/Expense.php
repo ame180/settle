@@ -33,10 +33,10 @@ class Expense
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $amount;
 
-    #[ORM\Column(length: 3)]
+    #[ORM\Column(length: 3, options: ['default' => 'PLN'])]
     private string $currency;
 
-    #[ORM\Column(length: 16, enumType: SplitType::class)]
+    #[ORM\Column(length: 16, enumType: SplitType::class, options: ['default' => SplitType::Exact->value])]
     private SplitType $splitType;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]

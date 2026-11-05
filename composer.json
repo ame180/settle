@@ -88,6 +88,7 @@
       "bin/console --env=test doctrine:database:drop --force --if-exists",
       "bin/console --env=test doctrine:database:create",
       "bin/console --env=test doctrine:migrations:migrate --no-interaction",
+      "bin/console --env=test doctrine:schema:validate",
       "phpunit"
     ],
     "checkup": [
