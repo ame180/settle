@@ -74,17 +74,20 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
           {formatMoney(expense.amount, expense.currency)}
         </p>
         <p className="-mt-0.5 text-[15px] text-foreground/75">
-          {position.label}{' '}
-          <span
-            className={cn(
-              'font-semibold tabular-nums',
-              position.direction === 'owed' && 'text-positive',
-              position.direction === 'owe' && 'text-negative',
-              position.direction === 'none' && 'text-muted-foreground',
-            )}
-          >
-            {formatMoney(position.amount, expense.currency)}
-          </span>
+          {position.label}
+          {position.direction !== 'none' && (
+            <>
+              {' '}
+              <span
+                className={cn(
+                  'font-semibold tabular-nums',
+                  position.direction === 'owed' ? 'text-positive' : 'text-negative',
+                )}
+              >
+                {formatMoney(position.amount, expense.currency)}
+              </span>
+            </>
+          )}
         </p>
         <p className="text-[13px] text-muted-foreground">
           {formatShortDate(expense.occurredOn)} · {categoryInfo[expense.category].label}

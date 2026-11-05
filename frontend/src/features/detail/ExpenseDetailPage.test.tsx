@@ -95,6 +95,26 @@ describe('ExpenseDetailPage', () => {
     expect(screen.queryByText('Note')).not.toBeInTheDocument()
   })
 
+  it('says no balance without an amount when the viewer paid only for themselves', async () => {
+    stubDetailApi({
+      'GET /api/expenses/7': {
+        status: 200,
+        body: expenseResponse({
+          debts: [
+            {
+              payer: { id: 1, displayName: 'Ame', email: 'ame@example.com' },
+              amount: '184.30',
+              splitValue: null,
+            },
+          ],
+        }),
+      },
+    })
+    renderExpense()
+
+    expect(await screen.findByText('No balance')).toHaveTextContent(/^No balance$/)
+  })
+
   it.each([
     [404, 'This expense doesn’t exist'],
     [403, 'You can’t see this expense'],
