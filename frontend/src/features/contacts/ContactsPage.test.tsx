@@ -17,6 +17,7 @@ function contact(
     name: displayName,
     isRegistered,
     balances: plnAmount === null ? [] : [{ currency: 'PLN', amount: plnAmount }],
+    lastActivityAt: '2026-10-01T12:00:00+00:00',
   }
 }
 
