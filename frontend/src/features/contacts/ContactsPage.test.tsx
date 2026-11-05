@@ -5,11 +5,15 @@ import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { jsonResponse, renderRoutes } from '@/test/utils'
 import { ContactsPage } from './ContactsPage'
 
+const LONG_AGO = '2025-01-01T12:00:00+00:00'
+const RECENTLY = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+
 function contact(
   id: number,
   displayName: string,
   plnAmount: string | null,
   isRegistered = true,
+  lastActivityAt = LONG_AGO,
 ): ContactListItem {
   return {
     person: { id, displayName, email: `user${id}@example.com` },
@@ -17,7 +21,7 @@ function contact(
     name: displayName,
     isRegistered,
     balances: plnAmount === null ? [] : [{ currency: 'PLN', amount: plnAmount }],
-    lastActivityAt: '2026-10-01T12:00:00+00:00',
+    lastActivityAt,
   }
 }
 
@@ -83,13 +87,10 @@ describe('ContactsPage', () => {
     expect(screen.queryByText('Julia Mazur')).not.toBeInTheDocument()
   })
 
-  it('shows the all-settled state when no contact has a PLN balance', async () => {
+  it('shows the all-settled state when every contact is settled and inactive', async () => {
     stubContacts({
-      totals: [{ currency: 'EUR', amount: '3.00' }],
-      items: [
-        contact(1, 'Anna Kowalska', null),
-        { ...contact(2, 'Kasia', null), balances: [{ currency: 'EUR', amount: '3.00' }] },
-      ],
+      totals: [],
+      items: [contact(1, 'Anna Kowalska', null), contact(2, 'Kasia', null)],
     })
     renderContacts()
 
@@ -98,6 +99,26 @@ describe('ContactsPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Show 2 settled-up contacts' }))
     expect(screen.getByText('Kasia')).toBeInTheDocument()
+  })
+
+  it('keeps recently active and non-PLN contacts in the main list', async () => {
+    stubContacts({
+      totals: [{ currency: 'EUR', amount: '3.00' }],
+      items: [
+        contact(1, 'Anna Kowalska', null, true, RECENTLY),
+        { ...contact(2, 'Kasia', null), balances: [{ currency: 'EUR', amount: '3.00' }] },
+        contact(3, 'Julia Mazur', null),
+      ],
+    })
+    renderContacts()
+
+    expect(await screen.findByText('You are all settled up')).toBeInTheDocument()
+    const rows = within(screen.getByRole('list')).getAllByRole('listitem')
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toHaveTextContent('Anna Kowalskano balance')
+    expect(rows[1]).toHaveTextContent('Kasiano PLN balance')
+    expect(screen.queryByText('Julia Mazur')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Show 1 settled-up contact' })).toBeInTheDocument()
   })
 
   it('says the user is even when PLN balances net to zero', async () => {
@@ -138,14 +159,15 @@ describe('ContactsPage', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('confirms a newly added contact with a toast that disappears', async () => {
-    stubContacts({ totals: [], items: [contact(5, 'Jan', null, false)] })
+  it('lists a newly added contact and confirms it with a toast that disappears', async () => {
+    stubContacts({ totals: [], items: [contact(5, 'Jan', null, false, RECENTLY)] })
     vi.useFakeTimers({ shouldAdvanceTime: true })
     renderContacts({ addedContactName: 'Jan' })
 
     expect(
       (await screen.findByText('Jan added to your contacts')).closest('[role="status"]'),
     ).not.toBeNull()
+    expect(screen.getByRole('list')).toHaveTextContent('Not on Settle yetno balance')
 
     await vi.advanceTimersByTimeAsync(4000)
     await waitFor(() =>

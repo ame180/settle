@@ -1,21 +1,23 @@
 import type { ContactListItem } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { formatPln, isNegativeAmount } from '@/lib/money'
+import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 import { cn } from '@/lib/utils'
 
 type ContactRowProps = {
   contact: ContactListItem
-  plnBalance: string | null
+  /** Rows in the settled-up section, hidden from the main list after a quiet spell. */
+  settled?: boolean
 }
 
-export function ContactRow({ contact, plnBalance }: ContactRowProps) {
+export function ContactRow({ contact, settled = false }: ContactRowProps) {
   const { person } = contact
+  const plnBalance = findPlnAmount(contact.balances)
 
   return (
     <li className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
       <PersonAvatar id={person.id} name={person.displayName} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className={cn('truncate', plnBalance === null && 'text-foreground/80')}>
+        <span className={cn('truncate', settled && 'text-foreground/80')}>
           {person.displayName}
         </span>
         {!contact.isRegistered && (
@@ -23,7 +25,9 @@ export function ContactRow({ contact, plnBalance }: ContactRowProps) {
         )}
       </div>
       {plnBalance === null ? (
-        <span className="shrink-0 text-[13px] text-muted-foreground">settled up</span>
+        <span className="shrink-0 text-[13px] text-muted-foreground">
+          {settled ? 'settled up' : noPlnBalanceLabel(contact)}
+        </span>
       ) : (
         <BalanceAmount amount={plnBalance} />
       )}
@@ -45,4 +49,9 @@ function BalanceAmount({ amount }: { amount: string }) {
       <span className="text-[17px] font-semibold tabular-nums">{formatPln(amount)}</span>
     </span>
   )
+}
+
+// The list only shows PLN for now, so a balance in another currency must not read as "none".
+function noPlnBalanceLabel(contact: ContactListItem): string {
+  return contact.balances.length === 0 ? 'no balance' : 'no PLN balance'
 }

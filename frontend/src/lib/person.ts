@@ -1,11 +1,16 @@
+const LETTER = /\p{L}/u
+
 export function getInitials(displayName: string): string {
-  const words = displayName.trim().split(/\s+/).filter(Boolean)
-  if (words.length === 0) {
+  const initials = displayName
+    .normalize('NFC')
+    .split(/\s+/)
+    .map((word) => word.match(LETTER)?.[0])
+    .filter((initial) => initial !== undefined)
+  if (initials.length === 0) {
     return '?'
   }
 
-  const firstInitial = Array.from(words[0])[0]
-  const lastInitial = words.length > 1 ? Array.from(words[words.length - 1])[0] : ''
+  const lastInitial = initials.length > 1 ? initials[initials.length - 1] : ''
 
-  return (firstInitial + lastInitial).toUpperCase()
+  return (initials[0] + lastInitial).toUpperCase()
 }

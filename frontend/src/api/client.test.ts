@@ -63,4 +63,30 @@ describe('apiRequest', () => {
 
     expect((error as ApiError).message).toBe('Invalid credentials.')
   })
+
+  it('keeps the status when the error body is not JSON', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('<html>502 Bad Gateway</html>', {
+          status: 502,
+          headers: { 'Content-Type': 'text/html' },
+        }),
+      ),
+    )
+
+    const error = await apiRequest('/api/x').catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).status).toBe(502)
+    expect((error as ApiError).message).toBe('Request failed with status 502')
+  })
+
+  it('keeps the status when the error body is empty', async () => {
+    mockFetch(500, undefined)
+
+    const error = await apiRequest('/api/x').catch((e: unknown) => e)
+
+    expect((error as ApiError).status).toBe(500)
+  })
 })

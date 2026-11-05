@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { ContactRow } from './ContactRow'
+import { isHiddenAsSettled } from './contactVisibility'
 
 export type ContactsLocationState = { addedContactName?: string } | null
 
@@ -104,7 +105,7 @@ export function ContactsPage() {
 
       <div
         role="status"
-        className="fixed right-4 bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-4 z-20"
+        className="fixed right-[calc(var(--app-inset-x)+1rem)] bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-[calc(var(--app-inset-x)+1rem)] z-20"
       >
         {isToastVisible && (
           <div className="flex items-center gap-2.5 rounded-xl bg-primary px-4 py-3.5 text-[15px] text-primary-foreground shadow-[0_6px_20px_rgb(0_0_0/0.2)]">
@@ -119,21 +120,22 @@ export function ContactsPage() {
 
 function ContactList({ contacts }: { contacts: ContactListResponse }) {
   const [showSettled, setShowSettled] = useState(false)
+  const [now] = useState(() => new Date())
 
-  const withBalance: { contact: ContactListItem; plnBalance: string }[] = []
+  const visible: ContactListItem[] = []
   const settled: ContactListItem[] = []
   for (const contact of contacts.items) {
-    const plnBalance = findPlnAmount(contact.balances)
-    if (plnBalance === null) {
+    if (isHiddenAsSettled(contact, now)) {
       settled.push(contact)
       continue
     }
-    withBalance.push({ contact, plnBalance })
+    visible.push(contact)
   }
+  const hasPlnBalances = visible.some((contact) => findPlnAmount(contact.balances) !== null)
 
   const showSettledLabel = `Show ${settled.length} settled-up ${settled.length === 1 ? 'contact' : 'contacts'}`
 
-  if (withBalance.length === 0 && !showSettled) {
+  if (visible.length === 0 && !showSettled) {
     return (
       <>
         <BalanceSummary total={null} />
@@ -154,12 +156,12 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
 
   return (
     <>
-      <BalanceSummary total={findPlnAmount(contacts.totals)} hasBalances={withBalance.length > 0} />
+      <BalanceSummary total={findPlnAmount(contacts.totals)} hasBalances={hasPlnBalances} />
 
-      {withBalance.length > 0 && (
+      {visible.length > 0 && (
         <ul>
-          {withBalance.map(({ contact, plnBalance }) => (
-            <ContactRow key={contact.person.id} contact={contact} plnBalance={plnBalance} />
+          {visible.map((contact) => (
+            <ContactRow key={contact.person.id} contact={contact} />
           ))}
         </ul>
       )}
@@ -170,14 +172,14 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
             id="settled-up-heading"
             className={cn(
               'mx-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase',
-              withBalance.length > 0 && 'mt-3 border-t pt-4',
+              visible.length > 0 && 'mt-3 border-t pt-4',
             )}
           >
             Settled up
           </h2>
           <ul>
             {settled.map((contact) => (
-              <ContactRow key={contact.person.id} contact={contact} plnBalance={null} />
+              <ContactRow key={contact.person.id} contact={contact} settled />
             ))}
           </ul>
           <div className="flex justify-center px-4 pt-4">
