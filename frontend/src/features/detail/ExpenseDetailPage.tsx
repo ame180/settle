@@ -1,6 +1,6 @@
 import { useParams } from 'react-router'
 import { useMe } from '@/api/auth'
-import { expenseQueryKey, useDeleteExpense, useExpense } from '@/api/detail'
+import { useDeleteExpense, useExpense } from '@/api/detail'
 import type { ExpenseResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
@@ -56,7 +56,6 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
   const position = expensePosition(expense, viewerId)
   const deletion = useDeleteAndGoBack({
     mutation: useDeleteExpense(expense.id),
-    detailQueryKey: expenseQueryKey(expense.id),
     successMessage: 'Expense deleted',
     errorMessage: 'Couldn’t delete the expense. Try again.',
   })

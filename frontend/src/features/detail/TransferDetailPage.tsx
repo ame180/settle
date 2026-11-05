@@ -1,7 +1,7 @@
 import { useParams } from 'react-router'
 import { ArrowRight } from 'lucide-react'
 import { useMe } from '@/api/auth'
-import { transferQueryKey, useDeleteTransfer, useTransfer } from '@/api/detail'
+import { useDeleteTransfer, useTransfer } from '@/api/detail'
 import type { PersonRef, TransferResponse } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
@@ -53,7 +53,6 @@ function TransferDetail({ transfer, viewerId }: { transfer: TransferResponse; vi
     .map((person) => person.displayName)
   const deletion = useDeleteAndGoBack({
     mutation: useDeleteTransfer(transfer.id),
-    detailQueryKey: transferQueryKey(transfer.id),
     successMessage: 'Payment deleted',
     errorMessage: 'Couldn’t delete the payment. Try again.',
   })

@@ -1,32 +1,24 @@
 import { useRef, useState } from 'react'
-import { useQueryClient, type UseMutationResult } from '@tanstack/react-query'
+import type { UseMutationResult } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useGoBack } from '@/lib/useGoBack'
 import { detailBackFallback } from './DetailParts'
 
 type Options = {
   mutation: UseMutationResult<void, Error, void>
-  detailQueryKey: readonly unknown[]
   successMessage: string
   errorMessage: string
 }
 
 /** Confirm sheet state plus the delete: on success, back to where the user came from. */
-export function useDeleteAndGoBack({
-  mutation,
-  detailQueryKey,
-  successMessage,
-  errorMessage,
-}: Options) {
+export function useDeleteAndGoBack({ mutation, successMessage, errorMessage }: Options) {
   const [isConfirmOpen, setConfirmOpen] = useState(false)
   const { goBack } = useGoBack(detailBackFallback)
-  const queryClient = useQueryClient()
   const isSending = useRef(false)
 
   const leave = () => {
     setConfirmOpen(false)
     goBack()
-    queryClient.removeQueries({ queryKey: detailQueryKey, exact: true })
     toast.success(successMessage)
   }
 

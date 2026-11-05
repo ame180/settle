@@ -37,7 +37,8 @@ async function deleteIgnoringMissing(path: string): Promise<void> {
   }
 }
 
-// Balances move with every delete, so the feed and the contact list refetch.
+// Balances move with every delete, so the feed and the contact list refetch. These run even if
+// the user leaves the page before the DELETE answers.
 function invalidateBalances(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: activityQueryKey }),
@@ -49,7 +50,10 @@ export function useDeleteExpense(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => deleteIgnoringMissing(`/api/expenses/${id}`),
-    onSuccess: () => invalidateBalances(queryClient),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: expenseQueryKey(id), exact: true })
+      return invalidateBalances(queryClient)
+    },
   })
 }
 
@@ -57,6 +61,9 @@ export function useDeleteTransfer(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => deleteIgnoringMissing(`/api/transfers/${id}`),
-    onSuccess: () => invalidateBalances(queryClient),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: transferQueryKey(id), exact: true })
+      return invalidateBalances(queryClient)
+    },
   })
 }

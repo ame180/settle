@@ -32,6 +32,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  window.history.replaceState(null, '')
   vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
@@ -180,6 +181,16 @@ describe('ExpenseDetailPage', () => {
 
     await userEvent.click(await screen.findByRole('link', { name: 'Back' }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/contacts/2'))
+  })
+
+  it('falls back to activity when the page replaced the first entry, e.g. after logging in', async () => {
+    window.history.replaceState({ idx: 0 }, '')
+    stubDetailApi({ 'GET /api/expenses/7': { status: 200, body: expenseResponse() } })
+    const router = renderExpense(['/login'])
+    await router.navigate('/expenses/7', { replace: true })
+
+    await userEvent.click(await screen.findByRole('link', { name: 'Back' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/activity'))
   })
 
   it('cancels without deleting', async () => {
