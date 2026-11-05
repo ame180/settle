@@ -95,7 +95,7 @@ describe('AddPage', () => {
     await userEvent.type(screen.getByLabelText('Amount'), '40')
     expect(screen.getByRole('radio', { name: 'Equally' })).toBeChecked()
     await userEvent.click(screen.getByRole('button', { name: 'Switch who paid' }))
-    expect(screen.getByRole('region', { name: 'Who paid and how to split' })).toHaveTextContent(
+    expect(screen.getByRole('group', { name: 'Who paid and how to split' })).toHaveTextContent(
       'Anna paid',
     )
     await userEvent.click(screen.getByRole('radio', { name: 'Full amount' }))
@@ -109,6 +109,32 @@ describe('AddPage', () => {
       debts: [{ payerId: 1 }],
       splitType: 'equal',
     })
+  })
+
+  it('keeps a custom split that no longer adds up in the card and opens the editor from it', async () => {
+    const calls = mockApi({})
+    renderAdd('/add?contact=2')
+
+    await userEvent.type(await screen.findByLabelText('What was it for?'), 'Pizza')
+    await userEvent.type(screen.getByLabelText('Amount'), '99')
+    await userEvent.click(screen.getByRole('radio', { name: /Custom/ }))
+    await userEvent.click(await screen.findByRole('tab', { name: 'Amounts' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    const amount = screen.getByLabelText('Amount')
+    await userEvent.clear(amount)
+    await userEvent.type(amount, '120')
+    await userEvent.click(screen.getByRole('button', { name: /Add 120.00/ }))
+
+    const custom = screen.getByRole('radio', { name: /Custom/ })
+    expect(custom).toBeChecked()
+    expect(custom).toHaveFocus()
+    expect(custom).toHaveAccessibleDescription(/Adds up to 99\.00\szł of 120\.00\szł/)
+    expect(calls.some((call) => call.key === 'POST /api/expenses')).toBe(false)
+
+    await userEvent.click(screen.getByRole('button', { name: /By amounts.*Adds up to/ }))
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
   })
 
   it('names what is missing without calling the API', async () => {

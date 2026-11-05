@@ -45,7 +45,8 @@ export function SplitCard({
   splitButtonRef,
 }: SplitCardProps) {
   return (
-    <section
+    <div
+      role="group"
       aria-label="Who paid and how to split"
       className={cn(
         'flex scroll-mt-4 scroll-mb-28 flex-col gap-2 rounded-xl border border-border-strong px-3 pt-2 pb-3',
@@ -86,37 +87,45 @@ export function SplitCard({
           ref={splitButtonRef}
           type="button"
           onClick={onOpenSplit}
-          aria-describedby={warning ? warningId : undefined}
           className="-mx-1 flex min-h-11 items-center gap-2.5 rounded-lg px-1 text-left hover:bg-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <PieChart className="size-6 shrink-0 p-px" aria-hidden="true" />
-          <span className="flex-1">{split.label}</span>
+          <span className="flex flex-1 flex-col gap-0.5">
+            <span>{split.label}</span>
+            {warning && <Warning message={warning} />}
+          </span>
           <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         </button>
       )}
 
-      {split.kind === 'quick' && split.summary && (
+      {split.kind === 'quick' && (split.summary || warning) && (
         <button
           type="button"
           onClick={onOpenSplit}
-          aria-haspopup="dialog"
-          className="-my-1 min-h-8 rounded-md px-1 text-left text-[13px] text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="-mb-1.5 flex min-h-11 flex-col justify-center gap-1 rounded-md px-1 text-left text-[13px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <span className="sr-only">Edit custom split: </span>
-          {split.summary}
+          {split.summary && (
+            <span className="text-muted-foreground">
+              <span className="sr-only">Edit split: </span>
+              {split.summary}
+            </span>
+          )}
+          {warning && <Warning message={warning} />}
         </button>
       )}
+    </div>
+  )
+}
 
-      {warning && (
-        <p
-          id={warningId}
-          className="flex items-start gap-1.5 px-1 text-[13px] font-semibold text-negative"
-        >
-          <TriangleAlert className="mt-px size-4 shrink-0" aria-hidden="true" />
-          <span>{warning}</span>
-        </p>
-      )}
-    </section>
+function Warning({ message }: { message: string }) {
+  return (
+    <span
+      id={warningId}
+      className="flex items-start gap-1.5 text-[13px] font-semibold text-negative"
+    >
+      <TriangleAlert className="mt-px size-4 shrink-0" aria-hidden="true" />
+      <span>{message}</span>
+    </span>
   )
 }
 
@@ -156,7 +165,6 @@ function QuickChoices({
       ref={groupRef}
       role="radiogroup"
       aria-label="How to split"
-      aria-describedby={describedBy}
       className="grid grid-cols-3 rounded-full bg-muted p-1"
     >
       {choices.map((option, index) => {
@@ -169,7 +177,7 @@ function QuickChoices({
             type="button"
             role="radio"
             aria-checked={checked}
-            aria-haspopup={value === 'custom' ? 'dialog' : undefined}
+            aria-describedby={checked ? describedBy : undefined}
             tabIndex={checked ? 0 : -1}
             onClick={() => (value === 'custom' ? onCustom() : onChoose(value))}
             onKeyDown={(event) => onKeyDown(event, index)}
