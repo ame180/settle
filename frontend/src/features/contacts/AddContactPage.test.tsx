@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ContactListItem } from '@/api/types'
 import { jsonResponse, renderRoutes } from '@/test/utils'
 import { AddContactPage } from './AddContactPage'
 import { ContactsPage } from './ContactsPage'
@@ -118,7 +119,8 @@ describe('AddContactPage', () => {
             name: null,
             isRegistered: false,
             balances: [],
-          }),
+            lastActivityAt: '2026-10-01T12:00:00+00:00',
+          } satisfies ContactListItem),
         )
       }
       return Promise.resolve(jsonResponse(200, { totals: [], items: [] }))
@@ -148,7 +150,8 @@ describe('AddContactPage', () => {
         name: null,
         isRegistered: false,
         balances: [],
-      }),
+        lastActivityAt: '2026-10-01T12:00:00+00:00',
+      } satisfies ContactListItem),
     )
     vi.stubGlobal('fetch', fetchMock)
     renderAddContact()

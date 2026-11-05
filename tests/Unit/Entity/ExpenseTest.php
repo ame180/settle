@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Debt;
 use App\Entity\Expense;
+use App\Enum\ExpenseCategory;
 use App\Enum\SplitType;
 use App\Tests\Support\Factory\UserFactory;
 use PHPUnit\Framework\TestCase;
@@ -45,6 +46,20 @@ class ExpenseTest extends TestCase
         );
 
         $this->assertSame('PLN', $expense->getCurrency());
+    }
+
+    public function testConstructorDefaultsToGeneralCategory(): void
+    {
+        $this->assertSame(ExpenseCategory::General, $this->makeExpense()->getCategory());
+    }
+
+    public function testSetCategory(): void
+    {
+        $expense = $this->makeExpense();
+
+        $expense->setCategory(ExpenseCategory::Health);
+
+        $this->assertSame(ExpenseCategory::Health, $expense->getCategory());
     }
 
     /**
