@@ -51,3 +51,39 @@ export function useLogout() {
     },
   })
 }
+
+export type RegisterInput = {
+  email: string
+  password: string
+  name: string | null
+}
+
+export function register(input: RegisterInput): Promise<MeResponse> {
+  return apiRequest<MeResponse>('/api/register', { method: 'POST', body: input })
+}
+
+export function updateMe(input: { name: string }): Promise<MeResponse> {
+  return apiRequest<MeResponse>('/api/me', { method: 'PATCH', body: input })
+}
+
+export function useRegister() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: register,
+    onSuccess: (me) => {
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'me' })
+      queryClient.setQueryData(meQueryKey, me)
+      return queryClient.invalidateQueries({ queryKey: meQueryKey })
+    },
+  })
+}
+
+export function useUpdateMe() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateMe,
+    onSuccess: (me) => {
+      queryClient.setQueryData(meQueryKey, me)
+    },
+  })
+}
