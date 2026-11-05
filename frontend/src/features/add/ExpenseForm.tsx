@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { Calendar, CircleAlert, FileText, TriangleAlert } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { useContacts } from '@/api/contacts'
@@ -110,9 +111,10 @@ export function ExpenseForm({
     update('split', (current) => ({ ...current, split }))
   }
 
+  // Synchronous so the focus happens inside the tap; iOS only opens the keyboard then.
   const closePeople = useCallback(() => {
-    setPeopleOpen(false)
-    window.setTimeout(() => titleRef.current?.focus(), 0)
+    flushSync(() => setPeopleOpen(false))
+    titleRef.current?.focus()
   }, [])
 
   function focusField(field: ExpenseField) {
@@ -310,8 +312,8 @@ export function ExpenseForm({
                 {!noteOpen && (
                   <PillButton
                     onClick={() => {
-                      setNoteOpen(true)
-                      window.setTimeout(() => noteRef.current?.focus(), 0)
+                      flushSync(() => setNoteOpen(true))
+                      noteRef.current?.focus()
                     }}
                   >
                     <FileText aria-hidden="true" />
