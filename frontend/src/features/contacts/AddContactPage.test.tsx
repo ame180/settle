@@ -134,7 +134,7 @@ describe('AddContactPage', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
     expect(
-      (await screen.findByText('Jan added to your contacts')).closest('[role="status"]'),
+      (await screen.findByText('Jan added to your contacts')).closest('[aria-live]'),
     ).not.toBeNull()
 
     const [path, init] = fetchMock.mock.calls[0] as [string, RequestInit]

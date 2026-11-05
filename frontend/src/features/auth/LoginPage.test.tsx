@@ -66,6 +66,27 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid email or password.')
   })
 
+  it('shows its own message when sign in is throttled', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ status: 429, detail: 'Too Many Requests' }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ),
+    )
+    renderLogin()
+
+    await userEvent.type(screen.getByLabelText('Email'), 'alice@example.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'secret')
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Too many sign-in attempts. Wait a few minutes and try again.',
+    )
+  })
+
   it('navigates home after a successful login', async () => {
     vi.stubGlobal(
       'fetch',
