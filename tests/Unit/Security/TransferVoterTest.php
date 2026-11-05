@@ -39,7 +39,7 @@ class TransferVoterTest extends TestCase
         $voter = new TransferVoter();
 
         $this->assertSame(VoterInterface::ACCESS_ABSTAIN, $voter->vote(new UsernamePasswordToken($user, 'main'), $transfer, ['ROLE_USER']));
-        $this->assertSame(VoterInterface::ACCESS_ABSTAIN, $voter->vote(new UsernamePasswordToken($user, 'main'), new \stdClass(), [TransferVoter::EDIT]));
+        $this->assertSame(VoterInterface::ACCESS_ABSTAIN, $voter->vote(new UsernamePasswordToken($user, 'main'), new \stdClass(), [TransferVoter::VIEW]));
     }
 
     /**
@@ -48,6 +48,7 @@ class TransferVoterTest extends TestCase
     public static function attributeProvider(): array
     {
         return [
+            'view' => [TransferVoter::VIEW],
             'edit' => [TransferVoter::EDIT],
             'delete' => [TransferVoter::DELETE],
         ];
