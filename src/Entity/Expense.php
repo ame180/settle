@@ -40,7 +40,7 @@ class Expense
     #[ORM\Column(length: 16, enumType: SplitType::class)]
     private SplitType $splitType;
 
-    #[ORM\Column(length: 32, enumType: ExpenseCategory::class)]
+    #[ORM\Column(length: 32, enumType: ExpenseCategory::class, options: ['default' => ExpenseCategory::General->value])]
     private ExpenseCategory $category;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
