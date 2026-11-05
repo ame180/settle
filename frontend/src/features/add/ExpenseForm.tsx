@@ -1,34 +1,33 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
-import { Calendar, CircleAlert, FileText, TriangleAlert } from 'lucide-react'
-import { ApiError } from '@/api/client'
+import { TriangleAlert } from 'lucide-react'
 import { useContacts } from '@/api/contacts'
 import { useCreateExpense, useUpdateExpense } from '@/api/expenses'
 import type { ExpenseRequest, MeResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { categoryInfo } from '@/lib/categories'
-import { formatDateLabel } from '@/lib/dates'
 import { formatGrosze, formatPln } from '@/lib/money'
 import { getShortName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { AmountField } from './AmountField'
 import { CategorySheet } from './CategorySheet'
 import { guessCategory } from './categoryGuess'
-import { DateSheet } from './DateSheet'
+import { DateNoteFields } from './DateNoteFields'
 import {
   buildExpenseRequest,
   draftTotal,
   expenseFieldOrder,
-  mapViolations,
+  fieldForPath,
   peopleIds,
   splitError,
   type ExpenseDraft,
   type ExpenseField,
   type FieldErrors,
 } from './expenseDraft'
-import { FieldError, PillButton, PrimaryButton } from './formParts'
+import { FieldError, FormFooter, PrimaryButton } from './formParts'
 import { PeopleField } from './PeopleField'
 import { QuickSplitSheet } from './QuickSplitSheet'
+import { describeSaveError } from './saveErrors'
 import { SplitCard } from './SplitCard'
 import { SplitEditorSheet } from './SplitEditorSheet'
 import {
@@ -54,7 +53,7 @@ type ExpenseFormProps = {
   onSaved: (message: string) => void
 }
 
-type OpenSheet = 'category' | 'date' | 'quick-split' | 'editor' | null
+type OpenSheet = 'category' | 'quick-split' | 'editor' | null
 
 export function ExpenseForm({
   me,
@@ -75,7 +74,6 @@ export function ExpenseForm({
   const [peopleOpen, setPeopleOpen] = useState(false)
   const [openSheet, setOpenSheet] = useState<OpenSheet>(null)
   const [editorPayerOpen, setEditorPayerOpen] = useState(false)
-  const [noteOpen, setNoteOpen] = useState(draft.note !== '')
 
   const peopleInputRef = useRef<HTMLInputElement>(null)
   const peopleBlockRef = useRef<HTMLDivElement>(null)
@@ -163,17 +161,15 @@ export function ExpenseForm({
     mutation.mutate(result.request, {
       onSuccess: () => onSaved(savedMessage(result.request, check, draft, me.id, mode.kind)),
       onError: (error) => {
-        if (error instanceof ApiError && (error.status === 400 || error.status === 422)) {
-          const mapped = mapViolations(error.violations)
-          if (Object.keys(mapped.errors).length > 0) {
-            showErrors(mapped.errors)
-            setServerError(mapped.unplaced[0] ?? null)
-            return
-          }
-          setServerError(mapped.unplaced[0] ?? error.detail ?? genericError(mode.kind))
-          return
+        const { errors: fieldErrors, banner } = describeSaveError(
+          error,
+          fieldForPath,
+          genericError(mode.kind),
+        )
+        if (Object.keys(fieldErrors).length > 0) {
+          showErrors(fieldErrors)
         }
-        setServerError(genericError(mode.kind))
+        setServerError(banner)
       },
     })
   }
@@ -311,64 +307,24 @@ export function ExpenseForm({
                 />
               )}
 
-              <div className="flex flex-wrap gap-2">
-                <PillButton onClick={() => setOpenSheet('date')}>
-                  <Calendar aria-hidden="true" />
-                  {formatDateLabel(draft.occurredOn)}
-                </PillButton>
-                {!noteOpen && (
-                  <PillButton
-                    onClick={() => {
-                      flushSync(() => setNoteOpen(true))
-                      noteRef.current?.focus()
-                    }}
-                  >
-                    <FileText aria-hidden="true" />
-                    Add note
-                  </PillButton>
-                )}
-              </div>
-              {errors.date && <FieldError message={errors.date} />}
-
-              {noteOpen && (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="expense-note" className="text-sm font-medium">
-                    Note <span className="font-normal text-muted-foreground">(optional)</span>
-                  </label>
-                  <textarea
-                    ref={noteRef}
-                    id="expense-note"
-                    rows={3}
-                    value={draft.note}
-                    aria-invalid={!!errors.note}
-                    onChange={(event) => {
-                      const note = event.target.value
-                      update('note', (current) => ({ ...current, note }))
-                    }}
-                    onFocus={(event) => {
-                      const target = event.currentTarget
-                      window.setTimeout(() => target.scrollIntoView({ block: 'nearest' }), 300)
-                    }}
-                    className="scroll-mb-28 rounded-[10px] border border-border-strong bg-background px-3 py-2.5 text-base outline-none focus:border-foreground focus:ring-[3px] focus:ring-foreground/10"
-                  />
-                  {errors.note && <FieldError message={errors.note} />}
-                </div>
-              )}
+              <DateNoteFields
+                idPrefix="expense"
+                occurredOn={draft.occurredOn}
+                onDateChange={(occurredOn) =>
+                  update('date', (current) => ({ ...current, occurredOn }))
+                }
+                dateError={errors.date}
+                note={draft.note}
+                onNoteChange={(note) => update('note', (current) => ({ ...current, note }))}
+                noteError={errors.note}
+                noteRef={noteRef}
+              />
             </>
           )}
         </fieldset>
       </div>
 
-      <div className="flex flex-col gap-3 px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        {serverError && (
-          <p
-            role="alert"
-            className="flex items-start gap-2.5 rounded-xl bg-destructive/8 px-3.5 py-3 text-[15px] text-destructive"
-          >
-            <CircleAlert className="mt-0.5 size-4.5 shrink-0" aria-hidden="true" />
-            <span>{serverError}</span>
-          </p>
-        )}
+      <FormFooter serverError={serverError}>
         {mode.kind === 'edit' && draft.others.length > 0 && (
           <p className="text-center text-[13px] text-muted-foreground">
             {joinNames(draft.others.map((person) => getShortName(person.displayName)))} will see
@@ -382,7 +338,7 @@ export function ExpenseForm({
         >
           {submitLabel}
         </PrimaryButton>
-      </div>
+      </FormFooter>
 
       <CategorySheet
         open={openSheet === 'category'}
@@ -392,12 +348,6 @@ export function ExpenseForm({
           update(null, (current) => ({ ...current, category, categoryPicked: true }))
           setOpenSheet(null)
         }}
-      />
-      <DateSheet
-        open={openSheet === 'date'}
-        onOpenChange={(open) => setOpenSheet(open ? 'date' : null)}
-        value={draft.occurredOn}
-        onChange={(occurredOn) => update('date', (current) => ({ ...current, occurredOn }))}
       />
       {isOneToOne && (
         <QuickSplitSheet

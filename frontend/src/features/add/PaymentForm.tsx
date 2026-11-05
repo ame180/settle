@@ -1,30 +1,26 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { flushSync } from 'react-dom'
-import {
-  ArrowLeftRight,
-  Calendar,
-  ChevronDown,
-  CircleAlert,
-  CircleCheck,
-  FileText,
-  Info,
-  TriangleAlert,
-} from 'lucide-react'
-import { ApiError } from '@/api/client'
+import { ArrowLeftRight, ChevronDown, CircleCheck, Info, TriangleAlert } from 'lucide-react'
 import { useContacts } from '@/api/contacts'
 import { useCreateTransfer, useUpdateTransfer } from '@/api/transfers'
 import type { MeResponse, PersonRef } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { formatDateLabel } from '@/lib/dates'
 import { findPlnAmount, formatGrosze, formatPln, fromGrosze, toGrosze } from '@/lib/money'
 import { getShortName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { AmountField } from './AmountField'
 import { ContactPickerSheet } from './ContactPickerSheet'
-import { DateSheet } from './DateSheet'
+import { DateNoteFields } from './DateNoteFields'
 import { amountError, amountTotal } from './expenseDraft'
-import { FieldError, PillButton, PrimaryButton } from './formParts'
-import { clearingPayer, describePayment, paymentEffect, type PaymentPayer } from './paymentModel'
+import { FieldError, FormFooter, PrimaryButton } from './formParts'
+import {
+  clearingPayer,
+  describeBalance,
+  describePayment,
+  paymentEffect,
+  type PaymentOutcome,
+  type PaymentPayer,
+} from './paymentModel'
+import { describeSaveError } from './saveErrors'
 
 /** The Payment tab, as typed. Person, amount, date and note carry over from the Expense tab. */
 export type PaymentDraft = {
@@ -57,8 +53,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
 
   const [errors, setErrors] = useState<Partial<Record<PaymentField, string>>>({})
   const [serverError, setServerError] = useState<string | null>(null)
-  const [openSheet, setOpenSheet] = useState<'person' | 'date' | null>(null)
-  const [noteOpen, setNoteOpen] = useState(draft.note !== '')
+  const [pickerOpen, setPickerOpen] = useState(false)
   const amountRef = useRef<HTMLInputElement>(null)
   const personRef = useRef<HTMLButtonElement>(null)
   const noteRef = useRef<HTMLTextAreaElement>(null)
@@ -82,13 +77,15 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
       ? balance + paymentEffect(draft.payer, toGrosze(total))
       : null
   const outcome = balance !== null && after !== null ? describePayment(balance, after, name) : null
+  // Offered while the payment goes the way that clears the balance but isn't all of it.
   const fullBalance =
-    balance !== null && balance !== 0n ? (balance < 0n ? -balance : balance) : null
+    balance !== null && balance !== 0n && draft.payer === clearingPayer(balance)
+      ? balance < 0n
+        ? -balance
+        : balance
+      : null
   const offerFullBalance =
-    fullBalance !== null &&
-    !editing &&
-    draft.payer === clearingPayer(balance ?? 0n) &&
-    (total === null || toGrosze(total) !== fullBalance)
+    fullBalance !== null && (total === null || toGrosze(total) !== fullBalance)
 
   function update(field: PaymentField | null, change: (draft: PaymentDraft) => PaymentDraft) {
     onDraftChange(change)
@@ -146,26 +143,15 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
         }
       },
       onError: (error: Error) => {
-        if (error instanceof ApiError && (error.status === 400 || error.status === 422)) {
-          const placed: Partial<Record<PaymentField, string>> = {}
-          const unplaced: string[] = []
-          for (const violation of error.violations) {
-            const field = paymentFieldForPath(violation.propertyPath)
-            if (field) {
-              placed[field] ??= violation.title
-            } else {
-              unplaced.push(violation.title)
-            }
-          }
-          if (Object.keys(placed).length > 0) {
-            showErrors(placed)
-            setServerError(unplaced[0] ?? null)
-            return
-          }
-          setServerError(unplaced[0] ?? error.detail ?? genericError(editing))
-          return
+        const { errors: fieldErrors, banner } = describeSaveError(
+          error,
+          paymentFieldForPath,
+          genericError(editing),
+        )
+        if (Object.keys(fieldErrors).length > 0) {
+          showErrors(fieldErrors)
         }
-        setServerError(genericError(editing))
+        setServerError(banner)
       },
     }
 
@@ -200,7 +186,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
     <button
       ref={personRef}
       type="button"
-      onClick={() => setOpenSheet('person')}
+      onClick={() => setPickerOpen(true)}
       aria-invalid={!!errors.person}
       aria-label={person ? `${person.displayName}. Change person` : 'Choose a person'}
       className={cn(
@@ -235,7 +221,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
               <button
                 type="button"
                 aria-label="Swap who paid"
-                disabled={editing}
+                hidden={editing}
                 onClick={() =>
                   update(null, (current) => ({
                     ...current,
@@ -265,103 +251,47 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
             error={errors.amount}
             inputRef={amountRef}
             outcome={
-              offerFullBalance && fullBalance !== null ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    update('amount', (current) => ({ ...current, amount: fromGrosze(fullBalance) }))
-                  }
-                  className="h-11 px-3 text-[13px] font-semibold underline underline-offset-2"
-                >
-                  Use full balance ({formatGrosze(fullBalance)})
-                </button>
-              ) : null
+              <div className="flex w-full flex-col items-center">
+                {offerFullBalance && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      update('amount', (current) => ({
+                        ...current,
+                        amount: fromGrosze(fullBalance),
+                      }))
+                    }
+                    className="h-11 px-3 text-[13px] font-semibold underline underline-offset-2"
+                  >
+                    Use full balance ({formatGrosze(fullBalance)})
+                  </button>
+                )}
+                {person && balance !== null && (
+                  <BalanceLine
+                    outcome={outcome}
+                    fallback={describeBalance(balance, name)}
+                    className={offerFullBalance ? undefined : 'mt-2'}
+                  />
+                )}
+              </div>
             }
           />
 
-          {person && balance !== null && (
-            <div
-              role="status"
-              className={cn(
-                'flex items-start gap-2.5 rounded-xl border bg-subtle px-3.5 py-3',
-                outcome?.tone === 'warns' && 'border-negative bg-background',
-              )}
-            >
-              {outcome?.tone === 'settles' && (
-                <CircleCheck className="size-5 shrink-0 text-positive" aria-hidden="true" />
-              )}
-              {outcome?.tone === 'reduces' && (
-                <Info className="size-5 shrink-0 text-foreground/70" aria-hidden="true" />
-              )}
-              {outcome?.tone === 'warns' && (
-                <TriangleAlert className="size-5 shrink-0 text-negative" aria-hidden="true" />
-              )}
-              {outcome ? (
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-[15px] font-semibold">{outcome.title}</span>
-                  <span className="text-[13px] text-muted-foreground">{outcome.detail}</span>
-                </span>
-              ) : (
-                <span className="text-[15px] text-muted-foreground">
-                  {describePayment(balance, balance, name).detail}
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            <PillButton onClick={() => setOpenSheet('date')}>
-              <Calendar aria-hidden="true" />
-              {formatDateLabel(draft.occurredOn)}
-            </PillButton>
-            {!noteOpen && (
-              <PillButton
-                onClick={() => {
-                  flushSync(() => setNoteOpen(true))
-                  noteRef.current?.focus()
-                }}
-              >
-                <FileText aria-hidden="true" />
-                Add note
-              </PillButton>
-            )}
-          </div>
-          {errors.date && <FieldError message={errors.date} />}
-
-          {noteOpen && (
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="payment-note" className="text-sm font-medium">
-                Note <span className="font-normal text-muted-foreground">(optional)</span>
-              </label>
-              <textarea
-                ref={noteRef}
-                id="payment-note"
-                rows={2}
-                placeholder="e.g. BLIK"
-                value={draft.note}
-                aria-invalid={!!errors.note}
-                onChange={(event) => {
-                  const note = event.target.value
-                  update('note', (current) => ({ ...current, note }))
-                }}
-                className="rounded-[10px] border border-border-strong bg-background px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-[3px] focus:ring-foreground/10"
-              />
-              {errors.note && <FieldError message={errors.note} />}
-            </div>
-          )}
+          <DateNoteFields
+            idPrefix="payment"
+            occurredOn={draft.occurredOn}
+            onDateChange={(occurredOn) => update('date', (current) => ({ ...current, occurredOn }))}
+            dateError={errors.date}
+            note={draft.note}
+            onNoteChange={(note) => update('note', (current) => ({ ...current, note }))}
+            noteError={errors.note}
+            noteRef={noteRef}
+            notePlaceholder="e.g. BLIK"
+          />
         </fieldset>
       </div>
 
-      <div className="flex flex-col gap-3 px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        {serverError && (
-          <p
-            role="alert"
-            className="flex items-start gap-2.5 rounded-xl bg-destructive/8 px-3.5 py-3 text-[15px] text-destructive"
-          >
-            <CircleAlert className="mt-0.5 size-4.5 shrink-0" aria-hidden="true" />
-            <span>{serverError}</span>
-          </p>
-        )}
+      <FormFooter serverError={serverError}>
         <PrimaryButton
           type="submit"
           pending={pending}
@@ -373,28 +303,61 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
               ? `Record ${formatPln(total)} payment`
               : 'Record payment'}
         </PrimaryButton>
-      </div>
+      </FormFooter>
 
       {!editing && (
         <ContactPickerSheet
-          open={openSheet === 'person'}
-          onOpenChange={(open) => setOpenSheet(open ? 'person' : null)}
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
           title={draft.payer === 'me' ? 'Who did you pay?' : 'Who paid you?'}
           contacts={contacts?.items.filter((item) => item.person.id !== me.id)}
           selectedId={person?.id ?? null}
           onPick={(picked) => {
             update('person', (current) => ({ ...current, person: picked }))
-            setOpenSheet(null)
+            setPickerOpen(false)
           }}
         />
       )}
-      <DateSheet
-        open={openSheet === 'date'}
-        onOpenChange={(open) => setOpenSheet(open ? 'date' : null)}
-        value={draft.occurredOn}
-        onChange={(occurredOn) => update('date', (current) => ({ ...current, occurredOn }))}
-      />
     </form>
+  )
+}
+
+/** What the balance with that person becomes; the warning style when it grows the debt. */
+function BalanceLine({
+  outcome,
+  fallback,
+  className,
+}: {
+  outcome: PaymentOutcome | null
+  fallback: string
+  className?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'flex w-full items-start gap-2.5 rounded-xl border bg-subtle px-3.5 py-3 text-left',
+        outcome?.tone === 'warns' && 'border-negative bg-background',
+        className,
+      )}
+    >
+      {outcome?.tone === 'settles' && (
+        <CircleCheck className="size-5 shrink-0 text-positive" aria-hidden="true" />
+      )}
+      {outcome?.tone === 'reduces' && (
+        <Info className="size-5 shrink-0 text-foreground/70" aria-hidden="true" />
+      )}
+      {outcome?.tone === 'warns' && (
+        <TriangleAlert className="size-5 shrink-0 text-negative" aria-hidden="true" />
+      )}
+      {outcome ? (
+        <span className="flex flex-col gap-0.5">
+          <span className="text-[15px] font-semibold">{outcome.title}</span>
+          <span className="text-[13px] text-muted-foreground">{outcome.detail}</span>
+        </span>
+      ) : (
+        <span className="text-[15px] text-muted-foreground">{fallback}</span>
+      )}
+    </div>
   )
 }
 

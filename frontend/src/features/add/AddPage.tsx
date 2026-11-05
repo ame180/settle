@@ -3,15 +3,16 @@ import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { useMe } from '@/api/auth'
 import { useContacts } from '@/api/contacts'
-import type { MeResponse, PersonRef } from '@/api/types'
+import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
 import { todayIso } from '@/lib/dates'
+import { findPlnAmount, toGrosze } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { DiscardSheet } from './DiscardSheet'
 import { amountTotal, emptyDraft, type ExpenseDraft } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
 import { useGoBack, useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
-import type { PaymentPayer } from './paymentModel'
+import { clearingPayer, type PaymentPayer } from './paymentModel'
 import { Header, Loading } from './ScreenFrame'
 import { prunePeople } from './splitModel'
 
@@ -52,10 +53,20 @@ function AddScreen({ me }: { me: MeResponse }) {
     tab: searchParams.get('tab') === 'payment' ? 'payment' : 'expense',
     person: contact?.person ?? null,
     amount: amountTotal(searchParams.get('amount') ?? '') ?? '',
-    payer: searchParams.get('payer') === 'them' ? 'them' : 'me',
+    payer: parsePayer(searchParams.get('payer')) ?? defaultPayer(contact),
   }
 
   return <AddTabs me={me} prefill={prefill} />
+}
+
+function parsePayer(value: string | null): PaymentPayer | null {
+  return value === 'me' || value === 'them' ? value : null
+}
+
+/** Without `payer`, start with the direction that clears what's owed. */
+function defaultPayer(contact: ContactListItem | undefined): PaymentPayer {
+  const balance = contact ? findPlnAmount(contact.balances) : null
+  return balance === null ? 'me' : clearingPayer(toGrosze(balance))
 }
 
 function AddTabs({ me, prefill }: { me: MeResponse; prefill: Prefill }) {
@@ -82,8 +93,8 @@ function AddTabs({ me, prefill }: { me: MeResponse; prefill: Prefill }) {
   const [payment, setPayment] = useState(initial.payment)
 
   // Prefilled values aren't the user's input, so they don't make the form dirty.
-  const dirty =
-    JSON.stringify([expense, payment]) !== JSON.stringify([initial.expense, initial.payment])
+  const expenseDirty = JSON.stringify(expense) !== JSON.stringify(initial.expense)
+  const dirty = expenseDirty || JSON.stringify(payment) !== JSON.stringify(initial.payment)
   const guard = useLeaveGuard(dirty)
   const goBack = useGoBack('/')
 
@@ -96,18 +107,21 @@ function AddTabs({ me, prefill }: { me: MeResponse; prefill: Prefill }) {
     if (next === 'payment') {
       setPayment((current) => ({
         ...current,
-        person: expense.others[0] ?? current.person,
+        person: expense.others[0] ?? null,
         amount: expense.amount,
         occurredOn: expense.occurredOn,
         note: expense.note,
       }))
       return
     }
+    // A 1:1 expense follows the person picked on Payment; a group keeps its people.
     const person = payment.person
     const others =
       person === null
         ? expense.others
-        : [person, ...expense.others.filter((other) => other.id !== person.id)]
+        : expense.others.length <= 1
+          ? [person]
+          : [person, ...expense.others.filter((other) => other.id !== person.id)]
     setExpense((current) => ({
       ...current,
       others,
@@ -153,7 +167,13 @@ function AddTabs({ me, prefill }: { me: MeResponse; prefill: Prefill }) {
       )}
       <DiscardSheet
         open={guard.blocked}
-        title={tab === 'expense' ? 'Discard this expense?' : 'Discard this payment?'}
+        title={
+          expenseDirty && tab === 'expense'
+            ? 'Discard this expense?'
+            : expenseDirty
+              ? 'Discard what you’ve entered?'
+              : 'Discard this payment?'
+        }
         onDiscard={guard.discard}
         onKeepEditing={guard.keepEditing}
       />

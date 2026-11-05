@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatPln } from '@/lib/money'
-import { clearingPayer, describePayment, paymentEffect } from './paymentModel'
+import { clearingPayer, describeBalance, describePayment, paymentEffect } from './paymentModel'
 
 const zl = (amount: string) => formatPln(amount)
 
@@ -56,5 +56,13 @@ describe('clearingPayer', () => {
   it('picks who pays to clear the balance', () => {
     expect(clearingPayer(100n)).toBe('them')
     expect(clearingPayer(-100n)).toBe('me')
+  })
+})
+
+describe('describeBalance', () => {
+  it('says where the two stand', () => {
+    expect(describeBalance(19292n, 'Anna')).toBe(`Anna owes you ${zl('192.92')} now.`)
+    expect(describeBalance(-500n, 'Anna')).toBe(`You owe Anna ${zl('5.00')} now.`)
+    expect(describeBalance(0n, 'Anna')).toBe('You and Anna are settled up now.')
   })
 })

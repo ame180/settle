@@ -51,9 +51,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
       <SheetContent>
         <div className="flex flex-col gap-3 overflow-y-auto px-4 pt-2 pb-5">
           <SheetTitle>Date</SheetTitle>
-          <SheetDescription className="sr-only">
-            Pick the day the expense happened.
-          </SheetDescription>
+          <SheetDescription className="sr-only">Pick a date.</SheetDescription>
           <div className="flex gap-2">
             <PillButton aria-pressed={value === today} onClick={() => pick(today)}>
               Today

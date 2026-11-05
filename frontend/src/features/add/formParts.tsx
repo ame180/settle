@@ -86,3 +86,27 @@ export function PrimaryButton({
     </button>
   )
 }
+
+/** The pinned bottom of a form: the save-failed banner, anything else, then the button. */
+export function FormFooter({
+  serverError,
+  children,
+}: {
+  serverError: string | null
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-3 px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      {serverError && (
+        <p
+          role="alert"
+          className="flex items-start gap-2.5 rounded-xl bg-destructive/8 px-3.5 py-3 text-[15px] text-destructive"
+        >
+          <CircleAlert className="mt-0.5 size-4.5 shrink-0" aria-hidden="true" />
+          <span>{serverError}</span>
+        </p>
+      )}
+      {children}
+    </div>
+  )
+}

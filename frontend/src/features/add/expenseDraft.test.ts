@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { ExpenseResponse } from '@/api/types'
+import { mapViolations } from './saveErrors'
 import {
   buildExpenseRequest,
   draftFromExpense,
   emptyDraft,
   expenseRequestSchema,
-  mapViolations,
+  fieldForPath,
   type ExpenseDraft,
 } from './expenseDraft'
 
@@ -97,12 +98,15 @@ describe('expenseRequestSchema', () => {
 describe('mapViolations', () => {
   it('places violations on fields and keeps the rest', () => {
     expect(
-      mapViolations([
-        { propertyPath: 'title', title: 'This value should not be blank.' },
-        { propertyPath: 'debts[0].value', title: 'This value should be positive.' },
-        { propertyPath: 'occurredOn', title: 'This value is not a valid date.' },
-        { propertyPath: '', title: 'Something else.' },
-      ]),
+      mapViolations(
+        [
+          { propertyPath: 'title', title: 'This value should not be blank.' },
+          { propertyPath: 'debts[0].value', title: 'This value should be positive.' },
+          { propertyPath: 'occurredOn', title: 'This value is not a valid date.' },
+          { propertyPath: '', title: 'Something else.' },
+        ],
+        fieldForPath,
+      ),
     ).toEqual({
       errors: {
         title: 'This value should not be blank.',

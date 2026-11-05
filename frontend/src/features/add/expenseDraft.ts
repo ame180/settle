@@ -1,11 +1,5 @@
 import { z } from 'zod'
-import type {
-  ApiViolation,
-  ExpenseCategory,
-  ExpenseRequest,
-  ExpenseResponse,
-  PersonRef,
-} from '@/api/types'
+import type { ExpenseCategory, ExpenseRequest, ExpenseResponse, PersonRef } from '@/api/types'
 import {
   formatGrosze,
   fromGrosze,
@@ -243,23 +237,4 @@ export function fieldForPath(propertyPath: string): ExpenseField | null {
     default:
       return null
   }
-}
-
-/** Server violations on fields, plus whatever couldn't be placed on one. */
-export function mapViolations(violations: ApiViolation[]): {
-  errors: FieldErrors
-  unplaced: string[]
-} {
-  const errors: FieldErrors = {}
-  const unplaced: string[] = []
-  for (const violation of violations) {
-    const field = fieldForPath(violation.propertyPath)
-    if (field) {
-      errors[field] ??= violation.title
-    } else {
-      unplaced.push(violation.title)
-    }
-  }
-
-  return { errors, unplaced }
 }

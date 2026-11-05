@@ -55,7 +55,7 @@ describe('EditTransferPage', () => {
     )
 
     expect(await screen.findByText(/Anna will still owe you 100.00/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Swap who paid' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Swap who paid' })).not.toBeInTheDocument()
 
     await userEvent.clear(screen.getByLabelText('Amount'))
     await userEvent.type(screen.getByLabelText('Amount'), '150')

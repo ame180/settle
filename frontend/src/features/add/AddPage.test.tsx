@@ -170,6 +170,15 @@ describe('AddPage', () => {
     })
   })
 
+  it('says where the two stand before an amount is typed', async () => {
+    mockApi({})
+    renderAdd('/add?tab=payment&contact=2')
+
+    expect(await screen.findByText(/Anna owes you .* now\./)).toBeInTheDocument()
+    // Without `payer`, the form starts in the direction that clears the balance.
+    expect(screen.getByText('Anna paid you')).toBeInTheDocument()
+  })
+
   it('keeps person and amount when switching between tabs', async () => {
     mockApi({})
     renderAdd('/add?contact=2')
