@@ -85,7 +85,8 @@ export function SettlementRow({ item, viewerId, showDate = false, now }: RowProp
       to={activityItemPath(item)}
       className={cn(
         rowLinkClassName,
-        'min-h-13 gap-3 border-y bg-muted/40 py-2 text-[15px] text-foreground/80',
+        // -mt-px lets two settlements in a row share one border.
+        '-mt-px min-h-13 gap-3 border-y bg-muted/40 py-2 text-[15px] text-foreground/80',
       )}
     >
       <span className="flex w-11 shrink-0 justify-center">
