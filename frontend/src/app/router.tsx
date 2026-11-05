@@ -3,7 +3,8 @@ import { AppShell } from './AppShell'
 import { RequireAuth } from './RequireAuth'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { ActivityPage } from '@/features/activity/ActivityPage'
-import { DetailPlaceholderPage } from '@/features/activity/DetailPlaceholderPage'
+import { ExpenseDetailPage } from '@/features/detail/ExpenseDetailPage'
+import { TransferDetailPage } from '@/features/detail/TransferDetailPage'
 import { AddPage } from '@/features/feed/AddPage'
 import { ContactsPage } from '@/features/contacts/ContactsPage'
 import { AddContactPage } from '@/features/contacts/AddContactPage'
@@ -24,8 +25,8 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'contacts/new', element: <AddContactPage /> },
-      { path: 'expenses/:id', element: <DetailPlaceholderPage title="Expense" /> },
-      { path: 'transfers/:id', element: <DetailPlaceholderPage title="Payment" /> },
+      { path: 'expenses/:id', element: <ExpenseDetailPage /> },
+      { path: 'transfers/:id', element: <TransferDetailPage /> },
     ],
   },
 ])

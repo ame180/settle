@@ -20,3 +20,10 @@ if (!window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList
 }
+
+// jsdom lacks pointer capture; vaul calls it when a press starts inside the sheet.
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = () => {}
+  Element.prototype.releasePointerCapture = () => {}
+  Element.prototype.hasPointerCapture = () => false
+}
