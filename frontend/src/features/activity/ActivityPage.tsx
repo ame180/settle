@@ -49,6 +49,7 @@ export function ActivityPage() {
             now={new Date(activityQuery.dataUpdatedAt)}
             hasNextPage={activityQuery.hasNextPage}
             isFetchingNextPage={activityQuery.isFetchingNextPage}
+            isFetching={activityQuery.isFetching}
             isNextPageError={activityQuery.isFetchNextPageError}
             fetchNextPage={() => activityQuery.fetchNextPage({ cancelRefetch: false })}
           />
@@ -66,6 +67,7 @@ type ActivityFeedProps = {
   now: Date
   hasNextPage: boolean
   isFetchingNextPage: boolean
+  isFetching: boolean
   isNextPageError: boolean
   fetchNextPage: () => void
 }
@@ -76,6 +78,7 @@ function ActivityFeed({
   now,
   hasNextPage,
   isFetchingNextPage,
+  isFetching,
   isNextPageError,
   fetchNextPage,
 }: ActivityFeedProps) {
@@ -118,7 +121,8 @@ function ActivityFeed({
           </Button>
         </div>
       ) : (
-        hasNextPage && <LoadMoreSentinel onVisible={fetchNextPage} />
+        // Remounting after a background refetch re-arms the observer, which only fires on change.
+        hasNextPage && !isFetching && <LoadMoreSentinel onVisible={fetchNextPage} />
       )}
     </>
   )
