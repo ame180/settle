@@ -105,7 +105,7 @@ export function ContactsPage() {
 
       <div
         role="status"
-        className="fixed right-4 bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-4 z-20"
+        className="fixed right-[calc(var(--app-inset-x)+1rem)] bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-[calc(var(--app-inset-x)+1rem)] z-20"
       >
         {isToastVisible && (
           <div className="flex items-center gap-2.5 rounded-xl bg-primary px-4 py-3.5 text-[15px] text-primary-foreground shadow-[0_6px_20px_rgb(0_0_0/0.2)]">

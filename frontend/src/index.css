@@ -20,6 +20,9 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+  /* Wide screens keep the phone layout as a centred column; fixed elements offset by the inset. */
+  --app-width: 28rem;
+  --app-inset-x: max(0px, calc((100vw - var(--app-width)) / 2));
 }
 
 .dark {
@@ -75,5 +78,18 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+  }
+  #root {
+    max-width: var(--app-width);
+    margin-inline: auto;
+    @apply bg-background;
+  }
+  @media (min-width: 30rem) {
+    body {
+      @apply bg-muted;
+    }
+    #root {
+      @apply border-x;
+    }
   }
 }
