@@ -39,11 +39,19 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   const text = await response.text()
-  const payload = text === '' ? undefined : (JSON.parse(text) as unknown)
 
   if (!response.ok) {
-    throw new ApiError(response.status, (payload ?? {}) as Partial<ApiProblem>)
+    throw new ApiError(response.status, parseProblem(text))
   }
 
-  return payload as T
+  return (text === '' ? undefined : JSON.parse(text)) as T
+}
+
+// Errors from outside Symfony (e.g. an nginx 502 page) aren't JSON; keep the status anyway.
+function parseProblem(text: string): Partial<ApiProblem> {
+  try {
+    return (JSON.parse(text) as Partial<ApiProblem> | null) ?? {}
+  } catch {
+    return {}
+  }
 }

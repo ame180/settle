@@ -8,6 +8,12 @@ describe('getInitials', () => {
     ['  ewa  maria nowak ', 'EN'],
     ['łukasz Żak', 'ŁŻ'],
     ['jan.nowak@example.com', 'J'],
+    ['Tomek (flatmate)', 'TF'],
+    ['(Ola)', 'O'],
+    ['Z\u0307ak', 'Ż'],
+    ['Ania ❤️', 'A'],
+    ['ś. Ździsław', 'ŚŹ'],
+    ['123 !!', '?'],
     ['', '?'],
   ])('derives %j -> %s', (displayName, expected) => {
     expect(getInitials(displayName)).toBe(expected)

@@ -1,8 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, apiRequest } from './client'
 import type { MeResponse } from './types'
 
 export const meQueryKey = ['me'] as const
+
+/** Signs the SPA out locally: no user, and no cached data of theirs left for the next one. */
+export function clearSession(queryClient: QueryClient) {
+  queryClient.setQueryData(meQueryKey, null)
+  queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== meQueryKey[0] })
+}
 
 export function fetchMe(signal?: AbortSignal): Promise<MeResponse | null> {
   return apiRequest<MeResponse>('/api/me', { signal }).catch((error: unknown) => {
@@ -45,9 +51,6 @@ export function useLogout() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: logout,
-    onSuccess: () => {
-      queryClient.setQueryData(meQueryKey, null)
-      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'me' })
-    },
+    onSuccess: () => clearSession(queryClient),
   })
 }
