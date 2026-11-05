@@ -25,17 +25,19 @@ import {
 } from './expenseDraft'
 import { FieldError, FormFooter, PrimaryButton } from './formParts'
 import { PeopleField } from './PeopleField'
-import { QuickSplitSheet } from './QuickSplitSheet'
 import { describeSaveError } from './saveErrors'
 import { SplitCard } from './SplitCard'
 import { SplitEditorSheet } from './SplitEditorSheet'
 import {
+  applyQuickChoice,
   checkSplit,
+  describeCustomSplit,
   describeOutcome,
   describeSplit,
   joinNames,
   mirrorSplit,
   prunePeople,
+  quickChoice,
   type SplitCheck,
   type SplitDraft,
 } from './splitModel'
@@ -52,7 +54,7 @@ type ExpenseFormProps = {
   onSaved: (message: string) => void
 }
 
-type OpenSheet = 'category' | 'quick-split' | 'editor' | null
+type OpenSheet = 'category' | 'editor' | null
 
 export function ExpenseForm({
   me,
@@ -280,7 +282,7 @@ export function ExpenseForm({
                     id: payer.id,
                     name: payerIsMe ? (me.name ?? me.email) : payer.displayName,
                   }}
-                  payerText={payerIsMe ? 'You paid' : `${getShortName(payer.displayName)} paid`}
+                  payerName={payerIsMe ? 'You' : getShortName(payer.displayName)}
                   payerAction={
                     isOneToOne
                       ? {
@@ -296,11 +298,24 @@ export function ExpenseForm({
                           },
                         }
                   }
-                  splitLabel={describeSplit(draft.split, people, me.id)}
+                  split={
+                    isOneToOne
+                      ? {
+                          kind: 'quick',
+                          choice: quickChoice(draft.split),
+                          summary:
+                            quickChoice(draft.split) === 'custom'
+                              ? describeCustomSplit(draft.split, people, me.id)
+                              : null,
+                          onChoose: (choice) =>
+                            setSplit(applyQuickChoice(draft.split, choice, ids, total)),
+                        }
+                      : { kind: 'label', label: describeSplit(draft.split, people, me.id) }
+                  }
                   warning={cardWarning}
                   onOpenSplit={() => {
                     setEditorPayerOpen(false)
-                    setOpenSheet(isOneToOne ? 'quick-split' : 'editor')
+                    setOpenSheet('editor')
                   }}
                   splitButtonRef={splitButtonRef}
                 />
@@ -354,21 +369,6 @@ export function ExpenseForm({
           setOpenSheet(null)
         }}
       />
-      {isOneToOne && (
-        <QuickSplitSheet
-          open={openSheet === 'quick-split'}
-          onOpenChange={(open) => setOpenSheet(open ? 'quick-split' : null)}
-          meId={me.id}
-          other={draft.others[0]}
-          total={total}
-          split={draft.split}
-          onPick={(split) => {
-            setSplit(split)
-            setOpenSheet(null)
-          }}
-          onCustom={() => setOpenSheet('editor')}
-        />
-      )}
       <SplitEditorSheet
         open={openSheet === 'editor'}
         onOpenChange={(open) => setOpenSheet(open ? 'editor' : null)}

@@ -289,6 +289,35 @@ export function mirrorSplit(split: SplitDraft, meId: number, otherId: number): S
   }
 }
 
+/** The 1:1 card's three choices. "full": whoever didn't pay owes the whole amount. */
+export type QuickChoice = 'equal' | 'full' | 'custom'
+
+export function quickChoice(split: SplitDraft): QuickChoice {
+  if (split.type !== 'equal') {
+    return 'custom'
+  }
+  if (split.excluded.length === 0) {
+    return 'equal'
+  }
+  if (split.excluded.length === 1 && split.excluded[0] === split.payerId) {
+    return 'full'
+  }
+
+  return 'custom'
+}
+
+/** Picks "Equally" or "Full amount"; what was entered in the other types stays for the editor. */
+export function applyQuickChoice(
+  split: SplitDraft,
+  choice: Exclude<QuickChoice, 'custom'>,
+  peopleIds: number[],
+  total: string | null,
+): SplitDraft {
+  const equal = switchSplitType(split, 'equal', peopleIds, total)
+
+  return editSplit(equal, { excluded: choice === 'full' ? [split.payerId] : [], values: {} })
+}
+
 /** Keeps the split consistent when people are added or removed on the form. */
 export function prunePeople(split: SplitDraft, peopleIds: number[], meId: number): SplitDraft {
   return {
@@ -343,6 +372,32 @@ export function describeSplit(split: SplitDraft, people: NamedPerson[], meId: nu
   }
 
   return `Split equally between ${sharing.length} of ${people.length}`
+}
+
+/** The 1:1 card's caption for a custom split: "By shares · You 2, Anna 1". */
+export function describeCustomSplit(
+  split: SplitDraft,
+  people: NamedPerson[],
+  meId: number,
+): string {
+  if (split.type === 'equal') {
+    return describeSplit(split, people, meId)
+  }
+
+  const label = { exact: 'By amounts', percentage: 'By %', shares: 'By shares' }[split.type]
+  const parts = people.map((person) => {
+    const raw = split.values[person.id]?.trim() || '0'
+    const parsed = parseAmountInput(raw)
+    const value =
+      parsed === null
+        ? raw
+        : split.type === 'exact'
+          ? formatGrosze(toGrosze(parsed))
+          : `${trimDecimal(parsed)}${split.type === 'percentage' ? '%' : ''}`
+    return `${nameOf(people, person.id, meId)} ${value}`
+  })
+
+  return `${label} · ${parts.join(', ')}`
 }
 
 export type Outcome = {

@@ -2,14 +2,17 @@ import { describe, expect, it } from 'vitest'
 import type { SplitType } from '@/api/types'
 import { formatPln } from '@/lib/money'
 import {
+  applyQuickChoice,
   checkSplit,
   convertSplit,
   defaultSplit,
+  describeCustomSplit,
   describeOutcome,
   describeSplit,
   editSplit,
   mirrorSplit,
   prunePeople,
+  quickChoice,
   splitDebts,
   switchSplitType,
   type SplitDraft,
@@ -326,6 +329,62 @@ describe('describeSplit', () => {
     [{ ...defaultSplit(ME), type: 'exact' }, people, 'Split by amounts'],
   ])('describes %j', (split, group, expected) => {
     expect(describeSplit(split, group, ME)).toBe(expected)
+  })
+})
+
+describe('quickChoice', () => {
+  it.each<[SplitDraft, string]>([
+    [defaultSplit(ME), 'equal'],
+    [{ ...defaultSplit(ME), excluded: [ME] }, 'full'],
+    [{ ...defaultSplit(ME), payerId: ANNA, excluded: [ANNA] }, 'full'],
+    [{ ...defaultSplit(ME), excluded: [ANNA] }, 'custom'],
+    [{ ...defaultSplit(ME), type: 'shares', values: { [ME]: '1', [ANNA]: '1' } }, 'custom'],
+  ])('reads %j', (split, expected) => {
+    expect(quickChoice(split)).toBe(expected)
+  })
+})
+
+describe('applyQuickChoice', () => {
+  const shares: SplitDraft = {
+    ...defaultSplit(ME),
+    type: 'shares',
+    values: { [ME]: '2', [ANNA]: '1' },
+    seeded: false,
+  }
+
+  it('makes whoever did not pay owe the full amount', () => {
+    const full = applyQuickChoice({ ...shares, payerId: ANNA }, 'full', duoIds, '99.00')
+    expect(full).toMatchObject({ type: 'equal', excluded: [ANNA], payerId: ANNA })
+    expect(checkSplit(full, duoIds, '99.00', ME)).toEqual({
+      ok: true,
+      shares: new Map([[ME, 9900n]]),
+    })
+  })
+
+  it('keeps the custom values for the editor', () => {
+    const equal = applyQuickChoice(shares, 'equal', duoIds, '99.00')
+    expect(equal).toMatchObject({ type: 'equal', excluded: [] })
+    expect(switchSplitType(equal, 'shares', duoIds, '99.00').values).toEqual(shares.values)
+  })
+})
+
+describe('describeCustomSplit', () => {
+  it.each<[SplitDraft, string]>([
+    [
+      { ...defaultSplit(ME), type: 'shares', values: { [ME]: '2', [ANNA]: '1' } },
+      'By shares · You 2, Anna 1',
+    ],
+    [
+      { ...defaultSplit(ME), type: 'percentage', values: { [ME]: '60', [ANNA]: '40,5' } },
+      'By % · You 60%, Anna 40.5%',
+    ],
+    [
+      { ...defaultSplit(ME), type: 'exact', values: { [ME]: '30', [ANNA]: '' } },
+      `By amounts · You ${formatPln('30.00')}, Anna ${formatPln('0.00')}`,
+    ],
+    [{ ...defaultSplit(ME), excluded: [ANNA] }, 'You owe it all'],
+  ])('describes %j', (split, expected) => {
+    expect(describeCustomSplit(split, duo, ME)).toBe(expected)
   })
 })
 

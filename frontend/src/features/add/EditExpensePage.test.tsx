@@ -49,7 +49,8 @@ describe('EditExpensePage', () => {
 
     const title = await screen.findByLabelText('What was it for?')
     expect(title).toHaveValue('Kino')
-    expect(screen.getByText('Split by shares')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /Custom/ })).toBeChecked()
+    expect(screen.getByText('By shares · You 2, Anna 1')).toBeInTheDocument()
     expect(screen.getByText('Anna will see your changes.')).toBeInTheDocument()
 
     await userEvent.type(title, ' IMAX')

@@ -87,6 +87,30 @@ describe('AddPage', () => {
     })
   })
 
+  it('switches who paid and splits the full amount on a 1:1 expense', async () => {
+    const calls = mockApi({ 'POST /api/expenses': () => jsonResponse(201, { id: 9 }) })
+    renderAdd('/add?contact=2')
+
+    await userEvent.type(await screen.findByLabelText('What was it for?'), 'Taxi')
+    await userEvent.type(screen.getByLabelText('Amount'), '40')
+    expect(screen.getByRole('radio', { name: 'Equally' })).toBeChecked()
+    await userEvent.click(screen.getByRole('button', { name: 'Switch who paid' }))
+    expect(screen.getByRole('region', { name: 'Who paid and how to split' })).toHaveTextContent(
+      'Anna paid',
+    )
+    await userEvent.click(screen.getByRole('radio', { name: 'Full amount' }))
+    expect(screen.getByRole('radio', { name: 'Full amount' })).toBeChecked()
+    expect(screen.getByText('You owe Anna')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Add 40.00/ }))
+
+    expect(await screen.findByText('Contact page')).toBeInTheDocument()
+    expect(calls.find((call) => call.key === 'POST /api/expenses')?.body).toMatchObject({
+      payeeId: 2,
+      debts: [{ payerId: 1 }],
+      splitType: 'equal',
+    })
+  })
+
   it('names what is missing without calling the API', async () => {
     const calls = mockApi({})
     renderAdd()
@@ -181,7 +205,7 @@ describe('AddPage', () => {
 
     await userEvent.click(screen.getByPlaceholderText('Name or email'))
     await userEvent.click(screen.getByRole('button', { name: /Anna Kowalska/ }))
-    await userEvent.click(screen.getByRole('button', { name: /Split equally/ }))
+    await userEvent.click(screen.getByRole('radio', { name: /Custom/ }))
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
 
     await act(() => router.navigate(-1))
