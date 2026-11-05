@@ -52,6 +52,7 @@ function renderAdd(entry = '/add') {
     [
       { path: '/add', element: <AddPage /> },
       { path: '/', element: <p>Contacts page</p> },
+      { path: '/contacts/:userId', element: <p>Contact page</p> },
     ],
     entry,
   )
@@ -62,7 +63,7 @@ afterEach(() => {
 })
 
 describe('AddPage', () => {
-  it('saves a 1:1 expense with a prefilled contact and goes back', async () => {
+  it('saves a 1:1 expense with a prefilled contact and goes back to them', async () => {
     const calls = mockApi({ 'POST /api/expenses': () => jsonResponse(201, { id: 9 }) })
     renderAdd('/add?contact=2')
 
@@ -73,7 +74,7 @@ describe('AddPage', () => {
     expect(screen.getByText('Anna owes you')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /Add 99.50/ }))
 
-    expect(await screen.findByText('Contacts page')).toBeInTheDocument()
+    expect(await screen.findByText('Contact page')).toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/expenses')?.body).toEqual({
       title: 'Pizza',
       amount: '99.50',
@@ -160,7 +161,7 @@ describe('AddPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Record 100.00/ }))
 
-    expect(await screen.findByText('Contacts page')).toBeInTheDocument()
+    expect(await screen.findByText('Contact page')).toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/transfers')?.body).toEqual({
       payerId: 2,
       payeeId: 1,

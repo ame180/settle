@@ -56,7 +56,10 @@ function AddScreen({ me }: { me: MeResponse }) {
     payer: parsePayer(searchParams.get('payer')) ?? defaultPayer(contact),
   }
 
-  return <AddTabs me={me} prefill={prefill} />
+  // Opened from a contact's page without history (reload, shared link): close lands back there.
+  const backFallback = contactId === null ? '/' : `/contacts/${contactId}`
+
+  return <AddTabs me={me} prefill={prefill} backFallback={backFallback} />
 }
 
 function parsePayer(value: string | null): PaymentPayer | null {
@@ -69,7 +72,15 @@ function defaultPayer(contact: ContactListItem | undefined): PaymentPayer {
   return balance === null ? 'me' : clearingPayer(toGrosze(balance))
 }
 
-function AddTabs({ me, prefill }: { me: MeResponse; prefill: Prefill }) {
+function AddTabs({
+  me,
+  prefill,
+  backFallback,
+}: {
+  me: MeResponse
+  prefill: Prefill
+  backFallback: string
+}) {
   // Frozen on mount: later contact refetches or a new day mustn't count as the user's input.
   const [initial] = useState(() => {
     const occurredOn = todayIso()
@@ -96,7 +107,7 @@ function AddTabs({ me, prefill }: { me: MeResponse; prefill: Prefill }) {
   const expenseDirty = JSON.stringify(expense) !== JSON.stringify(initial.expense)
   const dirty = expenseDirty || JSON.stringify(payment) !== JSON.stringify(initial.payment)
   const guard = useLeaveGuard(dirty)
-  const goBack = useGoBack('/')
+  const goBack = useGoBack(backFallback)
 
   function switchTo(next: Tab) {
     if (next === tab) {
