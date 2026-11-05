@@ -23,3 +23,18 @@ export function formatMoney(amount: string, currency: string): string {
   const formatted = formatPln(amount)
   return currency === 'PLN' ? formatted : formatted.replace(/zł$/, currency)
 }
+
+function toCents(amount: string): bigint {
+  const negative = amount.startsWith('-')
+  const [integerPart, fractionPart = ''] = amount.replace(/^-/, '').split('.')
+  const cents = BigInt(integerPart || '0') * 100n + BigInt(fractionPart.padEnd(2, '0').slice(0, 2))
+  return negative ? -cents : cents
+}
+
+/** Adds 2-decimal money strings exactly (no float math): ['61.43', '61.43'] → '122.86'. */
+export function sumAmounts(amounts: string[]): string {
+  const total = amounts.reduce((sum, amount) => sum + toCents(amount), 0n)
+  const sign = total < 0n ? '-' : ''
+  const absolute = total < 0n ? -total : total
+  return `${sign}${absolute / 100n}.${String(absolute % 100n).padStart(2, '0')}`
+}
