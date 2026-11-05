@@ -22,6 +22,16 @@
   --radius: 0.625rem;
   /* Wide screens keep the phone layout as a centred column; fixed elements offset by the inset. */
   --app-width: 28rem;
+  /* Expense categories: solid tile fills, white icon on top (approved CategoryPalette). */
+  --cat-groceries: #d97706;
+  --cat-food-and-drink: #ea580c;
+  --cat-transport: #2563eb;
+  --cat-home-and-bills: #0d9488;
+  --cat-entertainment: #7c3aed;
+  --cat-gifts: #db2777;
+  --cat-health: #16a34a;
+  --cat-general: #525252;
+  --cat-on-solid: #ffffff;
   --app-inset-x: max(0px, calc((100vw - var(--app-width)) / 2));
 }
 
@@ -61,6 +71,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-category-groceries: var(--cat-groceries);
+  --color-category-food-and-drink: var(--cat-food-and-drink);
+  --color-category-transport: var(--cat-transport);
+  --color-category-home-and-bills: var(--cat-home-and-bills);
+  --color-category-entertainment: var(--cat-entertainment);
+  --color-category-gifts: var(--cat-gifts);
+  --color-category-health: var(--cat-health);
+  --color-category-general: var(--cat-general);
+  --color-category-on-solid: var(--cat-on-solid);
+  --radius-tile: 0.75rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
