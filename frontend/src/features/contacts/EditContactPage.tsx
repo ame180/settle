@@ -126,7 +126,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex min-w-0 items-center gap-3.5">
-        <PersonAvatar id={person.id} name={ownName} />
+        <PersonAvatar id={person.id} name={person.displayName} />
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate font-semibold">{ownName}</span>
           <span className="truncate text-[13px] text-muted-foreground">

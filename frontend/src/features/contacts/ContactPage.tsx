@@ -229,7 +229,7 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
   }
 
   return (
-    <section aria-label={`Activity with ${name}`} className="pt-2">
+    <section aria-label={`Activity with ${name}`}>
       <ul>
         {items.map((item) => (
           <li key={activityItemKey(item)}>
