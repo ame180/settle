@@ -92,7 +92,7 @@ describe('AddPage', () => {
     renderAdd()
 
     await screen.findByText('Recent')
-    await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+    await userEvent.keyboard('{Escape}')
     await userEvent.click(screen.getByRole('button', { name: 'Add expense' }))
 
     expect(screen.getByText('Add who you split this with')).toBeInTheDocument()
@@ -120,6 +120,42 @@ describe('AddPage', () => {
     expect(screen.getByLabelText('What was it for?')).toHaveAttribute('aria-invalid', 'true')
   })
 
+  it('closes the people list after each pick and reopens it from Add person', async () => {
+    mockApi({})
+    renderAdd()
+
+    const search = await screen.findByPlaceholderText('Name or email')
+    await waitFor(() => expect(search).toHaveFocus())
+    expect(screen.queryByRole('button', { name: 'Done' })).not.toBeInTheDocument()
+
+    await userEvent.click(await screen.findByRole('button', { name: /Anna Kowalska/ }))
+
+    expect(screen.queryByText('Recent')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove Anna Kowalska' })).toBeInTheDocument()
+    expect(screen.getByLabelText('What was it for?')).not.toHaveFocus()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add person' }))
+    const reopened = screen.getByPlaceholderText('Name or email')
+    expect(reopened).toHaveFocus()
+    await userEvent.type(reopened, 'ewa')
+    await userEvent.click(screen.getByRole('button', { name: /Ewa Nowak/ }))
+
+    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove Ewa Nowak' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add person' })).toHaveFocus()
+  })
+
+  it('starts on the title with the list closed when opened from a contact', async () => {
+    mockApi({})
+    renderAdd('/add?contact=2')
+
+    await waitFor(() => expect(screen.getByLabelText('What was it for?')).toHaveFocus())
+    expect(screen.getByRole('button', { name: 'Remove Anna Kowalska' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add person' })).toBeInTheDocument()
+    expect(screen.queryByText('Recent')).not.toBeInTheDocument()
+  })
+
   it('adds someone new by email', async () => {
     const calls = mockApi({
       'POST /api/contacts': () =>
@@ -136,6 +172,7 @@ describe('AddPage', () => {
     expect(
       await screen.findByRole('button', { name: 'Remove jan@example.com' }),
     ).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/contacts')?.body).toEqual({
       email: 'jan@example.com',
     })

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type RefObject } from 'react'
-import { Check, UserPlus, X } from 'lucide-react'
+import { flushSync } from 'react-dom'
+import { Check, Plus, UserPlus, X } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { useAddContact } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
@@ -18,15 +19,14 @@ type PeopleFieldProps = {
   contacts: ContactListItem[] | undefined
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Called when the user is done picking (Done, or a tap outside the list). */
-  onDone: () => void
   error?: string
   inputRef: RefObject<HTMLInputElement | null>
 }
 
 /**
  * "With": the user is a fixed chip, everyone else is picked from contacts or added by email.
- * The list stays open so several people can be picked in a row.
+ * Picking someone closes the list and the keyboard, so the rest of the form is back in view;
+ * "Add person" reopens it with search for the next one.
  */
 export function PeopleField({
   me,
@@ -35,18 +35,18 @@ export function PeopleField({
   contacts,
   open,
   onOpenChange,
-  onDone,
   error,
   inputRef,
 }: PeopleFieldProps) {
   const [query, setQuery] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const addButtonRef = useRef<HTMLButtonElement>(null)
   const listId = useId()
   const errorId = useId()
   const addContact = useAddContact()
 
-  // A tap anywhere outside the field and its list counts as Done.
+  // A tap anywhere outside the field and its list closes it; that tap decides where focus goes.
   useEffect(() => {
     if (!open) {
       return
@@ -54,12 +54,13 @@ export function PeopleField({
     const onPointerDown = (event: PointerEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setQuery('')
-        onDone()
+        setAddError(null)
+        onOpenChange(false)
       }
     }
     document.addEventListener('pointerdown', onPointerDown)
     return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open, onDone])
+  }, [open, onOpenChange])
 
   const pickedIds = new Set(others.map((person) => person.id))
   const trimmedQuery = query.trim()
@@ -71,11 +72,29 @@ export function PeopleField({
   )
   const isOwnEmail = trimmedQuery.toLowerCase() === me.email.toLowerCase()
   const offerEmail = looksLikeEmail(trimmedQuery) && !exactEmailMatch && !isOwnEmail
-  // The add-by-email request can finish after more people were picked; add to the latest list.
+  // The add-by-email request can finish after more people were picked or the list was closed;
+  // it acts on the latest state.
   const othersRef = useRef(others)
+  const openRef = useRef(open)
   useEffect(() => {
     othersRef.current = others
-  }, [others])
+    openRef.current = open
+  }, [others, open])
+
+  // Synchronous so the focus happens inside the tap; iOS only opens the keyboard then.
+  function openList() {
+    flushSync(() => onOpenChange(true))
+    inputRef.current?.focus()
+  }
+
+  /** Closes the list and drops the keyboard; focus lands on "Add person" for the next one. */
+  function close() {
+    setQuery('')
+    setAddError(null)
+    inputRef.current?.blur()
+    flushSync(() => onOpenChange(false))
+    addButtonRef.current?.focus({ preventScroll: true })
+  }
 
   function toggle(person: PersonRef) {
     onChange(
@@ -83,8 +102,7 @@ export function PeopleField({
         ? others.filter((other) => other.id !== person.id)
         : [...others, person],
     )
-    setQuery('')
-    inputRef.current?.focus()
+    close()
   }
 
   function addByEmail() {
@@ -100,8 +118,10 @@ export function PeopleField({
           if (!latest.some((person) => person.id === contact.person.id)) {
             onChange([...latest, contact.person])
           }
-          setQuery('')
-          inputRef.current?.focus()
+          // Don't pull focus back if the user already closed the list while this was saving.
+          if (openRef.current) {
+            close()
+          }
         },
         onError: (mutationError) => {
           setAddError(
@@ -112,11 +132,6 @@ export function PeopleField({
         },
       },
     )
-  }
-
-  function finish() {
-    setQuery('')
-    onDone()
   }
 
   return (
@@ -130,7 +145,7 @@ export function PeopleField({
           open && 'border-foreground ring-[3px] ring-foreground/10',
           error && 'border-destructive ring-[3px] ring-destructive/15',
         )}
-        onClick={() => inputRef.current?.focus()}
+        onClick={() => (open ? inputRef.current?.focus() : openList())}
       >
         <span className="flex h-8 items-center gap-1.5 rounded-full bg-secondary pr-3 pl-1 text-[15px]">
           <PersonAvatar id={me.id} name={me.name ?? me.email} size="sm" />
@@ -156,61 +171,68 @@ export function PeopleField({
             </button>
           </span>
         ))}
-        <input
-          ref={inputRef}
-          id={`${listId}-input`}
-          type="text"
-          inputMode="email"
-          autoComplete="off"
-          autoCapitalize="none"
-          spellCheck={false}
-          placeholder="Name or email"
-          value={query}
-          aria-invalid={!!error}
-          aria-describedby={error ? errorId : undefined}
-          onFocus={() => onOpenChange(true)}
-          onChange={(event) => {
-            setQuery(event.target.value)
-            setAddError(null)
-            onOpenChange(true)
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Backspace' && query === '' && others.length > 0) {
-              onChange(others.slice(0, -1))
-            }
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              if (offerEmail) {
-                addByEmail()
-              } else if (trimmedQuery !== '' && rows.length === 1) {
-                toggle(rows[0].person)
-              } else if (trimmedQuery === '') {
-                finish()
+        {open ? (
+          <input
+            ref={inputRef}
+            id={`${listId}-input`}
+            type="text"
+            inputMode="email"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="Name or email"
+            value={query}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
+            onFocus={() => onOpenChange(true)}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setAddError(null)
+              onOpenChange(true)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Backspace' && query === '' && others.length > 0) {
+                onChange(others.slice(0, -1))
               }
-            }
-            if (event.key === 'Escape') {
-              finish()
-            }
-          }}
-          className="h-8 min-w-32 flex-1 bg-transparent px-1.5 text-base outline-none placeholder:text-muted-foreground"
-        />
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                if (offerEmail) {
+                  addByEmail()
+                } else if (trimmedQuery !== '' && rows.length === 1) {
+                  toggle(rows[0].person)
+                } else if (trimmedQuery === '') {
+                  close()
+                }
+              }
+              if (event.key === 'Escape') {
+                close()
+              }
+            }}
+            className="h-8 min-w-32 flex-1 bg-transparent px-1.5 text-base outline-none placeholder:text-muted-foreground"
+          />
+        ) : (
+          <button
+            ref={addButtonRef}
+            type="button"
+            aria-describedby={error ? errorId : undefined}
+            onClick={(event) => {
+              event.stopPropagation()
+              openList()
+            }}
+            className="relative flex h-8 items-center gap-1 rounded-full px-2.5 text-[15px] font-medium after:absolute after:-inset-x-1 after:-inset-y-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Plus className="size-4.5" aria-hidden="true" />
+            Add person
+          </button>
+        )}
       </div>
       {error && !open && <FieldError id={errorId} message={error} />}
 
       {open && (
         <div className="mt-1 overflow-hidden rounded-xl border bg-background shadow-[0_4px_16px_rgb(0_0_0/0.06)]">
-          <div className="flex h-11 items-center justify-between pr-1 pl-3">
-            <span className="text-[13px] font-medium text-muted-foreground">
-              {trimmedQuery === '' ? 'Recent' : 'Contacts'}
-            </span>
-            <button
-              type="button"
-              onClick={finish}
-              className="h-11 rounded-full px-3 text-[15px] font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              Done
-            </button>
-          </div>
+          <p className="flex h-10 items-center px-3 text-[13px] font-medium text-muted-foreground">
+            {trimmedQuery === '' ? 'Recent' : 'Contacts'}
+          </p>
           <ul id={listId} aria-label="Contacts" className="border-t">
             {contacts === undefined && (
               <li className="px-3 py-3 text-sm text-muted-foreground">Loading contacts…</li>

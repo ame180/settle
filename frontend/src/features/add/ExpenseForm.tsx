@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { flushSync } from 'react-dom'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { TriangleAlert } from 'lucide-react'
 import { useContacts } from '@/api/contacts'
 import { useCreateExpense, useUpdateExpense } from '@/api/expenses'
@@ -71,7 +70,8 @@ export function ExpenseForm({
 
   const [errors, setErrors] = useState<FieldErrors>({})
   const [serverError, setServerError] = useState<string | null>(null)
-  const [peopleOpen, setPeopleOpen] = useState(false)
+  // Opening on the people field shows its list straight away.
+  const [peopleOpen, setPeopleOpen] = useState(initialFocus === 'people')
   const [openSheet, setOpenSheet] = useState<OpenSheet>(null)
   const [editorPayerOpen, setEditorPayerOpen] = useState(false)
 
@@ -115,12 +115,6 @@ export function ExpenseForm({
   function setSplit(split: SplitDraft) {
     update('split', (current) => ({ ...current, split }))
   }
-
-  // Synchronous so the focus happens inside the tap; iOS only opens the keyboard then.
-  const closePeople = useCallback(() => {
-    flushSync(() => setPeopleOpen(false))
-    titleRef.current?.focus()
-  }, [])
 
   function focusField(field: ExpenseField) {
     if (field === 'people') {
@@ -208,7 +202,6 @@ export function ExpenseForm({
               contacts={contacts?.items}
               open={peopleOpen}
               onOpenChange={setPeopleOpen}
-              onDone={closePeople}
               error={errors.people}
               inputRef={peopleInputRef}
             />
