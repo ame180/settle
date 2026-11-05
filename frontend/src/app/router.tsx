@@ -2,7 +2,8 @@ import { createBrowserRouter } from 'react-router'
 import { AppShell } from './AppShell'
 import { RequireAuth } from './RequireAuth'
 import { LoginPage } from '@/features/auth/LoginPage'
-import { FeedPage } from '@/features/feed/FeedPage'
+import { ActivityPage } from '@/features/activity/ActivityPage'
+import { DetailPlaceholderPage } from '@/features/activity/DetailPlaceholderPage'
 import { AddPage } from '@/features/feed/AddPage'
 import { ContactsPage } from '@/features/contacts/ContactsPage'
 import { AddContactPage } from '@/features/contacts/AddContactPage'
@@ -17,12 +18,14 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { index: true, element: <ContactsPage /> },
-          { path: 'activity', element: <FeedPage /> },
+          { path: 'activity', element: <ActivityPage /> },
           { path: 'add', element: <AddPage /> },
           { path: 'profile', element: <ProfilePage /> },
         ],
       },
       { path: 'contacts/new', element: <AddContactPage /> },
+      { path: 'expenses/:id', element: <DetailPlaceholderPage title="Expense" /> },
+      { path: 'transfers/:id', element: <DetailPlaceholderPage title="Payment" /> },
     ],
   },
 ])
