@@ -34,8 +34,9 @@ export type SplitProblem =
 export type SplitCheck =
   { ok: true; shares: Map<number, bigint> } | { ok: false; problem: SplitProblem }
 
+/** Everyone shares equally; nothing the user entered, so switching type converts from it. */
 export function defaultSplit(meId: number): SplitDraft {
-  return { payerId: meId, type: 'equal', excluded: [], values: {} }
+  return { payerId: meId, type: 'equal', excluded: [], values: {}, seeded: true }
 }
 
 /** The value as the API wants it, or null when the input is 0 or empty (left out of debts). */

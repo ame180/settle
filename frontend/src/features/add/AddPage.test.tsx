@@ -29,7 +29,7 @@ const contacts: ContactListResponse = {
   ],
 }
 
-type Handler = (body: unknown) => Response
+type Handler = (body: unknown) => Response | Promise<Response>
 
 function mockApi(handlers: Record<string, Handler>) {
   const calls: { key: string; body: unknown }[] = []
@@ -154,6 +154,27 @@ describe('AddPage', () => {
     expect(screen.getByRole('button', { name: 'Remove Anna Kowalska' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add person' })).toBeInTheDocument()
     expect(screen.queryByText('Recent')).not.toBeInTheDocument()
+  })
+
+  it('leaves focus alone when an add by email finishes after the list was closed', async () => {
+    let finish: (response: Response) => void = () => {}
+    mockApi({
+      'POST /api/contacts': () => new Promise<Response>((resolve) => (finish = resolve)),
+    })
+    renderAdd()
+
+    await userEvent.type(await screen.findByPlaceholderText('Name or email'), 'jan@example.com')
+    await userEvent.click(
+      screen.getByRole('button', { name: /Add jan@example.com as a new contact/ }),
+    )
+    await userEvent.keyboard('{Escape}')
+    finish(jsonResponse(201, contact(5, 'jan@example.com', 'jan@example.com')))
+
+    expect(
+      await screen.findByRole('button', { name: 'Remove jan@example.com' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('What was it for?')).not.toHaveFocus()
+    expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
   })
 
   it('adds someone new by email', async () => {

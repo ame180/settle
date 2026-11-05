@@ -3,12 +3,14 @@ import type { ExpenseResponse } from '@/api/types'
 import { mapViolations } from './saveErrors'
 import {
   buildExpenseRequest,
+  draftChanged,
   draftFromExpense,
   emptyDraft,
   expenseRequestSchema,
   fieldForPath,
   type ExpenseDraft,
 } from './expenseDraft'
+import { switchSplitType } from './splitModel'
 
 const ME = 1
 const anna = { id: 2, displayName: 'Anna Kowalska', email: 'anna@example.com' }
@@ -25,6 +27,19 @@ function draft(overrides: Partial<ExpenseDraft> = {}): ExpenseDraft {
     ...overrides,
   }
 }
+
+describe('draftChanged', () => {
+  it('ignores what other split types remember after a round trip', () => {
+    const start = draft()
+    const ids = [ME, anna.id]
+    const shares = switchSplitType(start.split, 'shares', ids, '99.50')
+    const back = { ...start, split: switchSplitType(shares, 'equal', ids, '99.50') }
+
+    expect(back).not.toEqual(start)
+    expect(draftChanged(back, start)).toBe(false)
+    expect(draftChanged({ ...back, split: { ...back.split, excluded: [ME] } }, start)).toBe(true)
+  })
+})
 
 describe('buildExpenseRequest', () => {
   it('builds the request, always sending category and split type', () => {

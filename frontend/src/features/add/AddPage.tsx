@@ -6,9 +6,10 @@ import { useContacts } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
 import { todayIso } from '@/lib/dates'
 import { findPlnAmount, toGrosze } from '@/lib/money'
+import { parseUserId } from '@/features/contacts/parseUserId'
 import { cn } from '@/lib/utils'
 import { DiscardSheet } from './DiscardSheet'
-import { amountTotal, emptyDraft, type ExpenseDraft } from './expenseDraft'
+import { amountTotal, draftChanged, emptyDraft, type ExpenseDraft } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
 import { useGoBack, useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
@@ -40,7 +41,7 @@ type Prefill = {
 
 function AddScreen({ me }: { me: MeResponse }) {
   const [searchParams] = useSearchParams()
-  const contactId = Number(searchParams.get('contact')) || null
+  const contactId = parseUserId(searchParams.get('contact') ?? undefined)
   const { data: contacts, isError } = useContacts()
 
   // Wait for contacts before prefilling, so the form mounts with its starting state.
@@ -57,7 +58,7 @@ function AddScreen({ me }: { me: MeResponse }) {
   }
 
   // Opened from a contact's page without history (reload, shared link): close lands back there.
-  const backFallback = contactId === null ? '/' : `/contacts/${contactId}`
+  const backFallback = contact ? `/contacts/${contact.person.id}` : '/'
 
   return <AddTabs me={me} prefill={prefill} backFallback={backFallback} />
 }
@@ -98,13 +99,17 @@ function AddTabs({
     }
     return { expense, payment }
   })
+  // Where the expense form starts; picking people later mustn't move focus to the title.
+  const [startFocus] = useState<'title' | 'people'>(
+    initial.expense.others.length > 0 ? 'title' : 'people',
+  )
   const [tab, setTab] = useState<Tab>(prefill.tab)
   const [switched, setSwitched] = useState(false)
   const [expense, setExpense] = useState(initial.expense)
   const [payment, setPayment] = useState(initial.payment)
 
   // Prefilled values aren't the user's input, so they don't make the form dirty.
-  const expenseDirty = JSON.stringify(expense) !== JSON.stringify(initial.expense)
+  const expenseDirty = draftChanged(expense, initial.expense)
   const dirty = expenseDirty || JSON.stringify(payment) !== JSON.stringify(initial.payment)
   const guard = useLeaveGuard(dirty)
   const goBack = useGoBack(backFallback)
@@ -161,7 +166,7 @@ function AddTabs({
           draft={expense}
           onDraftChange={setExpense}
           mode={{ kind: 'create' }}
-          initialFocus={switched ? undefined : expense.others.length > 0 ? 'title' : 'people'}
+          initialFocus={switched ? undefined : startFocus}
           top={tabs}
           onSaved={onSaved}
         />

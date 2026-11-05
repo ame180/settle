@@ -5,7 +5,7 @@ import { useMe } from '@/api/auth'
 import { useExpense } from '@/api/expenses'
 import type { ExpenseResponse, MeResponse } from '@/api/types'
 import { DiscardSheet } from './DiscardSheet'
-import { draftFromExpense } from './expenseDraft'
+import { draftChanged, draftFromExpense } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
 import { LoadFailed } from './LoadFailed'
 import { useGoBack, useLeaveGuard } from './navigation'
@@ -46,7 +46,7 @@ function EditExpenseForm({
 }) {
   const [initialDraft] = useState(() => draftFromExpense(expense, me.id))
   const [draft, setDraft] = useState(initialDraft)
-  const guard = useLeaveGuard(JSON.stringify(draft) !== JSON.stringify(initialDraft))
+  const guard = useLeaveGuard(draftChanged(draft, initialDraft))
 
   return (
     <div className="flex h-full flex-col">

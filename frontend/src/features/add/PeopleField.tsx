@@ -73,13 +73,15 @@ export function PeopleField({
   const isOwnEmail = trimmedQuery.toLowerCase() === me.email.toLowerCase()
   const offerEmail = looksLikeEmail(trimmedQuery) && !exactEmailMatch && !isOwnEmail
   // The add-by-email request can finish after more people were picked or the list was closed;
-  // it acts on the latest state.
+  // it adds to the latest list. Each opening of the list counts as a new visit.
   const othersRef = useRef(others)
-  const openRef = useRef(open)
+  const visitRef = useRef(0)
   useEffect(() => {
     othersRef.current = others
-    openRef.current = open
-  }, [others, open])
+  }, [others])
+  useEffect(() => {
+    visitRef.current += 1
+  }, [open])
 
   // Synchronous so the focus happens inside the tap; iOS only opens the keyboard then.
   function openList() {
@@ -110,6 +112,7 @@ export function PeopleField({
       return
     }
     setAddError(null)
+    const visit = visitRef.current
     addContact.mutate(
       { email: trimmedQuery },
       {
@@ -118,12 +121,15 @@ export function PeopleField({
           if (!latest.some((person) => person.id === contact.person.id)) {
             onChange([...latest, contact.person])
           }
-          // Don't pull focus back if the user already closed the list while this was saving.
-          if (openRef.current) {
+          // Only close the list the user added from, not one they closed or reopened since.
+          if (visitRef.current === visit) {
             close()
           }
         },
         onError: (mutationError) => {
+          if (visitRef.current !== visit) {
+            return
+          }
           setAddError(
             (mutationError instanceof ApiError &&
               (mutationError.violations[0]?.title ?? mutationError.detail)) ||
@@ -184,7 +190,6 @@ export function PeopleField({
             value={query}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
-            onFocus={() => onOpenChange(true)}
             onChange={(event) => {
               setQuery(event.target.value)
               setAddError(null)

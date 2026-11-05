@@ -234,8 +234,15 @@ describe('switchSplitType', () => {
   })
 
   it('counts a loaded or applied split as entered', () => {
-    const applied: SplitDraft = { ...defaultSplit(ME), type: 'shares', values: sharesEntered }
+    const applied: SplitDraft = { payerId: ME, type: 'shares', excluded: [], values: sharesEntered }
     expect(through(applied, 'percentage', 'shares').values).toEqual(sharesEntered)
+  })
+
+  it('converts to equal when the user never touched it', () => {
+    const annaAndMe = editSplit(through(defaultSplit(ME), 'shares'), {
+      values: { [ME]: '1', [ANNA]: '1', [EWA]: '0' },
+    })
+    expect(through(annaAndMe, 'equal').excluded).toEqual([EWA])
   })
 
   it('restores the equal ticks the user set', () => {

@@ -112,6 +112,18 @@ export const expenseRequestSchema = z.object({
   description: z.string().nullish(),
 })
 
+/** Whether the user changed anything that gets saved; what other split types remember doesn't count. */
+export function draftChanged(draft: ExpenseDraft, initial: ExpenseDraft): boolean {
+  return savedFields(draft) !== savedFields(initial)
+}
+
+function savedFields(draft: ExpenseDraft): string {
+  return JSON.stringify({
+    ...draft,
+    split: { ...draft.split, entered: undefined, seeded: undefined },
+  })
+}
+
 export function peopleIds(draft: ExpenseDraft, meId: number): number[] {
   return [meId, ...draft.others.map((person) => person.id)]
 }
