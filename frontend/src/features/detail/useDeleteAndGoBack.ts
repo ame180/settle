@@ -39,3 +39,5 @@ export function useDeleteAndGoBack({ mutation, successMessage, errorMessage }: O
 
   return { isConfirmOpen, setConfirmOpen, confirm, isPending: mutation.isPending }
 }
+
+export type DeleteAndGoBack = ReturnType<typeof useDeleteAndGoBack>

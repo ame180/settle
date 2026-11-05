@@ -48,17 +48,19 @@ describe('ExpenseDetailPage', () => {
     expect(screen.getByRole('img', { name: 'Groceries' })).toBeInTheDocument()
     expect(screen.getByText('184.30 zł')).toBeInTheDocument()
     expect(screen.getByText('20 Oct · Groceries')).toBeInTheDocument()
-    expect(screen.getByText('You lent').nextSibling).toHaveTextContent('122.86 zł')
+    expect(screen.getByText(/^You lent/)).toHaveTextContent('You lent 122.86 zł')
     expect(screen.getByText('Split equally between 3')).toBeInTheDocument()
     expect(personRow('You')).toHaveTextContent('Paid 184.30 zł')
     expect(personRow('You')).toHaveTextContent('61.44 zł')
     expect(personRow('Anna Kowalska')).toHaveTextContent('61.43 zł')
     expect(personRow('Anna Kowalska')).not.toHaveTextContent('Paid')
     expect(screen.getByText('Weekly shop for the flat, incl. cleaning stuff.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Edit expense' })).toHaveAttribute(
+    const header = screen.getByRole('banner')
+    expect(within(header).getByRole('link', { name: 'Edit expense' })).toHaveAttribute(
       'href',
       '/expenses/7/edit',
     )
+    expect(within(header).getByRole('button', { name: 'Delete expense' })).toBeInTheDocument()
   })
 
   it('shows an expense someone else paid, with the viewer’s share', async () => {
@@ -85,7 +87,7 @@ describe('ExpenseDetailPage', () => {
     renderExpense()
 
     expect(await screen.findByRole('heading', { name: 'Kawa' })).toBeInTheDocument()
-    expect(screen.getByText('You borrowed').nextSibling).toHaveTextContent('12.00 zł')
+    expect(screen.getByText(/^You borrowed/)).toHaveTextContent('You borrowed 12.00 zł')
     const rows = within(screen.getByRole('list')).getAllByRole('listitem')
     expect(rows[0]).toHaveTextContent('Anna Kowalska')
     expect(rows[0]).toHaveTextContent('Paid 24.00 zł')
@@ -102,6 +104,7 @@ describe('ExpenseDetailPage', () => {
 
     expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Edit expense' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete expense' })).not.toBeInTheDocument()
   })
 
   it('deletes after confirming, then goes back and refreshes balances', async () => {
@@ -193,16 +196,18 @@ describe('ExpenseDetailPage', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/activity'))
   })
 
-  it('cancels without deleting', async () => {
+  it('cancels without deleting and returns focus to the trash button', async () => {
     const fetchMock = stubDetailApi({
       'GET /api/expenses/7': { status: 200, body: expenseResponse() },
     })
     renderExpense()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Delete expense' }))
+    const trash = await screen.findByRole('button', { name: 'Delete expense' })
+    await userEvent.click(trash)
     await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(trash).toHaveFocus())
     expect(fetchMock).not.toHaveBeenCalledWith(
       '/api/expenses/7',
       expect.objectContaining({ method: 'DELETE' }),

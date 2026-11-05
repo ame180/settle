@@ -8,14 +8,7 @@ import { categoryInfo } from '@/lib/categories'
 import { formatShortDate } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import {
-  DeleteSection,
-  DetailError,
-  DetailLoading,
-  DetailScreen,
-  EditLink,
-  NoteBlock,
-} from './DetailParts'
+import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
 import {
   deleteWarning,
   expensePosition,
@@ -30,11 +23,28 @@ export function ExpenseDetailPage() {
   const expenseQuery = useExpense(id)
   const { data: me } = useMe()
   const expense = expenseQuery.data
+  const deletion = useDeleteAndGoBack({
+    mutation: useDeleteExpense(id),
+    successMessage: 'Expense deleted',
+    errorMessage: 'Couldn’t delete the expense. Try again.',
+  })
 
   return (
     <DetailScreen
       title="Expense"
-      trailing={expense && <EditLink to={`/expenses/${id}/edit`} label="Edit expense" />}
+      trailing={
+        expense &&
+        me && (
+          <DetailActions
+            editTo={`/expenses/${id}/edit`}
+            editLabel="Edit expense"
+            deleteLabel="Delete expense"
+            confirmTitle={`Delete “${expense.title}”?`}
+            confirmDescription={deleteWarning(otherParticipantNames(expense, me.id))}
+            deletion={deletion}
+          />
+        )
+      }
     >
       {expense && me ? (
         <ExpenseDetail expense={expense} viewerId={me.id} />
@@ -54,11 +64,6 @@ export function ExpenseDetailPage() {
 
 function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewerId: number }) {
   const position = expensePosition(expense, viewerId)
-  const deletion = useDeleteAndGoBack({
-    mutation: useDeleteExpense(expense.id),
-    successMessage: 'Expense deleted',
-    errorMessage: 'Couldn’t delete the expense. Try again.',
-  })
 
   return (
     <>
@@ -68,26 +73,25 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
         <p className="text-[28px] font-semibold tabular-nums">
           {formatMoney(expense.amount, expense.currency)}
         </p>
+        <p className="-mt-0.5 text-[15px] text-foreground/75">
+          {position.label}{' '}
+          <span
+            className={cn(
+              'font-semibold tabular-nums',
+              position.direction === 'owed' && 'text-positive',
+              position.direction === 'owe' && 'text-negative',
+              position.direction === 'none' && 'text-muted-foreground',
+            )}
+          >
+            {formatMoney(position.amount, expense.currency)}
+          </span>
+        </p>
         <p className="text-[13px] text-muted-foreground">
           {formatShortDate(expense.occurredOn)} · {categoryInfo[expense.category].label}
         </p>
       </section>
 
-      <div className="mx-4 flex items-center justify-between rounded-xl border bg-muted/40 px-4 py-3.5">
-        <span className="text-[15px] text-foreground/75">{position.label}</span>
-        <span
-          className={cn(
-            'text-[17px] font-semibold tabular-nums',
-            position.direction === 'owed' && 'text-positive',
-            position.direction === 'owe' && 'text-negative',
-            position.direction === 'none' && 'text-muted-foreground',
-          )}
-        >
-          {formatMoney(position.amount, expense.currency)}
-        </span>
-      </div>
-
-      <h3 className="mx-4 mt-6 mb-1 text-sm font-medium text-muted-foreground">
+      <h3 className="mx-4 mt-1 mb-1 text-sm font-medium text-muted-foreground">
         {splitHeading(expense)}
       </h3>
       <ul>
@@ -114,16 +118,6 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
       </ul>
 
       <NoteBlock note={expense.description} />
-
-      <DeleteSection
-        actionLabel="Delete expense"
-        title={`Delete “${expense.title}”?`}
-        description={deleteWarning(otherParticipantNames(expense, viewerId))}
-        open={deletion.isConfirmOpen}
-        onOpenChange={deletion.setConfirmOpen}
-        onConfirm={deletion.confirm}
-        isPending={deletion.isPending}
-      />
     </>
   )
 }

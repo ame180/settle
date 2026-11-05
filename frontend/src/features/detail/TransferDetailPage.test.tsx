@@ -41,10 +41,12 @@ describe('TransferDetailPage', () => {
     expect(screen.getByText('150.00 zł')).toBeInTheDocument()
     expect(screen.getByText('22 Oct')).toBeInTheDocument()
     expect(screen.getByText('BLIK for groceries and coffee')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Edit payment' })).toHaveAttribute(
+    const header = screen.getByRole('banner')
+    expect(within(header).getByRole('link', { name: 'Edit payment' })).toHaveAttribute(
       'href',
       '/transfers/3/edit',
     )
+    expect(within(header).getByRole('button', { name: 'Delete payment' })).toBeInTheDocument()
   })
 
   it('reads from the viewer’s side when they paid', async () => {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { CircleAlert, LoaderCircle, Lock, Pencil, RefreshCw, SearchX } from 'lucide-react'
+import { CircleAlert, LoaderCircle, Lock, RefreshCw, SearchX, Trash2 } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
@@ -14,13 +14,15 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet'
+import type { DeleteAndGoBack } from './useDeleteAndGoBack'
 
 export const detailBackFallback = '/activity'
 
 type DetailScreenProps = {
   title: string
-  /** Header action, e.g. the edit pencil; shown only once the item has loaded. */
+  /** Header actions; shown only once the item has loaded. */
   trailing?: ReactNode
   children: ReactNode
 }
@@ -33,20 +35,10 @@ export function DetailScreen({ title, trailing, children }: DetailScreenProps) {
         leading={<BackLink fallback={detailBackFallback} />}
         trailing={trailing}
       />
-      <main className="flex flex-1 flex-col overflow-y-auto">{children}</main>
+      <main className="flex flex-1 flex-col overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        {children}
+      </main>
     </div>
-  )
-}
-
-export function EditLink({ to, label }: { to: string; label: string }) {
-  return (
-    <Link
-      to={to}
-      aria-label={label}
-      className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
-      <Pencil className="size-5.5" aria-hidden="true" />
-    </Link>
   )
 }
 
@@ -138,53 +130,55 @@ export function NoteBlock({ note }: { note: string | null }) {
   )
 }
 
-type DeleteSectionProps = {
-  /** "Delete expense" */
-  actionLabel: string
-  title: string
-  description: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  isPending: boolean
+type DetailActionsProps = {
+  editTo: string
+  /** "Edit expense" */
+  editLabel: string
+  /** "Delete expense"; also the confirm button's label. */
+  deleteLabel: string
+  confirmTitle: string
+  confirmDescription: string
+  deletion: DeleteAndGoBack
 }
 
-/** The red text button at the bottom of a detail screen and its confirm sheet. */
-export function DeleteSection({
-  actionLabel,
-  title,
-  description,
-  open,
-  onOpenChange,
-  onConfirm,
-  isPending,
-}: DeleteSectionProps) {
+/** Header trash and Edit buttons, plus the trash's confirm sheet. */
+export function DetailActions({
+  editTo,
+  editLabel,
+  deleteLabel,
+  confirmTitle,
+  confirmDescription,
+  deletion,
+}: DetailActionsProps) {
+  const { isConfirmOpen, setConfirmOpen, confirm, isPending } = deletion
   return (
-    <div className="mt-auto flex justify-center px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-      <Sheet open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
-        <button
-          type="button"
-          onClick={() => onOpenChange(true)}
-          className="h-11 rounded-full px-5 text-[15px] font-semibold text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {actionLabel}
-        </button>
+    <>
+      <Sheet open={isConfirmOpen} onOpenChange={(next) => !isPending && setConfirmOpen(next)}>
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            aria-label={deleteLabel}
+            className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Trash2 className="size-5.5" aria-hidden="true" />
+          </button>
+        </SheetTrigger>
         <SheetContent>
           <SheetHeader className="pt-3">
-            <SheetTitle className="break-words">{title}</SheetTitle>
-            <SheetDescription className="leading-[1.45]">{description}</SheetDescription>
+            <SheetTitle className="break-words">{confirmTitle}</SheetTitle>
+            <SheetDescription className="leading-[1.45]">{confirmDescription}</SheetDescription>
           </SheetHeader>
           <SheetFooter className="pb-6">
             <Button
               variant="destructive"
               className="h-12 rounded-full text-base font-semibold"
-              onClick={onConfirm}
+              onClick={confirm}
               disabled={isPending}
             >
               {isPending && (
                 <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
               )}
-              {isPending ? 'Deleting…' : actionLabel}
+              {isPending ? 'Deleting…' : deleteLabel}
             </Button>
             <SheetClose asChild>
               <Button
@@ -198,6 +192,13 @@ export function DeleteSection({
           </SheetFooter>
         </SheetContent>
       </Sheet>
-    </div>
+      <Link
+        to={editTo}
+        aria-label={editLabel}
+        className="flex h-11 items-center rounded-full px-3 text-base font-semibold hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        Edit
+      </Link>
+    </>
   )
 }

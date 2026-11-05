@@ -6,14 +6,7 @@ import type { PersonRef, TransferResponse } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
-import {
-  DeleteSection,
-  DetailError,
-  DetailLoading,
-  DetailScreen,
-  EditLink,
-  NoteBlock,
-} from './DetailParts'
+import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
 import { deleteWarning } from './expenseSummary'
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
 
@@ -22,11 +15,28 @@ export function TransferDetailPage() {
   const transferQuery = useTransfer(id)
   const { data: me } = useMe()
   const transfer = transferQuery.data
+  const deletion = useDeleteAndGoBack({
+    mutation: useDeleteTransfer(id),
+    successMessage: 'Payment deleted',
+    errorMessage: 'Couldn’t delete the payment. Try again.',
+  })
 
   return (
     <DetailScreen
       title="Payment"
-      trailing={transfer && <EditLink to={`/transfers/${id}/edit`} label="Edit payment" />}
+      trailing={
+        transfer &&
+        me && (
+          <DetailActions
+            editTo={`/transfers/${id}/edit`}
+            editLabel="Edit payment"
+            deleteLabel="Delete payment"
+            confirmTitle="Delete this payment?"
+            confirmDescription={deleteWarning(otherNames(transfer, me.id))}
+            deletion={deletion}
+          />
+        )
+      }
     >
       {transfer && me ? (
         <TransferDetail transfer={transfer} viewerId={me.id} />
@@ -48,14 +58,6 @@ function TransferDetail({ transfer, viewerId }: { transfer: TransferResponse; vi
   const { payer, payee } = transfer
   const nameOf = (person: PersonRef) => (person.id === viewerId ? 'You' : person.displayName)
   const sentence = `${nameOf(payer)} paid ${payee.id === viewerId ? 'you' : payee.displayName}`
-  const otherNames = [payer, payee]
-    .filter((person) => person.id !== viewerId)
-    .map((person) => person.displayName)
-  const deletion = useDeleteAndGoBack({
-    mutation: useDeleteTransfer(transfer.id),
-    successMessage: 'Payment deleted',
-    errorMessage: 'Couldn’t delete the payment. Try again.',
-  })
 
   return (
     <>
@@ -77,18 +79,14 @@ function TransferDetail({ transfer, viewerId }: { transfer: TransferResponse; vi
       <div className="mt-3">
         <NoteBlock note={transfer.description} />
       </div>
-
-      <DeleteSection
-        actionLabel="Delete payment"
-        title="Delete this payment?"
-        description={deleteWarning(otherNames)}
-        open={deletion.isConfirmOpen}
-        onOpenChange={deletion.setConfirmOpen}
-        onConfirm={deletion.confirm}
-        isPending={deletion.isPending}
-      />
     </>
   )
+}
+
+function otherNames({ payer, payee }: TransferResponse, viewerId: number) {
+  return [payer, payee]
+    .filter((person) => person.id !== viewerId)
+    .map((person) => person.displayName)
 }
 
 function Party({ person, name }: { person: PersonRef; name: string }) {
