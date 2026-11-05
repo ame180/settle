@@ -221,14 +221,19 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
               <button
                 type="button"
                 aria-label="Swap who paid"
-                hidden={editing}
+                // Fixed in edit mode (the API can't change it); kept in place for the layout.
+                disabled={editing}
+                aria-hidden={editing || undefined}
                 onClick={() =>
                   update(null, (current) => ({
                     ...current,
                     payer: current.payer === 'me' ? 'them' : 'me',
                   }))
                 }
-                className="flex size-11 items-center justify-center rounded-full border border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-40"
+                className={cn(
+                  'flex size-11 items-center justify-center rounded-full border border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                  editing && 'invisible',
+                )}
               >
                 <ArrowLeftRight className="size-4.5" aria-hidden="true" />
               </button>
@@ -351,7 +356,9 @@ function BalanceLine({
       )}
       {outcome ? (
         <span className="flex flex-col gap-0.5">
-          <span className="text-[15px] font-semibold">{outcome.title}</span>
+          <span aria-live="polite" className="text-[15px] font-semibold">
+            {outcome.title}
+          </span>
           <span className="text-[13px] text-muted-foreground">{outcome.detail}</span>
         </span>
       ) : (

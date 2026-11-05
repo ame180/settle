@@ -272,7 +272,13 @@ export function ExpenseForm({
                 onChange={(amount) => update('amount', (current) => ({ ...current, amount }))}
                 error={errors.amount}
                 inputRef={amountRef}
-                outcome={<OutcomeLine draft={draft} check={check} people={people} meId={me.id} />}
+                outcome={
+                  errors.amount ? null : (
+                    <div aria-live="polite">
+                      <OutcomeLine draft={draft} check={check} people={people} meId={me.id} />
+                    </div>
+                  )
+                }
               />
 
               {draft.others.length > 0 && (
@@ -306,21 +312,24 @@ export function ExpenseForm({
                   splitButtonRef={splitButtonRef}
                 />
               )}
-
-              <DateNoteFields
-                idPrefix="expense"
-                occurredOn={draft.occurredOn}
-                onDateChange={(occurredOn) =>
-                  update('date', (current) => ({ ...current, occurredOn }))
-                }
-                dateError={errors.date}
-                note={draft.note}
-                onNoteChange={(note) => update('note', (current) => ({ ...current, note }))}
-                noteError={errors.note}
-                noteRef={noteRef}
-              />
             </>
           )}
+
+          {/* Hidden rather than unmounted, so an opened note stays open. */}
+          <div hidden={peopleOpen} className="flex flex-col gap-5">
+            <DateNoteFields
+              idPrefix="expense"
+              occurredOn={draft.occurredOn}
+              onDateChange={(occurredOn) =>
+                update('date', (current) => ({ ...current, occurredOn }))
+              }
+              dateError={errors.date}
+              note={draft.note}
+              onNoteChange={(note) => update('note', (current) => ({ ...current, note }))}
+              noteError={errors.note}
+              noteRef={noteRef}
+            />
+          </div>
         </fieldset>
       </div>
 

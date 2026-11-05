@@ -7,23 +7,13 @@ type AmountFieldProps = {
   value: string
   onChange: (value: string) => void
   error?: string
-  /** The live line under the amount: who owes what, or a hint. */
+  /** Shown under the amount (and any error), and kept in view with it while typing. */
   outcome?: ReactNode
   inputRef: RefObject<HTMLInputElement | null>
-  label?: string
-  readOnly?: boolean
 }
 
 /** Large centred amount with a fixed "zł" suffix; decimal comma accepted, tidied on blur. */
-export function AmountField({
-  value,
-  onChange,
-  error,
-  outcome,
-  inputRef,
-  label = 'Amount',
-  readOnly,
-}: AmountFieldProps) {
+export function AmountField({ value, onChange, error, outcome, inputRef }: AmountFieldProps) {
   const id = useId()
   const blockRef = useRef<HTMLDivElement>(null)
   const width = Math.max(value.length, 4)
@@ -31,7 +21,7 @@ export function AmountField({
   return (
     <div ref={blockRef} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
       <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
-        {label}
+        Amount
       </label>
       <div
         className={cn(
@@ -47,7 +37,6 @@ export function AmountField({
           autoComplete="off"
           placeholder="0.00"
           value={value}
-          readOnly={readOnly}
           aria-invalid={!!error}
           aria-describedby={`${id}-outcome`}
           onChange={(event) => onChange(sanitizeAmountInput(event.target.value, value))}
@@ -69,8 +58,9 @@ export function AmountField({
         />
         <span className="text-lg font-semibold text-muted-foreground">zł</span>
       </div>
-      <div id={`${id}-outcome`} aria-live="polite" className="min-h-6 text-center">
-        {error ? <FieldError message={error} className="justify-center" /> : outcome}
+      <div id={`${id}-outcome`} className="min-h-6 self-stretch text-center">
+        {error && <FieldError message={error} className="justify-center" />}
+        {outcome}
       </div>
     </div>
   )
