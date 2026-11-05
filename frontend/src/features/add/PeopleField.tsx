@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type RefObject } from 'react'
 import { flushSync } from 'react-dom'
+import { toast } from 'sonner'
 import { Check, Plus, UserPlus, X } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { useAddContact } from '@/api/contacts'
@@ -127,21 +128,31 @@ export function PeopleField({
           }
         },
         onError: (mutationError) => {
-          if (visitRef.current !== visit) {
-            return
-          }
-          setAddError(
+          const message =
             (mutationError instanceof ApiError &&
               (mutationError.violations[0]?.title ?? mutationError.detail)) ||
-              'Couldn’t add this contact. Try again.',
-          )
+            'Couldn’t add this contact. Try again.'
+          // The list it was added from is gone, so say it where the user can still see it.
+          if (visitRef.current !== visit) {
+            toast.error(message)
+            return
+          }
+          setAddError(message)
         },
       },
     )
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-1.5">
+    <div
+      ref={containerRef}
+      className="flex flex-col gap-1.5"
+      onKeyDown={(event) => {
+        if (open && event.key === 'Escape') {
+          close()
+        }
+      }}
+    >
       <label htmlFor={`${listId}-input`} className="text-sm font-medium">
         With
       </label>
@@ -208,9 +219,6 @@ export function PeopleField({
                 } else if (trimmedQuery === '') {
                   close()
                 }
-              }
-              if (event.key === 'Escape') {
-                close()
               }
             }}
             className="h-8 min-w-32 flex-1 bg-transparent px-1.5 text-base outline-none placeholder:text-muted-foreground"

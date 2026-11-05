@@ -167,7 +167,8 @@ describe('AddPage', () => {
     await userEvent.click(
       screen.getByRole('button', { name: /Add jan@example.com as a new contact/ }),
     )
-    await userEvent.keyboard('{Escape}')
+    // Tapping outside closes the list while the add is still saving.
+    await userEvent.click(document.body)
     finish(jsonResponse(201, contact(5, 'jan@example.com', 'jan@example.com')))
 
     expect(
@@ -175,6 +176,26 @@ describe('AddPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByLabelText('What was it for?')).not.toHaveFocus()
     expect(screen.queryByPlaceholderText('Name or email')).not.toBeInTheDocument()
+  })
+
+  it('shows a late add-by-email error as a toast once the list is closed', async () => {
+    let finish: (response: Response) => void = () => {}
+    mockApi({
+      'POST /api/contacts': () => new Promise<Response>((resolve) => (finish = resolve)),
+    })
+    renderAdd()
+
+    await userEvent.type(await screen.findByPlaceholderText('Name or email'), 'jan@example.com')
+    await userEvent.click(
+      screen.getByRole('button', { name: /Add jan@example.com as a new contact/ }),
+    )
+    // Tapping outside closes the list while the add is still saving.
+    await userEvent.click(document.body)
+    finish(jsonResponse(503, { status: 503, title: 'Service Unavailable' }))
+
+    expect(await screen.findByText('Couldn’t add this contact. Try again.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Add person' }))
+    expect(screen.queryAllByText('Couldn’t add this contact. Try again.')).toHaveLength(1)
   })
 
   it('adds someone new by email', async () => {
