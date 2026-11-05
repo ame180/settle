@@ -14,7 +14,7 @@ import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { shortName } from '@/lib/contact'
+import { getShortName } from '@/lib/person'
 import { hasInAppHistory } from '@/lib/history'
 import { cn } from '@/lib/utils'
 import { ContactNotFound } from './ContactNotFound'
@@ -40,7 +40,7 @@ function EditContact({ userId }: { userId: number }) {
     return <ContactNotFound />
   }
 
-  const backLabel = contact ? `Back to ${shortName(contact.person.displayName)}` : 'Back'
+  const backLabel = contact ? `Back to ${getShortName(contact.person.displayName)}` : 'Back'
 
   return (
     <div className="flex h-full flex-col">

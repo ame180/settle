@@ -10,7 +10,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
-import { addExpenseWithPath, contactSecondaryLine, settleUpPath, shortName } from '@/lib/contact'
+import { addExpenseWithPath, contactSecondaryLine, settleUpPath } from '@/lib/contact'
+import { getShortName } from '@/lib/person'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { ActivityListFooter } from '@/features/activity/ActivityListFooter'
@@ -135,7 +136,7 @@ function ContactHeader({ contact, sharedActivity }: ContactHeaderProps) {
 }
 
 function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
-  const name = shortName(contact.person.displayName)
+  const name = getShortName(contact.person.displayName)
   const balance = findPlnAmount(contact.balances)
 
   if (balance !== null) {
@@ -193,7 +194,7 @@ type ContactActivityProps = {
 
 function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
   const { data: me } = useMe()
-  const name = shortName(contact.person.displayName)
+  const name = getShortName(contact.person.displayName)
 
   if (activityQuery.isPending) {
     return <ActivityRowsSkeleton />
