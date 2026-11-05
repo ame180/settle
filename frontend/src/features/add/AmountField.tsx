@@ -1,0 +1,85 @@
+import { useId, type ReactNode, type RefObject } from 'react'
+import { MAX_AMOUNT_INTEGER_DIGITS, parseAmountInput } from '@/lib/money'
+import { cn } from '@/lib/utils'
+import { FieldError } from './formParts'
+
+const allowedInput = new RegExp(`^\\d{0,${MAX_AMOUNT_INTEGER_DIGITS}}(?:[.,]\\d{0,2})?$`)
+
+/** Keeps the field to something that can become an amount: digits, one separator, 2 decimals. */
+export function sanitizeAmountInput(next: string, previous: string): string {
+  const compact = next.replace(/\s/g, '')
+  return allowedInput.test(compact) ? compact : previous
+}
+
+type AmountFieldProps = {
+  value: string
+  onChange: (value: string) => void
+  error?: string
+  /** The live line under the amount: who owes what, or a hint. */
+  outcome?: ReactNode
+  inputRef: RefObject<HTMLInputElement | null>
+  label?: string
+  readOnly?: boolean
+}
+
+/** Large centred amount with a fixed "zł" suffix; decimal comma accepted, tidied on blur. */
+export function AmountField({
+  value,
+  onChange,
+  error,
+  outcome,
+  inputRef,
+  label = 'Amount',
+  readOnly,
+}: AmountFieldProps) {
+  const id = useId()
+  const width = Math.max(value.length, 4)
+
+  return (
+    <div id={`${id}-block`} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
+        {label}
+      </label>
+      <div
+        className={cn(
+          'flex items-baseline gap-1.5 border-b-2 border-border-strong px-4 pb-0.5 focus-within:border-foreground',
+          error && 'border-destructive focus-within:border-destructive',
+        )}
+      >
+        <input
+          ref={inputRef}
+          id={id}
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder="0.00"
+          value={value}
+          readOnly={readOnly}
+          aria-invalid={!!error}
+          aria-describedby={`${id}-outcome`}
+          onChange={(event) => onChange(sanitizeAmountInput(event.target.value, value))}
+          onBlur={() => {
+            const parsed = parseAmountInput(value)
+            if (parsed !== null && parsed !== value) {
+              onChange(parsed)
+            }
+          }}
+          onFocus={(event) => {
+            // Keep the whole block, outcome line included, above the keyboard.
+            const block = event.currentTarget.closest(`[id="${id}-block"]`)
+            window.setTimeout(
+              () => block?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+              300,
+            )
+          }}
+          style={{ width: `${width + 0.5}ch` }}
+          className="min-w-0 bg-transparent text-right text-4xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/70"
+        />
+        <span className="text-lg font-semibold text-muted-foreground">zł</span>
+      </div>
+      <div id={`${id}-outcome`} aria-live="polite" className="min-h-6 text-center">
+        {error ? <FieldError message={error} className="justify-center" /> : outcome}
+      </div>
+    </div>
+  )
+}
