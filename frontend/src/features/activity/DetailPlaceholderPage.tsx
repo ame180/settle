@@ -14,8 +14,14 @@ export function DetailPlaceholderPage({ title }: { title: string }) {
           <Link
             to="/activity"
             onClick={(event) => {
+              const isPlainClick =
+                event.button === 0 &&
+                !event.metaKey &&
+                !event.ctrlKey &&
+                !event.shiftKey &&
+                !event.altKey
               const hasInAppHistory = (window.history.state?.idx ?? 0) > 0
-              if (event.button !== 0 || event.metaKey || event.ctrlKey || !hasInAppHistory) {
+              if (!isPlainClick || !hasInAppHistory) {
                 return
               }
               event.preventDefault()

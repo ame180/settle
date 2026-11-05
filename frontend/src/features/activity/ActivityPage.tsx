@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Activity, CircleAlert, LoaderCircle, RefreshCw } from 'lucide-react'
 import { useActivity } from '@/api/activity'
 import { useMe } from '@/api/auth'
@@ -15,7 +15,6 @@ const pillClassName = 'rounded-full px-5 text-[15px]'
 export function ActivityPage() {
   const activityQuery = useActivity()
   const { data: me } = useMe()
-  const [now] = useState(() => new Date())
 
   return (
     <>
@@ -46,11 +45,12 @@ export function ActivityPage() {
           <ActivityFeed
             items={flattenActivityPages(activityQuery.data.pages)}
             viewerId={me?.id ?? 0}
-            now={now}
+            // Today/Yesterday follow the last fetch, so a feed left open overnight relabels on refetch.
+            now={new Date(activityQuery.dataUpdatedAt)}
             hasNextPage={activityQuery.hasNextPage}
             isFetchingNextPage={activityQuery.isFetchingNextPage}
             isNextPageError={activityQuery.isFetchNextPageError}
-            fetchNextPage={() => activityQuery.fetchNextPage()}
+            fetchNextPage={() => activityQuery.fetchNextPage({ cancelRefetch: false })}
           />
         )}
       </div>
@@ -92,8 +92,8 @@ function ActivityFeed({
   return (
     <>
       {groupActivityByDay(items).map(({ day, items: dayItems }) => (
-        <section key={day} aria-label={formatDayLabel(day, now)}>
-          <DayHeader label={formatDayLabel(day, now)} />
+        <section key={day} aria-labelledby={`day-${day}`}>
+          <DayHeader id={`day-${day}`} label={formatDayLabel(day, now)} />
           <ul>
             {dayItems.map((item) => (
               <li key={activityItemKey(item)}>
@@ -104,18 +104,18 @@ function ActivityFeed({
         </section>
       ))}
 
-      {isNextPageError ? (
+      {isFetchingNextPage ? (
+        <div role="status" className="flex justify-center py-5 text-muted-foreground">
+          <LoaderCircle className="size-6 motion-safe:animate-spin" aria-hidden="true" />
+          <span className="sr-only">Loading more activity</span>
+        </div>
+      ) : isNextPageError ? (
         <div role="alert" className="flex flex-col items-center gap-3 px-4 pt-6">
           <p className="text-sm text-muted-foreground">Couldn't load more activity.</p>
           <Button variant="outline" className={pillClassName} onClick={fetchNextPage}>
             <RefreshCw aria-hidden="true" />
             Try again
           </Button>
-        </div>
-      ) : isFetchingNextPage ? (
-        <div role="status" className="flex justify-center py-5 text-muted-foreground">
-          <LoaderCircle className="size-6 motion-safe:animate-spin" aria-hidden="true" />
-          <span className="sr-only">Loading more activity</span>
         </div>
       ) : (
         hasNextPage && <LoadMoreSentinel onVisible={fetchNextPage} />

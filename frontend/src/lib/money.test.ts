@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findPlnAmount, formatPln, isNegativeAmount } from './money'
+import { findPlnAmount, formatMoney, formatPln, isNegativeAmount } from './money'
 
 describe('formatPln', () => {
   it.each([
@@ -30,5 +30,12 @@ describe('findPlnAmount', () => {
       ]),
     ).toBe('-12.50')
     expect(findPlnAmount([{ currency: 'EUR', amount: '5.00' }])).toBeNull()
+  })
+})
+
+describe('formatMoney', () => {
+  it('uses zł for PLN and the currency code otherwise', () => {
+    expect(formatMoney('-1234.5', 'PLN')).toBe('1\u00a0234.50\u00a0zł')
+    expect(formatMoney('50', 'EUR')).toBe('50.00\u00a0EUR')
   })
 })

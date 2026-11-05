@@ -36,7 +36,18 @@ describe('ExpenseRow', () => {
     expect(screen.getByRole('link')).toHaveTextContent('Anna Kowalska paid 24.00 zł')
     const label = screen.getByText('you borrowed')
     expect(label.parentElement).toHaveClass('text-negative')
-    expect(label.parentElement).toHaveTextContent(/^you borrowed12\.00 zł$/)
+    expect(label.parentElement).toHaveTextContent(/^you borrowed 12\.00 zł$/)
+  })
+
+  it('keeps the currency code for non-PLN expenses', () => {
+    renderRow(
+      <ExpenseRow
+        item={expenseItem({ currency: 'EUR', amount: '50.00', value: '25.00' })}
+        viewerId={viewer.id}
+      />,
+    )
+
+    expect(screen.getByRole('link')).toHaveTextContent('You paid 50.00 EUR you lent 25.00 EUR')
   })
 
   it('labels an expense that left balances unchanged', () => {
