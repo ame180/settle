@@ -5,8 +5,8 @@ import { calculateSplit, type SplitDebtInput } from '@/lib/split'
 
 /**
  * Who paid and how the cost is shared, as the user is editing it. People are kept on the form;
- * this only holds ids. Each split type keeps its own inputs so switching back and forth between
- * the editor's tabs stays predictable.
+ * this only holds ids. Each split type keeps what the user entered in it, so switching back to a
+ * type restores their exact values instead of a rounded conversion.
  */
 export type SplitDraft = {
   payerId: number
@@ -15,7 +15,13 @@ export type SplitDraft = {
   excluded: number[]
   /** Amounts, percentages or shares, as typed, keyed by person id. Missing or empty means 0. */
   values: Record<number, string>
+  /** What the user entered in the other split types, restored when they switch back. */
+  entered?: Partial<Record<SplitType, SplitEntries>>
+  /** The current values were converted from another type and the user hasn't touched them. */
+  seeded?: boolean
 }
+
+type SplitEntries = Pick<SplitDraft, 'excluded' | 'values'>
 
 export type SplitProblem =
   | { kind: 'invalid-value'; personId: number }
@@ -222,36 +228,77 @@ export function convertSplit(
   }
 }
 
+/** The user changed the current type's values: they're now theirs to keep. */
+export function editSplit(split: SplitDraft, change: Partial<SplitEntries>): SplitDraft {
+  return { ...split, ...change, seeded: false }
+}
+
+/**
+ * The editor's tabs. A type the user entered values in comes back exactly as they left it; any
+ * other type is seeded by converting the current split.
+ */
+export function switchSplitType(
+  split: SplitDraft,
+  type: SplitType,
+  peopleIds: number[],
+  total: string | null,
+): SplitDraft {
+  if (type === split.type) {
+    return split
+  }
+
+  const entered = split.seeded
+    ? { ...split.entered }
+    : { ...split.entered, [split.type]: { excluded: split.excluded, values: split.values } }
+  const restored = entered[type]
+  if (restored) {
+    return { ...split, ...restored, type, entered, seeded: false }
+  }
+
+  return { ...convertSplit(split, type, peopleIds, total), entered, seeded: true }
+}
+
+/** Applies `change` to the current entries and to what each other type has kept. */
+function mapEntries(split: SplitDraft, change: (entries: SplitEntries) => SplitEntries) {
+  const current = change(split)
+  if (!split.entered) {
+    return current
+  }
+
+  const entered: Partial<Record<SplitType, SplitEntries>> = {}
+  for (const [type, entries] of Object.entries(split.entered) as [SplitType, SplitEntries][]) {
+    entered[type] = change(entries)
+  }
+  return { ...current, entered }
+}
+
 /** 1:1 "Switch": the other person paid, and the shares swap with the roles. */
 export function mirrorSplit(split: SplitDraft, meId: number, otherId: number): SplitDraft {
   const swap = (id: number) => (id === meId ? otherId : id === otherId ? meId : id)
-  const values: Record<number, string> = {}
-  for (const [id, value] of Object.entries(split.values)) {
-    values[swap(Number(id))] = value
-  }
 
   return {
     ...split,
     payerId: swap(split.payerId),
-    excluded: split.excluded.map(swap),
-    values,
+    ...mapEntries(split, ({ excluded, values }) => ({
+      excluded: excluded.map(swap),
+      values: Object.fromEntries(
+        Object.entries(values).map(([id, value]) => [swap(Number(id)), value]),
+      ),
+    })),
   }
 }
 
 /** Keeps the split consistent when people are added or removed on the form. */
 export function prunePeople(split: SplitDraft, peopleIds: number[], meId: number): SplitDraft {
-  const values: Record<number, string> = {}
-  for (const id of peopleIds) {
-    if (split.values[id] !== undefined) {
-      values[id] = split.values[id]
-    }
-  }
-
   return {
     ...split,
     payerId: peopleIds.includes(split.payerId) ? split.payerId : meId,
-    excluded: split.excluded.filter((id) => peopleIds.includes(id)),
-    values,
+    ...mapEntries(split, ({ excluded, values }) => ({
+      excluded: excluded.filter((id) => peopleIds.includes(id)),
+      values: Object.fromEntries(
+        peopleIds.filter((id) => values[id] !== undefined).map((id) => [id, values[id]]),
+      ),
+    })),
   }
 }
 

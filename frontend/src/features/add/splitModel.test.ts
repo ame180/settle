@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { SplitType } from '@/api/types'
 import { formatPln } from '@/lib/money'
 import {
   checkSplit,
@@ -6,9 +7,11 @@ import {
   defaultSplit,
   describeOutcome,
   describeSplit,
+  editSplit,
   mirrorSplit,
   prunePeople,
   splitDebts,
+  switchSplitType,
   type SplitDraft,
 } from './splitModel'
 
@@ -188,6 +191,75 @@ describe('convertSplit', () => {
   })
 })
 
+describe('switchSplitType', () => {
+  const trio = [ME, ANNA, EWA]
+  const sharesEntered = { [ME]: '3', [ANNA]: '2', [EWA]: '4' }
+  // Shares 3:2:4, entered by the user after starting on Equal.
+  const typed = editSplit(switchSplitType(defaultSplit(ME), 'shares', trio, '90.00'), {
+    values: sharesEntered,
+  })
+  const through = (split: SplitDraft, ...types: SplitType[]) =>
+    types.reduce((current, type) => switchSplitType(current, type, trio, '90.00'), split)
+
+  it.each<[SplitType[]]>([
+    [['percentage', 'shares']],
+    [['exact', 'shares']],
+    [['equal', 'shares']],
+    [['percentage', 'exact', 'equal', 'shares']],
+  ])('brings shares 3:2:4 back exactly via %j', (types) => {
+    expect(through(typed, ...types).values).toEqual(sharesEntered)
+  })
+
+  it('seeds a type the user has not touched by converting the current split', () => {
+    expect(through(typed, 'percentage').values).toEqual({
+      [ME]: '33.33',
+      [ANNA]: '22.22',
+      [EWA]: '44.45',
+    })
+  })
+
+  it('keeps edits in every type the user changed', () => {
+    const percents = { [ME]: '50', [ANNA]: '25', [EWA]: '25' }
+    const edited = editSplit(through(typed, 'percentage'), { values: percents })
+
+    expect(through(edited, 'shares').values).toEqual(sharesEntered)
+    expect(through(edited, 'shares', 'percentage').values).toEqual(percents)
+  })
+
+  it('reseeds a type that was only converted, from the split the user left', () => {
+    const amounts = { [ME]: '45.00', [ANNA]: '45.00', [EWA]: '0' }
+    const edited = editSplit(through(typed, 'percentage', 'exact'), { values: amounts })
+
+    expect(through(edited, 'percentage').values).toEqual({ [ME]: '50', [ANNA]: '50' })
+  })
+
+  it('counts a loaded or applied split as entered', () => {
+    const applied: SplitDraft = { ...defaultSplit(ME), type: 'shares', values: sharesEntered }
+    expect(through(applied, 'percentage', 'shares').values).toEqual(sharesEntered)
+  })
+
+  it('restores the equal ticks the user set', () => {
+    const withoutEwa = editSplit(defaultSplit(ME), { excluded: [EWA] })
+    expect(through(withoutEwa, 'shares', 'equal').excluded).toEqual([EWA])
+  })
+
+  it('flags restored amounts when the total changed since', () => {
+    const amounts = { [ME]: '30.00', [ANNA]: '20.00', [EWA]: '40.00' }
+    const entered = editSplit(through(typed, 'exact'), { values: amounts })
+    const back = switchSplitType(through(entered, 'shares'), 'exact', trio, '120.00')
+
+    expect(back.values).toEqual(amounts)
+    expect(checkSplit(back, trio, '120.00', ME)).toEqual({
+      ok: false,
+      problem: { kind: 'amounts', assigned: 9000n, total: 12000n },
+    })
+  })
+
+  it('keeps the payer', () => {
+    expect(through({ ...typed, payerId: EWA }, 'percentage', 'shares').payerId).toBe(EWA)
+  })
+})
+
 describe('mirrorSplit', () => {
   it('swaps who paid and who owes it all', () => {
     const annaOwesAll: SplitDraft = { ...defaultSplit(ME), excluded: [ME] }
@@ -195,6 +267,27 @@ describe('mirrorSplit', () => {
       ...defaultSplit(ME),
       payerId: ANNA,
       excluded: [ANNA],
+    })
+  })
+})
+
+describe('mirrorSplit and prunePeople with entered types', () => {
+  const split: SplitDraft = {
+    ...defaultSplit(ME),
+    type: 'percentage',
+    values: { [ME]: '60', [ANNA]: '40' },
+    entered: { shares: { excluded: [EWA], values: { [ME]: '3', [ANNA]: '1', [EWA]: '2' } } },
+  }
+
+  it('swaps what other types kept along with the roles', () => {
+    expect(mirrorSplit(split, ME, ANNA).entered).toEqual({
+      shares: { excluded: [EWA], values: { [ANNA]: '3', [ME]: '1', [EWA]: '2' } },
+    })
+  })
+
+  it('drops removed people from what other types kept', () => {
+    expect(prunePeople(split, duoIds, ME).entered).toEqual({
+      shares: { excluded: [], values: { [ME]: '3', [ANNA]: '1' } },
     })
   })
 })

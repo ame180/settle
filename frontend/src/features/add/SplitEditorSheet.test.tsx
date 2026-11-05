@@ -43,12 +43,37 @@ describe('SplitEditorSheet', () => {
     expect(anna).toHaveValue('80.00')
     await userEvent.click(screen.getByRole('button', { name: 'Done' }))
 
-    expect(onDone).toHaveBeenCalledWith({
-      payerId: 1,
-      type: 'exact',
-      excluded: [],
-      values: { 1: '80.00', 2: '80.00', 3: '80.00' },
-    })
+    expect(onDone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payerId: 1,
+        type: 'exact',
+        excluded: [],
+        values: { 1: '80.00', 2: '80.00', 3: '80.00' },
+      }),
+    )
+  })
+
+  it('brings back shares 3:2:4 after switching to another type and back', async () => {
+    const onDone = renderEditor()
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Shares' }))
+    const more = (name: string) =>
+      userEvent.click(screen.getByRole('button', { name: `One share more for ${name}` }))
+    await more('You')
+    await more('You')
+    await more('Anna Kowalska')
+    await more('Ewa Nowak')
+    await more('Ewa Nowak')
+    await more('Ewa Nowak')
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Percentages' }))
+    expect(screen.getByRole('textbox', { name: 'Anna Kowalska, percent' })).toHaveValue('22.22')
+    await userEvent.click(screen.getByRole('tab', { name: 'Shares' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+    expect(onDone).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'shares', values: { 1: '3', 2: '2', 3: '4' } }),
+    )
   })
 
   it('says the user must pay or share', async () => {

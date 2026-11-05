@@ -24,9 +24,10 @@ import { cn } from '@/lib/utils'
 import { CloseIcon, IconButton } from './formParts'
 import {
   checkSplit,
-  convertSplit,
+  editSplit,
   MAX_SHARES,
   splitDebts,
+  switchSplitType,
   trimDecimal,
   type SplitCheck,
   type SplitDraft,
@@ -133,7 +134,7 @@ function SplitEditor({
   const tab = tabs.find((candidate) => candidate.type === split.type) ?? tabs[0]
 
   function setValue(personId: number, value: string) {
-    setSplit((current) => ({ ...current, values: { ...current.values, [personId]: value } }))
+    setSplit((current) => editSplit(current, { values: { ...current.values, [personId]: value } }))
   }
 
   return (
@@ -212,7 +213,7 @@ function SplitEditor({
               aria-selected={candidate.type === split.type}
               aria-label={candidate.type === 'percentage' ? 'Percentages' : undefined}
               onClick={() =>
-                setSplit((current) => convertSplit(current, candidate.type, ids, total))
+                setSplit((current) => switchSplitType(current, candidate.type, ids, total))
               }
               className={cn(
                 'h-10 rounded-full text-[15px] font-medium text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
@@ -266,12 +267,13 @@ function SplitEditor({
                 split={split}
                 person={person}
                 onToggle={(included) =>
-                  setSplit((current) => ({
-                    ...current,
-                    excluded: included
-                      ? current.excluded.filter((id) => id !== person.id)
-                      : [...current.excluded, person.id],
-                  }))
+                  setSplit((current) =>
+                    editSplit(current, {
+                      excluded: included
+                        ? current.excluded.filter((id) => id !== person.id)
+                        : [...current.excluded, person.id],
+                    }),
+                  )
                 }
                 onValue={(value) => setValue(person.id, value)}
                 onFocus={() => setFocusedId(person.id)}
