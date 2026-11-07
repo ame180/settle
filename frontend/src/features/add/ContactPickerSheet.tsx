@@ -1,7 +1,5 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
 import type { ContactListItem, PersonRef } from '@/api/types'
-import { PersonAvatar } from '@/components/PersonAvatar'
 import {
   Sheet,
   SheetContent,
@@ -9,8 +7,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { cn } from '@/lib/utils'
-import { balanceLine, recentContacts, searchContacts } from './contactOptions'
+import { ContactOption } from './ContactOption'
+import { recentContacts, searchContacts } from './contactOptions'
 
 type ContactPickerSheetProps = {
   open: boolean
@@ -69,24 +67,12 @@ export function ContactPickerSheet({
             const selected = contact.person.id === selectedId
             return (
               <li key={contact.person.id} className="border-b last:border-b-0">
-                <button
-                  type="button"
-                  aria-pressed={selected}
+                <ContactOption
+                  contact={contact}
+                  selected={selected}
                   onClick={() => onPick(contact.person)}
-                  className={cn(
-                    'flex min-h-15 w-full items-center gap-3 px-4 py-2 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
-                    selected && 'bg-subtle',
-                  )}
-                >
-                  <PersonAvatar id={contact.person.id} name={contact.person.displayName} />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate">{contact.person.displayName}</span>
-                    <span className="truncate text-[13px] text-muted-foreground">
-                      {balanceLine(contact)}
-                    </span>
-                  </span>
-                  {selected && <Check className="size-5.5 shrink-0" aria-hidden="true" />}
-                </button>
+                  className="px-4"
+                />
               </li>
             )
           })}

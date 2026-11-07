@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type RefObject } from 'react'
 import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
-import { Check, UserPlus, X } from 'lucide-react'
+import { UserPlus, X } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { useAddContact } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
@@ -9,7 +9,8 @@ import { useCloseOnBack } from '@/lib/backLayers'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
-import { balanceLine, looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
+import { ContactOption } from './ContactOption'
+import { looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
 import { FieldError } from '@/components/FieldError'
 
 const RECENT_LIMIT = 6
@@ -265,24 +266,12 @@ export function PeopleField({
               const picked = pickedIds.has(contact.person.id)
               return (
                 <li key={contact.person.id} className="border-b last:border-b-0">
-                  <button
-                    type="button"
-                    aria-pressed={picked}
+                  <ContactOption
+                    contact={contact}
+                    selected={picked}
                     onClick={(event) => toggle(contact.person, focusAfterClick(event))}
-                    className={cn(
-                      'flex min-h-15 w-full items-center gap-3 px-3 py-2 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
-                      picked && 'bg-subtle',
-                    )}
-                  >
-                    <PersonAvatar id={contact.person.id} name={contact.person.displayName} />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate">{contact.person.displayName}</span>
-                      <span className="truncate text-[13px] text-muted-foreground">
-                        {balanceLine(contact)}
-                      </span>
-                    </span>
-                    {picked && <Check className="size-5.5 shrink-0" aria-hidden="true" />}
-                  </button>
+                    className="px-3"
+                  />
                 </li>
               )
             })}
