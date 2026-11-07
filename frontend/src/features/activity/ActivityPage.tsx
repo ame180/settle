@@ -1,10 +1,10 @@
-import { Activity, CircleAlert, RefreshCw } from 'lucide-react'
+import { Activity } from 'lucide-react'
 import { useActivity } from '@/api/activity'
 import { useMe } from '@/api/auth'
 import { AddExpenseButton } from '@/components/AddExpenseButton'
 import { PageHeader } from '@/components/PageHeader'
+import { LoadError } from '@/components/LoadError'
 import { StateMessage } from '@/components/StateMessage'
-import { Button } from '@/components/ui/button'
 import { formatDayLabel } from '@/lib/dates'
 import { ActivityListFooter } from './ActivityListFooter'
 import { ActivityRow, DayHeader } from './ActivityRows'
@@ -22,23 +22,11 @@ export function ActivityPage() {
         {activityQuery.isPending ? (
           <ActivitySkeleton />
         ) : activityQuery.data === undefined ? (
-          <StateMessage
-            role="alert"
-            icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-            iconClassName="bg-destructive/10 text-destructive"
+          <LoadError
             title="Couldn't load activity"
-            description="Check your connection and try again."
-          >
-            <Button
-              variant="outline"
-              size="pill"
-              onClick={() => activityQuery.refetch()}
-              disabled={activityQuery.isFetching}
-            >
-              <RefreshCw aria-hidden="true" />
-              Try again
-            </Button>
-          </StateMessage>
+            onRetry={() => activityQuery.refetch()}
+            isRetrying={activityQuery.isFetching}
+          />
         ) : (
           <ActivityFeed
             items={flattenActivityPages(activityQuery.data.pages)}

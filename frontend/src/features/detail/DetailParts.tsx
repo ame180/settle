@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { CircleAlert, LoaderCircle, Lock, RefreshCw, SearchX, Trash2 } from 'lucide-react'
+import { LoaderCircle, Lock, SearchX, Trash2 } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
+import { LoadError } from '@/components/LoadError'
+import { Spinner } from '@/components/Spinner'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
@@ -44,12 +46,7 @@ export function DetailScreen({ title, trailing, children }: DetailScreenProps) {
 }
 
 export function DetailLoading({ label }: { label: string }) {
-  return (
-    <div role="status" className="flex justify-center pt-40 text-muted-foreground">
-      <LoaderCircle className="size-7 motion-safe:animate-spin" aria-hidden="true" />
-      <span className="sr-only">{label}</span>
-    </div>
-  )
+  return <Spinner label={label} className="pt-40" />
 }
 
 type DetailErrorProps = {
@@ -88,18 +85,7 @@ export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorPro
   }
 
   return (
-    <StateMessage
-      role="alert"
-      icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-      iconClassName="bg-destructive/10 text-destructive"
-      title={`Couldn’t load this ${noun}`}
-      description="Check your connection and try again."
-    >
-      <Button variant="outline" size="pill" onClick={onRetry} disabled={isRetrying}>
-        <RefreshCw aria-hidden="true" />
-        Try again
-      </Button>
-    </StateMessage>
+    <LoadError title={`Couldn’t load this ${noun}`} onRetry={onRetry} isRetrying={isRetrying} />
   )
 }
 

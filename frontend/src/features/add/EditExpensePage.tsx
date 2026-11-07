@@ -7,10 +7,10 @@ import type { ExpenseResponse, MeResponse } from '@/api/types'
 import { DiscardSheet } from './DiscardSheet'
 import { draftChanged, draftFromExpense } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
-import { LoadFailed } from './LoadFailed'
 import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
-import { Frame, Header, Loading } from './ScreenFrame'
+import { DetailError, DetailLoading } from '@/features/detail/DetailParts'
+import { Frame, Header } from './ScreenFrame'
 
 /** /expenses/:id/edit: the Add expense form, loaded with the expense and saved with PUT. */
 export function EditExpensePage() {
@@ -21,14 +21,27 @@ export function EditExpensePage() {
   const { goBack } = useGoBack(`/expenses/${expenseId}`)
 
   if (!me || expense.isPending) {
-    return <Frame title="Edit expense" onClose={goBack} body={<Loading />} />
+    return (
+      <Frame
+        title="Edit expense"
+        onClose={goBack}
+        body={<DetailLoading label="Loading expense" />}
+      />
+    )
   }
   if (expense.isError) {
     return (
       <Frame
         title="Edit expense"
         onClose={goBack}
-        body={<LoadFailed what="expense" error={expense.error} onRetry={() => expense.refetch()} />}
+        body={
+          <DetailError
+            error={expense.error}
+            noun="expense"
+            onRetry={() => expense.refetch()}
+            isRetrying={expense.isFetching}
+          />
+        }
       />
     )
   }

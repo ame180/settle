@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { LoaderCircle, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
+import { Spinner } from '@/components/Spinner'
 import { Button } from '@/components/ui/button'
 
 type ActivityListFooterProps = {
@@ -19,12 +20,7 @@ export function ActivityListFooter({
   fetchNextPage,
 }: ActivityListFooterProps) {
   if (isFetchingNextPage) {
-    return (
-      <div role="status" className="flex justify-center py-5 text-muted-foreground">
-        <LoaderCircle className="size-6 motion-safe:animate-spin" aria-hidden="true" />
-        <span className="sr-only">Loading more activity</span>
-      </div>
-    )
+    return <Spinner label="Loading more activity" className="py-5" />
   }
   if (isNextPageError) {
     return (

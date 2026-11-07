@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router'
-import { Activity, CircleAlert, CircleCheck, Pencil, RefreshCw } from 'lucide-react'
+import { Activity, CircleCheck, Pencil } from 'lucide-react'
 import { useActivity } from '@/api/activity'
 import { useMe } from '@/api/auth'
 import { useContact } from '@/api/contacts'
@@ -8,8 +8,8 @@ import { AddExpenseButton } from '@/components/AddExpenseButton'
 import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
+import { LoadError } from '@/components/LoadError'
 import { StateMessage } from '@/components/StateMessage'
-import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
 import { addExpenseWithPath, contactSecondaryLine, settleUpPath } from '@/lib/contact'
 import { getShortName } from '@/lib/person'
@@ -56,23 +56,11 @@ function ContactView({ userId }: { userId: number }) {
         {contactQuery.isPending ? (
           <ContactSkeleton />
         ) : contact === undefined ? (
-          <StateMessage
-            role="alert"
-            icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-            iconClassName="bg-destructive/10 text-destructive"
+          <LoadError
             title="Couldn't load contact"
-            description="Check your connection and try again."
-          >
-            <Button
-              variant="outline"
-              size="pill"
-              onClick={() => contactQuery.refetch()}
-              disabled={contactQuery.isFetching}
-            >
-              <RefreshCw aria-hidden="true" />
-              Try again
-            </Button>
-          </StateMessage>
+            onRetry={() => contactQuery.refetch()}
+            isRetrying={contactQuery.isFetching}
+          />
         ) : contact === null ? (
           <ContactNotFoundMessage />
         ) : (
@@ -204,24 +192,12 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
   }
   if (activityQuery.data === undefined) {
     return (
-      <StateMessage
+      <LoadError
         compact
-        role="alert"
-        icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-        iconClassName="bg-destructive/10 text-destructive"
         title="Couldn't load activity"
-        description="Check your connection and try again."
-      >
-        <Button
-          variant="outline"
-          size="pill"
-          onClick={() => activityQuery.refetch()}
-          disabled={activityQuery.isFetching}
-        >
-          <RefreshCw aria-hidden="true" />
-          Try again
-        </Button>
-      </StateMessage>
+        onRetry={() => activityQuery.refetch()}
+        isRetrying={activityQuery.isFetching}
+      />
     )
   }
 

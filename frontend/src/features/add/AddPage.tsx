@@ -15,7 +15,8 @@ import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
 import { clearingPayer, type PaymentPayer } from './paymentModel'
-import { Header, Loading } from './ScreenFrame'
+import { Spinner } from '@/components/Spinner'
+import { Header } from './ScreenFrame'
 import { prunePeople } from './splitModel'
 
 /**
@@ -47,7 +48,7 @@ function AddScreen({ me }: { me: MeResponse }) {
 
   // Wait for contacts before prefilling, so the form mounts with its starting state.
   if (contactId !== null && !contacts && !isError) {
-    return <Loading />
+    return <Spinner label="Loading" className="pt-40" />
   }
 
   const contact = contacts?.items.find((item) => item.person.id === contactId)

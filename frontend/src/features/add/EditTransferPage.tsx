@@ -5,11 +5,11 @@ import { useMe } from '@/api/auth'
 import { useTransfer } from '@/api/transfers'
 import type { MeResponse, TransferResponse } from '@/api/types'
 import { DiscardSheet } from './DiscardSheet'
-import { LoadFailed } from './LoadFailed'
 import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
-import { Frame, Header, Loading } from './ScreenFrame'
+import { DetailError, DetailLoading } from '@/features/detail/DetailParts'
+import { Frame, Header } from './ScreenFrame'
 
 /**
  * /transfers/:id/edit: the payment form, loaded with the payment and saved with PUT. The API
@@ -23,7 +23,13 @@ export function EditTransferPage() {
   const { goBack } = useGoBack(`/transfers/${transferId}`)
 
   if (!me || transfer.isPending) {
-    return <Frame title="Edit payment" onClose={goBack} body={<Loading />} />
+    return (
+      <Frame
+        title="Edit payment"
+        onClose={goBack}
+        body={<DetailLoading label="Loading payment" />}
+      />
+    )
   }
   if (transfer.isError) {
     return (
@@ -31,7 +37,12 @@ export function EditTransferPage() {
         title="Edit payment"
         onClose={goBack}
         body={
-          <LoadFailed what="payment" error={transfer.error} onRetry={() => transfer.refetch()} />
+          <DetailError
+            error={transfer.error}
+            noun="payment"
+            onRetry={() => transfer.refetch()}
+            isRetrying={transfer.isFetching}
+          />
         }
       />
     )

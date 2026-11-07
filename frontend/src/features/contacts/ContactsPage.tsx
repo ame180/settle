@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { CircleAlert, CircleCheck, RefreshCw, UserPlus, Users } from 'lucide-react'
+import { CircleCheck, UserPlus, Users } from 'lucide-react'
 import { useContacts } from '@/api/contacts'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { AddExpenseButton } from '@/components/AddExpenseButton'
 import { PageHeader } from '@/components/PageHeader'
+import { LoadError } from '@/components/LoadError'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
@@ -35,23 +36,11 @@ export function ContactsPage() {
         {contactsQuery.isPending ? (
           <ContactsSkeleton />
         ) : contactsQuery.data === undefined ? (
-          <StateMessage
-            role="alert"
-            icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-            iconClassName="bg-destructive/10 text-destructive"
+          <LoadError
             title="Couldn't load contacts"
-            description="Check your connection and try again."
-          >
-            <Button
-              variant="outline"
-              size="pill"
-              onClick={() => contactsQuery.refetch()}
-              disabled={contactsQuery.isFetching}
-            >
-              <RefreshCw aria-hidden="true" />
-              Try again
-            </Button>
-          </StateMessage>
+            onRetry={() => contactsQuery.refetch()}
+            isRetrying={contactsQuery.isFetching}
+          />
         ) : contactsQuery.data.items.length === 0 ? (
           <StateMessage
             icon={<Users className="size-7.5" aria-hidden="true" />}

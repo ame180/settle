@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useParams } from 'react-router'
-import { CircleAlert, LoaderCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { useContact, useUpdateContact } from '@/api/contacts'
@@ -11,9 +10,9 @@ import { BackLink } from '@/components/BackLink'
 import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { StateMessage } from '@/components/StateMessage'
+import { LoadError } from '@/components/LoadError'
+import { Spinner } from '@/components/Spinner'
 import { SubmitButton } from '@/components/SubmitButton'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getShortName } from '@/lib/person'
@@ -53,29 +52,14 @@ function EditContact({ userId }: { userId: number }) {
 
       <div className="flex-1 overflow-y-auto px-4 py-6">
         {contactQuery.isPending ? (
-          <div role="status" className="flex justify-center py-10 text-muted-foreground">
-            <LoaderCircle className="size-6 motion-safe:animate-spin" aria-hidden="true" />
-            <span className="sr-only">Loading contact</span>
-          </div>
+          <Spinner label="Loading contact" className="py-10" />
         ) : contact === undefined ? (
-          <StateMessage
+          <LoadError
             compact
-            role="alert"
-            icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-            iconClassName="bg-destructive/10 text-destructive"
             title="Couldn't load contact"
-            description="Check your connection and try again."
-          >
-            <Button
-              variant="outline"
-              size="pill"
-              onClick={() => contactQuery.refetch()}
-              disabled={contactQuery.isFetching}
-            >
-              <RefreshCw aria-hidden="true" />
-              Try again
-            </Button>
-          </StateMessage>
+            onRetry={() => contactQuery.refetch()}
+            isRetrying={contactQuery.isFetching}
+          />
         ) : (
           <EditContactForm contact={contact} />
         )}
