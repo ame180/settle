@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { toast } from 'sonner'
 import { useMe } from '@/api/auth'
 import { useContacts } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
@@ -11,7 +10,6 @@ import { cn } from '@/lib/utils'
 import { DiscardSheet } from './DiscardSheet'
 import { amountTotal, draftChanged, emptyDraft, type ExpenseDraft } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
-import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
 import { clearingPayer, type PaymentPayer } from './paymentModel'
@@ -113,8 +111,7 @@ function AddTabs({
   // Prefilled values aren't the user's input, so they don't make the form dirty.
   const expenseDirty = draftChanged(expense, initial.expense)
   const dirty = expenseDirty || JSON.stringify(payment) !== JSON.stringify(initial.payment)
-  const guard = useLeaveGuard(dirty)
-  const { goBack } = useGoBack(backFallback)
+  const guard = useLeaveGuard(dirty, backFallback)
 
   function switchTo(next: Tab) {
     if (next === tab) {
@@ -150,17 +147,11 @@ function AddTabs({
     }))
   }
 
-  function onSaved(message: string) {
-    toast.success(message)
-    guard.allowLeave()
-    goBack()
-  }
-
   const tabs = <AddTabList tab={tab} onChange={switchTo} />
 
   return (
     <div className="flex h-full flex-col">
-      <Header title={tab === 'expense' ? 'Add expense' : 'Record payment'} onClose={goBack} />
+      <Header title={tab === 'expense' ? 'Add expense' : 'Record payment'} onClose={guard.goBack} />
       {tab === 'expense' ? (
         <ExpenseForm
           key="expense"
@@ -170,7 +161,7 @@ function AddTabs({
           mode={{ kind: 'create' }}
           initialFocus={switched ? undefined : startFocus}
           top={tabs}
-          onSaved={onSaved}
+          onSaved={guard.leaveAfterSave}
         />
       ) : (
         <PaymentForm
@@ -180,11 +171,11 @@ function AddTabs({
           onDraftChange={setPayment}
           mode={{ kind: 'create' }}
           top={tabs}
-          onSaved={onSaved}
+          onSaved={guard.leaveAfterSave}
         />
       )}
       <DiscardSheet
-        open={guard.blocked}
+        guard={guard}
         title={
           expenseDirty && tab === 'expense'
             ? 'Discard this expense?'
@@ -192,8 +183,6 @@ function AddTabs({
               ? 'Discard what you’ve entered?'
               : 'Discard this payment?'
         }
-        onDiscard={guard.discard}
-        onKeepEditing={guard.keepEditing}
       />
     </div>
   )

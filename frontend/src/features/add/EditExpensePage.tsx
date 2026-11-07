@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
-import { toast } from 'sonner'
 import { useMe } from '@/api/auth'
 import { useExpense } from '@/api/expenses'
 import type { ExpenseResponse, MeResponse } from '@/api/types'
@@ -18,7 +17,8 @@ export function EditExpensePage() {
   const expenseId = Number(id)
   const { data: me } = useMe()
   const expense = useExpense(expenseId)
-  const { goBack } = useGoBack(`/expenses/${expenseId}`)
+  const fallback = `/expenses/${expenseId}`
+  const { goBack } = useGoBack(fallback)
 
   if (!me || expense.isPending) {
     return (
@@ -46,42 +46,33 @@ export function EditExpensePage() {
     )
   }
 
-  return <EditExpenseForm me={me} expense={expense.data} goBack={goBack} />
+  return <EditExpenseForm me={me} expense={expense.data} fallback={fallback} />
 }
 
 function EditExpenseForm({
   me,
   expense,
-  goBack,
+  fallback,
 }: {
   me: MeResponse
   expense: ExpenseResponse
-  goBack: () => void
+  fallback: string
 }) {
   const [initialDraft] = useState(() => draftFromExpense(expense, me.id))
   const [draft, setDraft] = useState(initialDraft)
-  const guard = useLeaveGuard(draftChanged(draft, initialDraft))
+  const guard = useLeaveGuard(draftChanged(draft, initialDraft), fallback)
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Edit expense" onClose={goBack} />
+      <Header title="Edit expense" onClose={guard.goBack} />
       <ExpenseForm
         me={me}
         draft={draft}
         onDraftChange={setDraft}
         mode={{ kind: 'edit', expenseId: expense.id }}
-        onSaved={(message) => {
-          toast.success(message)
-          guard.allowLeave()
-          goBack()
-        }}
+        onSaved={guard.leaveAfterSave}
       />
-      <DiscardSheet
-        open={guard.blocked}
-        title="Discard your changes?"
-        onDiscard={guard.discard}
-        onKeepEditing={guard.keepEditing}
-      />
+      <DiscardSheet guard={guard} title="Discard your changes?" />
     </div>
   )
 }

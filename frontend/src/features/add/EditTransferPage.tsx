@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
-import { toast } from 'sonner'
 import { useMe } from '@/api/auth'
 import { useTransfer } from '@/api/transfers'
 import type { MeResponse, TransferResponse } from '@/api/types'
@@ -21,7 +20,8 @@ export function EditTransferPage() {
   const transferId = Number(id)
   const { data: me } = useMe()
   const transfer = useTransfer(transferId)
-  const { goBack } = useGoBack(`/transfers/${transferId}`)
+  const fallback = `/transfers/${transferId}`
+  const { goBack } = useGoBack(fallback)
 
   if (!me || transfer.isPending) {
     return (
@@ -49,17 +49,17 @@ export function EditTransferPage() {
     )
   }
 
-  return <EditTransferForm me={me} transfer={transfer.data} goBack={goBack} />
+  return <EditTransferForm me={me} transfer={transfer.data} fallback={fallback} />
 }
 
 function EditTransferForm({
   me,
   transfer,
-  goBack,
+  fallback,
 }: {
   me: MeResponse
   transfer: TransferResponse
-  goBack: () => void
+  fallback: string
 }) {
   const payer = transfer.payer.id === me.id ? 'me' : 'them'
   const [initialDraft] = useState<PaymentDraft>(() => ({
@@ -70,11 +70,11 @@ function EditTransferForm({
     note: transfer.description ?? '',
   }))
   const [draft, setDraft] = useState(initialDraft)
-  const guard = useLeaveGuard(JSON.stringify(draft) !== JSON.stringify(initialDraft))
+  const guard = useLeaveGuard(JSON.stringify(draft) !== JSON.stringify(initialDraft), fallback)
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Edit payment" onClose={goBack} />
+      <Header title="Edit payment" onClose={guard.goBack} />
       <PaymentForm
         me={me}
         draft={draft}
@@ -84,18 +84,9 @@ function EditTransferForm({
           transferId: transfer.id,
           original: { payer, amount: transfer.amount },
         }}
-        onSaved={(message) => {
-          toast.success(message)
-          guard.allowLeave()
-          goBack()
-        }}
+        onSaved={guard.leaveAfterSave}
       />
-      <DiscardSheet
-        open={guard.blocked}
-        title="Discard your changes?"
-        onDiscard={guard.discard}
-        onKeepEditing={guard.keepEditing}
-      />
+      <DiscardSheet guard={guard} title="Discard your changes?" />
     </div>
   )
 }

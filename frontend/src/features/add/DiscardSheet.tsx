@@ -6,19 +6,18 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import type { LeaveGuard } from './navigation'
 
 type DiscardSheetProps = {
-  open: boolean
+  guard: Pick<LeaveGuard, 'blocked' | 'discard' | 'keepEditing'>
   /** "Discard this expense?" */
   title: string
-  onDiscard: () => void
-  onKeepEditing: () => void
 }
 
 /** Asked when the user leaves a form with input in it. Swiping it down keeps editing. */
-export function DiscardSheet({ open, title, onDiscard, onKeepEditing }: DiscardSheetProps) {
+export function DiscardSheet({ guard, title }: DiscardSheetProps) {
   return (
-    <Sheet open={open} onOpenChange={(next) => !next && onKeepEditing()}>
+    <Sheet open={guard.blocked} onOpenChange={(next) => !next && guard.keepEditing()}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
@@ -27,14 +26,14 @@ export function DiscardSheet({ open, title, onDiscard, onKeepEditing }: DiscardS
         <SheetFooter>
           <button
             type="button"
-            onClick={onDiscard}
+            onClick={guard.discard}
             className="h-12 rounded-full bg-destructive text-base font-semibold text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             Discard
           </button>
           <button
             type="button"
-            onClick={onKeepEditing}
+            onClick={guard.keepEditing}
             className="h-12 rounded-full border border-border-strong text-base font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Keep editing
