@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ContactListItem, PersonRef } from '@/api/types'
+import { Input } from '@/components/ui/input'
 import {
   Sheet,
   SheetContent,
@@ -44,14 +45,13 @@ export function ContactPickerSheet({
         <SheetHeader className="gap-3">
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription className="sr-only">Pick a contact.</SheetDescription>
-          <input
+          <Input
             type="search"
             aria-label="Search contacts"
             placeholder="Search contacts"
             autoComplete="off"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-11 rounded-[10px] border border-border-strong bg-background px-3 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-[3px] focus:ring-foreground/10"
           />
         </SheetHeader>
         <ul aria-label="Contacts" className="min-h-0 flex-1 overflow-y-auto border-t">

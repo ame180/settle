@@ -7,6 +7,7 @@ import { CategoryTile } from '@/components/CategoryTile'
 import { categoryInfo } from '@/lib/categories'
 import { formatGrosze, formatPln } from '@/lib/money'
 import { getShortName, joinNames, ownDisplayName } from '@/lib/person'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { AmountField } from './AmountField'
 import { CategorySheet } from './CategorySheet'
@@ -224,7 +225,7 @@ export function ExpenseForm({
                   >
                     <CategoryTile category={draft.category} className="pointer-events-none" />
                   </button>
-                  <input
+                  <Input
                     ref={titleRef}
                     id="expense-title"
                     type="text"
@@ -251,10 +252,7 @@ export function ExpenseForm({
                         amountRef.current?.focus()
                       }
                     }}
-                    className={cn(
-                      'h-11 min-w-0 flex-1 rounded-[10px] border border-border-strong bg-background px-3 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-[3px] focus:ring-foreground/10',
-                      errors.title && 'border-destructive ring-[3px] ring-destructive/15',
-                    )}
+                    className="flex-1"
                   />
                 </div>
                 {errors.title && (

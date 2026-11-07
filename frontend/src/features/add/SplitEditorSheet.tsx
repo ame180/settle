@@ -14,6 +14,7 @@ import {
   sanitizeAmountInput,
   toGrosze,
 } from '@/lib/money'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { AlertLine } from '@/components/FieldError'
 import { Button } from '@/components/ui/button'
@@ -364,7 +365,7 @@ function RowControl({
   const isPercent = split.type === 'percentage'
   return (
     <span className="flex shrink-0 items-center gap-1.5">
-      <input
+      <Input
         type="text"
         inputMode="decimal"
         autoComplete="off"
@@ -373,10 +374,7 @@ function RowControl({
         value={value}
         onFocus={onFocus}
         onChange={(event) => onValue(sanitizeAmountInput(event.target.value, value))}
-        className={cn(
-          'h-11 rounded-[10px] border border-border-strong bg-background px-3 text-right text-base tabular-nums outline-none focus:border-foreground focus:ring-[3px] focus:ring-foreground/10',
-          isPercent ? 'w-18' : 'w-24',
-        )}
+        className={cn('text-right tabular-nums', isPercent ? 'w-18' : 'w-24')}
       />
       <span className="w-5 text-[15px] text-muted-foreground">{isPercent ? '%' : 'zł'}</span>
     </span>

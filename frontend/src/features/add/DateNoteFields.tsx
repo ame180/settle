@@ -1,4 +1,5 @@
 import { useState, type RefObject } from 'react'
+import { Textarea } from '@/components/ui/input'
 import { flushSync } from 'react-dom'
 import { Calendar, FileText } from 'lucide-react'
 import { formatDateLabel } from '@/lib/dates'
@@ -61,7 +62,7 @@ export function DateNoteFields({
           <label htmlFor={noteId} className="text-sm font-medium">
             Note <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
-          <textarea
+          <Textarea
             ref={noteRef}
             id={noteId}
             rows={3}
@@ -73,7 +74,7 @@ export function DateNoteFields({
               const target = event.currentTarget
               window.setTimeout(() => target.scrollIntoView({ block: 'nearest' }), 300)
             }}
-            className="scroll-mb-28 rounded-[10px] border border-border-strong bg-background px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-[3px] focus:ring-foreground/10"
+            className="scroll-mb-28"
           />
           {noteError && <FieldError message={noteError} />}
         </div>
