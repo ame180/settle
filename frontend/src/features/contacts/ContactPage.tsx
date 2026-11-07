@@ -13,13 +13,7 @@ import { StateMessage } from '@/components/StateMessage'
 import { buttonClassName } from '@/components/ui/button-variants'
 import { addExpenseWithPath, contactSecondaryLine, settleUpPath } from '@/lib/contact'
 import { getShortName } from '@/lib/person'
-import {
-  balanceDirection,
-  balanceTextClassName,
-  findPlnAmount,
-  formatPln,
-  isNegativeAmount,
-} from '@/lib/money'
+import { balanceDirection, balanceTextClassName, findPlnAmount, formatPln } from '@/lib/money'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ActivityListFooter } from '@/features/activity/ActivityListFooter'
@@ -138,7 +132,8 @@ function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
   const balance = findPlnAmount(contact.balances)
 
   if (balance !== null) {
-    const youOwe = isNegativeAmount(balance)
+    const direction = balanceDirection(balance)
+    const youOwe = direction === 'owe'
     return (
       <div className="flex items-end justify-between gap-3">
         <p className="flex min-w-0 flex-col gap-0.5">
@@ -148,7 +143,7 @@ function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
           <span
             className={cn(
               'text-[28px] leading-tight font-semibold whitespace-nowrap tabular-nums',
-              balanceTextClassName[balanceDirection(balance)],
+              balanceTextClassName[direction],
             )}
           >
             {formatPln(balance)}

@@ -9,13 +9,7 @@ import { LoadError } from '@/components/LoadError'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
-import {
-  balanceDirection,
-  balanceTextClassName,
-  findPlnAmount,
-  formatPln,
-  isNegativeAmount,
-} from '@/lib/money'
+import { balanceDirection, balanceTextClassName, findPlnAmount, formatPln } from '@/lib/money'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ContactRow } from './ContactRow'
@@ -175,14 +169,13 @@ function BalanceSummary({
     )
   }
 
-  const youOwe = isNegativeAmount(total)
+  const direction = balanceDirection(total)
+  const youOwe = direction === 'owe'
 
   return (
     <p className="px-4 pt-5 pb-3 text-lg">
       {youOwe ? 'Overall, you owe' : 'Overall, you are owed'}{' '}
-      <span
-        className={cn('font-semibold tabular-nums', balanceTextClassName[balanceDirection(total)])}
-      >
+      <span className={cn('font-semibold tabular-nums', balanceTextClassName[direction])}>
         {formatPln(total)}
       </span>
     </p>

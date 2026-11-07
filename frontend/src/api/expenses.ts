@@ -30,11 +30,7 @@ export function useUpdateExpense(id: number) {
     mutationKey: saveMutationKey,
     mutationFn: (request: ExpenseRequest) =>
       apiRequest<ExpenseResponse>(`/api/expenses/${id}`, { method: 'PUT', body: request }),
-    onSuccess: () =>
-      Promise.all([
-        invalidateBalances(queryClient),
-        queryClient.invalidateQueries({ queryKey: expenseQueryKey(id) }),
-      ]),
+    onSuccess: () => invalidateBalances(queryClient, expenseQueryKey(id)),
   })
 }
 

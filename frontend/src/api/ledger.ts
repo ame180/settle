@@ -9,13 +9,14 @@ import { contactsQueryKey } from './contacts'
 export const saveMutationKey = ['save'] as const
 
 /**
- * Everything a saved or deleted expense or payment changes: the feed and balances. These run
- * even if the user leaves the page before the request answers.
+ * Everything a saved or deleted expense or payment changes: the feed, balances and, after an
+ * edit, its own detail. These run even if the user leaves the page before the request answers.
  */
-export function invalidateBalances(queryClient: QueryClient) {
+export function invalidateBalances(queryClient: QueryClient, detailKey?: readonly unknown[]) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: activityQueryKey }),
     queryClient.invalidateQueries({ queryKey: contactsQueryKey }),
+    detailKey && queryClient.invalidateQueries({ queryKey: detailKey }),
   ])
 }
 

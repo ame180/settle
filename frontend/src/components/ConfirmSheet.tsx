@@ -56,7 +56,7 @@ export function ConfirmSheet({
             disabled={pending}
           >
             {pending && <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />}
-            {pending ? pendingLabel : confirmLabel}
+            {pending ? (pendingLabel ?? confirmLabel) : confirmLabel}
           </Button>
           <Button
             variant="outline"

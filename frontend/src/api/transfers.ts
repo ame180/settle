@@ -30,11 +30,7 @@ export function useUpdateTransfer(id: number) {
     mutationKey: saveMutationKey,
     mutationFn: (request: TransferUpdateRequest) =>
       apiRequest<TransferResponse>(`/api/transfers/${id}`, { method: 'PUT', body: request }),
-    onSuccess: () =>
-      Promise.all([
-        invalidateBalances(queryClient),
-        queryClient.invalidateQueries({ queryKey: transferQueryKey(id) }),
-      ]),
+    onSuccess: () => invalidateBalances(queryClient, transferQueryKey(id)),
   })
 }
 
