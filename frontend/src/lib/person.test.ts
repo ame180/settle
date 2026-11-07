@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getInitials, getShortName } from './person'
+import { getInitials, getShortName, joinNames, peopleOtherThan } from './person'
 
 describe('getInitials', () => {
   it.each([
@@ -28,5 +28,23 @@ describe('getShortName', () => {
     ['  Ewa  Nowak ', 'Ewa'],
   ])('shortens %j to %s', (displayName, expected) => {
     expect(getShortName(displayName)).toBe(expected)
+  })
+})
+
+describe('joinNames', () => {
+  it.each([
+    [[], ''],
+    [['Anna'], 'Anna'],
+    [['Anna', 'Ewa'], 'Anna and Ewa'],
+    [['Anna', 'Ewa', 'Tomasz'], 'Anna, Ewa and Tomasz'],
+  ])('joins %j as %j', (names, expected) => {
+    expect(joinNames(names)).toBe(expected)
+  })
+})
+
+describe('peopleOtherThan', () => {
+  it('drops the viewer and repeats, keeping first-seen order', () => {
+    const people = [{ id: 2 }, { id: 1 }, { id: 3 }, { id: 2 }]
+    expect(peopleOtherThan(1, people)).toEqual([{ id: 2 }, { id: 3 }])
   })
 })

@@ -6,7 +6,7 @@ import type { ExpenseRequest, MeResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { categoryInfo } from '@/lib/categories'
 import { formatGrosze, formatPln } from '@/lib/money'
-import { getShortName, ownDisplayName } from '@/lib/person'
+import { getShortName, joinNames, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { AmountField } from './AmountField'
 import { CategorySheet } from './CategorySheet'
@@ -35,7 +35,6 @@ import {
   describeCustomSplit,
   describeOutcome,
   describeSplit,
-  joinNames,
   mirrorSplit,
   prunePeople,
   quickChoice,

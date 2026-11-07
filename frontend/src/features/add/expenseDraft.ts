@@ -7,7 +7,9 @@ import {
   parseAmountInput,
   toGrosze,
 } from '@/lib/money'
-import { checkSplit, defaultSplit, splitDebts, trimDecimal, type SplitDraft } from './splitModel'
+import { trimDecimal } from '@/lib/decimal'
+import { peopleOtherThan } from '@/lib/person'
+import { checkSplit, defaultSplit, splitDebts, type SplitDraft } from './splitModel'
 
 /** The Add expense form, as typed. The user is always in it and isn't listed in `others`. */
 export type ExpenseDraft = {
@@ -50,14 +52,9 @@ export function emptyDraft(meId: number, occurredOn: string): ExpenseDraft {
 }
 
 export function draftFromExpense(expense: ExpenseResponse, meId: number): ExpenseDraft {
-  const others = new Map<number, PersonRef>()
-  for (const person of [expense.payee, ...expense.debts.map((debt) => debt.payer)]) {
-    if (person.id !== meId) {
-      others.set(person.id, person)
-    }
-  }
+  const others = peopleOtherThan(meId, [expense.payee, ...expense.debts.map((debt) => debt.payer)])
   const debtorIds = expense.debts.map((debt) => debt.payer.id)
-  const peopleIds = [meId, ...others.keys()]
+  const peopleIds = [meId, ...others.map((person) => person.id)]
   const values: Record<number, string> = {}
   for (const debt of expense.debts) {
     const value = expense.splitType === 'exact' ? debt.amount : debt.splitValue
@@ -67,7 +64,7 @@ export function draftFromExpense(expense: ExpenseResponse, meId: number): Expens
   }
 
   return {
-    others: [...others.values()],
+    others,
     title: expense.title,
     category: expense.category,
     categoryPicked: true,

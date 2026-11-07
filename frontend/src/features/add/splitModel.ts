@@ -1,6 +1,7 @@
 import type { ExpenseDebtRequest, PersonRef, SplitType } from '@/api/types'
 import { formatGrosze, fromGrosze, parseAmountInput, toGrosze } from '@/lib/money'
-import { getShortName } from '@/lib/person'
+import { trimDecimal } from '@/lib/decimal'
+import { getShortName, joinNames } from '@/lib/person'
 import { calculateSplit, type SplitDebtInput } from '@/lib/split'
 
 /**
@@ -149,10 +150,6 @@ function distribute(total: string, weights: Map<number, string>): Map<number, bi
   )
 
   return new Map(results.map((result) => [result.payerId, toGrosze(result.amount)]))
-}
-
-export function trimDecimal(value: string): string {
-  return value.includes('.') ? value.replace(/\.?0+$/, '') : value
 }
 
 function gcd(a: bigint, b: bigint): bigint {
@@ -340,14 +337,6 @@ function nameOf(people: NamedPerson[], id: number, meId: number): string {
   }
 
   return getShortName(people.find((person) => person.id === id)?.displayName ?? '')
-}
-
-export function joinNames(names: string[]): string {
-  if (names.length <= 1) {
-    return names.join('')
-  }
-
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 }
 
 /** What the split card says: "Split equally", "Anna owes it all", "Split by amounts"… */

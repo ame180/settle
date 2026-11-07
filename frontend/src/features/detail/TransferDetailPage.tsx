@@ -9,7 +9,7 @@ import { formatMoney } from '@/lib/money'
 import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
 import { deleteWarning } from './expenseSummary'
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
-import { nameForViewer } from '@/lib/person'
+import { nameForViewer, peopleOtherThan } from '@/lib/person'
 
 export function TransferDetailPage() {
   const id = Number(useParams().id)
@@ -33,7 +33,11 @@ export function TransferDetailPage() {
             editLabel="Edit payment"
             deleteLabel="Delete payment"
             confirmTitle="Delete this payment?"
-            confirmDescription={deleteWarning(otherNames(transfer, me.id))}
+            confirmDescription={deleteWarning(
+              peopleOtherThan(me.id, [transfer.payer, transfer.payee]).map(
+                (person) => person.displayName,
+              ),
+            )}
             deletion={deletion}
           />
         )
@@ -81,12 +85,6 @@ function TransferDetail({ transfer, viewerId }: { transfer: TransferResponse; vi
       </div>
     </>
   )
-}
-
-function otherNames({ payer, payee }: TransferResponse, viewerId: number) {
-  return [payer, payee]
-    .filter((person) => person.id !== viewerId)
-    .map((person) => person.displayName)
 }
 
 function Party({ person, name }: { person: PersonRef; name: string }) {

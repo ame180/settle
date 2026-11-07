@@ -4,6 +4,7 @@ import type { MeResponse, PersonRef, SplitType } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { ownDisplayName } from '@/lib/person'
+import { trimDecimal } from '@/lib/decimal'
 import {
   formatGrosze,
   formatPln,
@@ -23,7 +24,6 @@ import {
   MAX_SHARES,
   splitDebts,
   switchSplitType,
-  trimDecimal,
   type SplitCheck,
   type SplitDraft,
 } from './splitModel'

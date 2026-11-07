@@ -22,3 +22,8 @@ export function fromScaled(value: bigint, scale: number): string {
 
   return `${negative ? '-' : ''}${integerPart}${scale > 0 ? `.${fractionPart}` : ''}`
 }
+
+/** Drops trailing fraction zeros: "40.00" → "40", "12.50" → "12.5". */
+export function trimDecimal(value: string): string {
+  return value.includes('.') ? value.replace(/\.?0+$/, '') : value
+}

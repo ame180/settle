@@ -1,7 +1,8 @@
 import type { ExpenseResponse, PersonRef, SplitType } from '@/api/types'
 import type { BalanceDirection } from '@/features/activity/activityItems'
 import { isZeroAmount, sumAmounts } from '@/lib/money'
-import { nameForViewer } from '@/lib/person'
+import { trimDecimal } from '@/lib/decimal'
+import { joinNames, nameForViewer, peopleOtherThan } from '@/lib/person'
 
 export type ExpensePosition = {
   direction: BalanceDirection
@@ -75,7 +76,7 @@ function splitValueLabel(splitType: SplitType, splitValue: string | null): strin
   if (splitValue === null) {
     return null
   }
-  const value = trimDecimals(splitValue)
+  const value = trimDecimal(splitValue)
   if (splitType === 'percentage') {
     return `${value}%`
   }
@@ -85,28 +86,11 @@ function splitValueLabel(splitType: SplitType, splitValue: string | null): strin
   return null
 }
 
-function trimDecimals(value: string): string {
-  return value.includes('.') ? value.replace(/\.?0+$/, '') : value
-}
-
-/** "Anna", "Anna and Ewa", "Anna, Ewa and Tomasz". */
-export function joinNames(names: string[]): string {
-  if (names.length <= 1) {
-    return names.join('')
-  }
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
-}
-
 /** Everyone in the expense but the viewer, for the delete warning. */
 export function otherParticipantNames(expense: ExpenseResponse, viewerId: number): string[] {
-  const people = [expense.payee, ...expense.debts.map((debt) => debt.payer)]
-  const names = new Map<number, string>()
-  for (const person of people) {
-    if (person.id !== viewerId) {
-      names.set(person.id, person.displayName)
-    }
-  }
-  return [...names.values()]
+  return peopleOtherThan(viewerId, [expense.payee, ...expense.debts.map((debt) => debt.payer)]).map(
+    (person) => person.displayName,
+  )
 }
 
 export function deleteWarning(otherNames: string[]): string {

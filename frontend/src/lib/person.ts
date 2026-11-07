@@ -36,3 +36,26 @@ export function nameForViewer(person: Pick<PersonRef, 'id' | 'displayName'>, vie
 export function ownDisplayName(me: MeResponse): string {
   return me.name ?? me.email
 }
+
+/** "Anna", "Anna and Ewa", "Anna, Ewa and Tomasz". */
+export function joinNames(names: string[]): string {
+  if (names.length <= 1) {
+    return names.join('')
+  }
+
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+}
+
+/** Everyone but the viewer, once each, in first-seen order. */
+export function peopleOtherThan<Person extends Pick<PersonRef, 'id'>>(
+  viewerId: number,
+  people: Person[],
+): Person[] {
+  const others = new Map<number, Person>()
+  for (const person of people) {
+    if (person.id !== viewerId && !others.has(person.id)) {
+      others.set(person.id, person)
+    }
+  }
+  return [...others.values()]
+}
