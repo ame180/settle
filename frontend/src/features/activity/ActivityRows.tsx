@@ -5,6 +5,7 @@ import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import {
   activityItemPath,
@@ -122,5 +123,28 @@ export function DayHeader({ id, label }: { id?: string; label: string }) {
     >
       {label}
     </h2>
+  )
+}
+
+/** Placeholder for an activity row while the feed loads. */
+export function ActivityRowSkeleton({
+  titleWidth,
+  sublineWidth,
+}: {
+  titleWidth: string
+  sublineWidth: string
+}) {
+  return (
+    <div className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
+      <Skeleton className="size-11 shrink-0 rounded-tile" />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <Skeleton className="h-3.5" style={{ width: titleWidth }} />
+        <Skeleton className="h-2.5" style={{ width: sublineWidth }} />
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <Skeleton className="h-2.5 w-14" />
+        <Skeleton className="h-3.5 w-19" />
+      </div>
+    </div>
   )
 }

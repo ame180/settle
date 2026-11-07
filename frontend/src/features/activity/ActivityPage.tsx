@@ -5,9 +5,10 @@ import { AddExpenseButton } from '@/components/AddExpenseButton'
 import { PageHeader } from '@/components/PageHeader'
 import { LoadError } from '@/components/LoadError'
 import { StateMessage } from '@/components/StateMessage'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatDayLabel } from '@/lib/dates'
 import { ActivityListFooter } from './ActivityListFooter'
-import { ActivityRow, DayHeader } from './ActivityRows'
+import { ActivityRow, ActivityRowSkeleton, DayHeader } from './ActivityRows'
 import { activityItemKey, flattenActivityPages, groupActivityByDay } from './activityItems'
 
 export function ActivityPage() {
@@ -122,26 +123,10 @@ function ActivitySkeleton() {
         <div key={titleWidth}>
           {index % 3 === 0 && (
             <div className="flex h-10 items-end px-4 pb-2">
-              <div className="h-3 w-20 motion-safe:animate-pulse rounded bg-muted" />
+              <Skeleton className="h-3 w-20" />
             </div>
           )}
-          <div className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
-            <div className="size-11 shrink-0 motion-safe:animate-pulse rounded-full bg-muted" />
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <div
-                className="h-3.5 motion-safe:animate-pulse rounded bg-muted"
-                style={{ width: titleWidth }}
-              />
-              <div
-                className="h-2.5 motion-safe:animate-pulse rounded bg-muted"
-                style={{ width: sublineWidth }}
-              />
-            </div>
-            <div className="flex shrink-0 flex-col items-end gap-1.5">
-              <div className="h-2.5 w-14 motion-safe:animate-pulse rounded bg-muted" />
-              <div className="h-3.5 w-19 motion-safe:animate-pulse rounded bg-muted" />
-            </div>
-          </div>
+          <ActivityRowSkeleton titleWidth={titleWidth} sublineWidth={sublineWidth} />
         </div>
       ))}
     </div>

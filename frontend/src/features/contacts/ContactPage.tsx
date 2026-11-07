@@ -14,9 +14,10 @@ import { buttonClassName } from '@/components/ui/button-variants'
 import { addExpenseWithPath, contactSecondaryLine, settleUpPath } from '@/lib/contact'
 import { getShortName } from '@/lib/person'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ActivityListFooter } from '@/features/activity/ActivityListFooter'
-import { ActivityRow } from '@/features/activity/ActivityRows'
+import { ActivityRow, ActivityRowSkeleton } from '@/features/activity/ActivityRows'
 import { activityItemKey, flattenActivityPages } from '@/features/activity/activityItems'
 import { ContactNotFound, ContactNotFoundMessage } from './ContactNotFound'
 import { parseUserId } from '@/lib/parseUserId'
@@ -253,18 +254,18 @@ function ContactSkeleton() {
       <span className="sr-only">Loading contact</span>
       <div className="flex flex-col gap-4 border-b px-4 py-5">
         <div className="flex items-center gap-3">
-          <div className="size-11 shrink-0 motion-safe:animate-pulse rounded-full bg-muted" />
+          <Skeleton className="size-11 shrink-0 rounded-full" />
           <div className="flex flex-1 flex-col gap-2">
-            <div className="h-4.5 w-40 motion-safe:animate-pulse rounded-md bg-muted" />
-            <div className="h-3 w-52 motion-safe:animate-pulse rounded bg-muted" />
+            <Skeleton className="h-4.5 w-40 rounded-md" />
+            <Skeleton className="h-3 w-52" />
           </div>
         </div>
         <div className="flex items-end justify-between">
           <div className="flex flex-col gap-2">
-            <div className="h-3 w-24 motion-safe:animate-pulse rounded bg-muted" />
-            <div className="h-7 w-36 motion-safe:animate-pulse rounded-md bg-muted" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-7 w-36 rounded-md" />
           </div>
-          <div className="h-11 w-28 motion-safe:animate-pulse rounded-full bg-muted" />
+          <Skeleton className="h-11 w-28 rounded-full" />
         </div>
       </div>
       <SkeletonRows />
@@ -285,23 +286,7 @@ function SkeletonRows() {
   return (
     <div className="pt-2">
       {skeletonRows.map(([titleWidth, sublineWidth]) => (
-        <div key={titleWidth} className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
-          <div className="size-11 shrink-0 motion-safe:animate-pulse rounded-tile bg-muted" />
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div
-              className="h-3.5 motion-safe:animate-pulse rounded bg-muted"
-              style={{ width: titleWidth }}
-            />
-            <div
-              className="h-2.5 motion-safe:animate-pulse rounded bg-muted"
-              style={{ width: sublineWidth }}
-            />
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <div className="h-2.5 w-14 motion-safe:animate-pulse rounded bg-muted" />
-            <div className="h-3.5 w-19 motion-safe:animate-pulse rounded bg-muted" />
-          </div>
-        </div>
+        <ActivityRowSkeleton key={titleWidth} titleWidth={titleWidth} sublineWidth={sublineWidth} />
       ))}
     </div>
   )

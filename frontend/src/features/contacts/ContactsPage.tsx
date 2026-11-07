@@ -10,6 +10,7 @@ import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ContactRow } from './ContactRow'
 import { isHiddenAsSettled } from './contactVisibility'
@@ -189,17 +190,17 @@ function ContactsSkeleton() {
     <div role="status">
       <span className="sr-only">Loading contacts</span>
       <div className="px-4 pt-6 pb-4">
-        <div className="h-4.5 w-60 motion-safe:animate-pulse rounded-md bg-muted" />
+        <Skeleton className="h-4.5 w-60 rounded-md" />
       </div>
       {skeletonNameWidths.map((width) => (
         <div key={width} className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
-          <div className="size-11 shrink-0 motion-safe:animate-pulse rounded-full bg-muted" />
+          <Skeleton className="size-11 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1">
-            <div className="h-3.5 motion-safe:animate-pulse rounded bg-muted" style={{ width }} />
+            <Skeleton className="h-3.5" style={{ width }} />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <div className="h-2.5 w-12 motion-safe:animate-pulse rounded bg-muted" />
-            <div className="h-3.5 w-19 motion-safe:animate-pulse rounded bg-muted" />
+            <Skeleton className="h-2.5 w-12" />
+            <Skeleton className="h-3.5 w-19" />
           </div>
         </div>
       ))}
