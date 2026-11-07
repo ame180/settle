@@ -103,13 +103,6 @@ export type TransferResponse = {
 
 export type ActivityType = 'expense' | 'transfer'
 
-/** Query string of GET /api/activity, which returns ActivityItem[]. `limit` is 1-100 (default 20). */
-export type ActivityQuery = {
-  limit?: number
-  offset?: number
-  contactId?: number
-}
-
 export type ActivityItem = {
   type: ActivityType
   id: number

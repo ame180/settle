@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, apiRequest } from './client'
-import type { MeResponse } from './types'
+import type { MeResponse, MeUpdateRequest, RegisterRequest } from './types'
 
 export const meQueryKey = ['me'] as const
 
@@ -55,17 +55,11 @@ export function useLogout() {
   })
 }
 
-export type RegisterInput = {
-  email: string
-  password: string
-  name: string | null
-}
-
-export function register(input: RegisterInput): Promise<MeResponse> {
+export function register(input: RegisterRequest): Promise<MeResponse> {
   return apiRequest<MeResponse>('/api/register', { method: 'POST', body: input })
 }
 
-export function updateMe(input: { name: string }): Promise<MeResponse> {
+export function updateMe(input: MeUpdateRequest): Promise<MeResponse> {
   return apiRequest<MeResponse>('/api/me', { method: 'PATCH', body: input })
 }
 
@@ -74,7 +68,7 @@ export function useRegister() {
   return useMutation({
     mutationFn: register,
     onSuccess: (me) => {
-      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'me' })
+      clearSession(queryClient)
       queryClient.setQueryData(meQueryKey, me)
       return queryClient.invalidateQueries({ queryKey: meQueryKey })
     },
