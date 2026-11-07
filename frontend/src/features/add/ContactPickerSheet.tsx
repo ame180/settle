@@ -2,7 +2,13 @@ import { useState } from 'react'
 import { Check } from 'lucide-react'
 import type { ContactListItem, PersonRef } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { balanceLine, recentContacts, searchContacts } from './contactOptions'
 
@@ -37,7 +43,7 @@ export function ContactPickerSheet({
       }}
     >
       <SheetContent className="h-[80dvh]">
-        <div className="flex flex-col gap-3 px-4 pt-2 pb-3">
+        <SheetHeader className="gap-3">
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription className="sr-only">Pick a contact.</SheetDescription>
           <input
@@ -49,7 +55,7 @@ export function ContactPickerSheet({
             onChange={(event) => setQuery(event.target.value)}
             className="h-11 rounded-[10px] border border-border-strong bg-background px-3 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-[3px] focus:ring-foreground/10"
           />
-        </div>
+        </SheetHeader>
         <ul aria-label="Contacts" className="min-h-0 flex-1 overflow-y-auto border-t">
           {contacts === undefined && (
             <li className="px-4 py-3 text-muted-foreground">Loading contacts…</li>

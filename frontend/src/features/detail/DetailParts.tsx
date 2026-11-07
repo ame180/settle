@@ -1,24 +1,15 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { LoaderCircle, Lock, SearchX, Trash2 } from 'lucide-react'
+import { Lock, SearchX, Trash2 } from 'lucide-react'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
+import { ConfirmSheet } from '@/components/ConfirmSheet'
 import { PageHeader } from '@/components/PageHeader'
 import { LoadError } from '@/components/LoadError'
 import { Spinner } from '@/components/Spinner'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
 import type { DeleteAndGoBack } from './useDeleteAndGoBack'
 
 export const detailBackFallback = '/activity'
@@ -132,41 +123,21 @@ export function DetailActions({
   const { isConfirmOpen, setConfirmOpen, confirm, isPending } = deletion
   return (
     <>
-      <Sheet open={isConfirmOpen} onOpenChange={(next) => !isPending && setConfirmOpen(next)}>
-        <SheetTrigger asChild>
+      <ConfirmSheet
+        trigger={
           <Button variant="ghost" size="icon" className="[&_svg]:size-5.5" aria-label={deleteLabel}>
             <Trash2 aria-hidden="true" />
           </Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader className="pt-3">
-            <SheetTitle className="break-words">{confirmTitle}</SheetTitle>
-            <SheetDescription className="leading-[1.45]">{confirmDescription}</SheetDescription>
-          </SheetHeader>
-          <SheetFooter className="pb-6">
-            <Button
-              variant="destructive"
-              className="h-12 rounded-full text-base font-semibold"
-              onClick={confirm}
-              disabled={isPending}
-            >
-              {isPending && (
-                <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
-              )}
-              {isPending ? 'Deleting…' : deleteLabel}
-            </Button>
-            <SheetClose asChild>
-              <Button
-                variant="outline"
-                className="h-12 rounded-full text-base"
-                disabled={isPending}
-              >
-                Cancel
-              </Button>
-            </SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+        }
+        open={isConfirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmLabel={deleteLabel}
+        onConfirm={confirm}
+        pending={isPending}
+        pendingLabel="Deleting…"
+      />
       <Link
         to={editTo}
         aria-label={editLabel}

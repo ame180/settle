@@ -1,6 +1,12 @@
 import type { ExpenseCategory } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { categoryInfo, expenseCategories } from '@/lib/categories'
 import { cn } from '@/lib/utils'
 
@@ -15,12 +21,12 @@ export function CategorySheet({ open, onOpenChange, value, onPick }: CategoryShe
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
-        <div className="flex flex-col gap-1 px-4 pt-2 pb-3">
+        <SheetHeader>
           <SheetTitle>Category</SheetTitle>
           <SheetDescription className="text-[13px]">
             Guessed from the title. Pick another and it stays.
           </SheetDescription>
-        </div>
+        </SheetHeader>
         <div role="radiogroup" aria-label="Category" className="grid grid-cols-4 gap-2 px-4 pb-6">
           {expenseCategories.map((category) => {
             const checked = category === value
