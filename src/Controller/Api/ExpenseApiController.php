@@ -46,7 +46,7 @@ class ExpenseApiController extends AbstractController
         return $this->json($this->toResponse($user, $expense), JsonResponse::HTTP_CREATED);
     }
 
-    #[Route('/expenses/{id}', name: 'api_expenses_show', methods: ['GET'])]
+    #[Route('/expenses/{id}', name: 'api_expenses_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function show(int $id): JsonResponse
     {
@@ -63,7 +63,7 @@ class ExpenseApiController extends AbstractController
         return $this->json($this->toResponse($user, $expense));
     }
 
-    #[Route('/expenses/{id}', name: 'api_expenses_update', methods: ['PUT'])]
+    #[Route('/expenses/{id}', name: 'api_expenses_update', methods: ['PUT'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function update(
         int $id,
@@ -85,7 +85,7 @@ class ExpenseApiController extends AbstractController
         return $this->json($this->toResponse($user, $expense));
     }
 
-    #[Route('/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'])]
+    #[Route('/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function delete(int $id): JsonResponse
     {

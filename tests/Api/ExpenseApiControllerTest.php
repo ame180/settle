@@ -1116,6 +1116,23 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(404);
     }
 
+    public function testShowFailsWhenIdIsNotANumber(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/api/expenses/abc');
+
+        $this->assertResponseStatusCodeSame(404);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
     public function testShowFailsWhenUserIsNotInvolved(): void
     {
         $client = static::createClient();

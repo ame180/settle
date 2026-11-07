@@ -316,6 +316,23 @@ class TransferApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(404);
     }
 
+    public function testShowNotFoundWhenIdIsNotANumber(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $user = UserFactory::createUser();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/api/transfers/abc');
+
+        $this->assertResponseStatusCodeSame(404);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
     public function testUpdateSuccess(): void
     {
         $client = static::createClient();
