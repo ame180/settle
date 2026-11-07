@@ -127,7 +127,10 @@ describe('SignUpPage', () => {
     await screen.findByRole('heading', { name: 'Create an account' })
     await fillForm()
 
-    expect(await screen.findByRole('button', { name: 'Creating account…' })).toBeDisabled()
+    expect(await screen.findByRole('button', { name: 'Creating account…' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
     expect(screen.getByLabelText('Email')).toHaveAttribute('readonly')
   })
 

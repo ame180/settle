@@ -1,5 +1,7 @@
 import type { ActivityItem } from '@/api/types'
 import { calendarDayKey } from '@/lib/dates'
+import type { BalanceDirection } from '@/lib/money'
+import { nameForViewer } from '@/lib/person'
 
 export type ActivityDay = {
   /** `YYYY-MM-DD` */
@@ -48,16 +50,6 @@ export function activityItemPath(item: ActivityItem): string {
   return item.type === 'expense' ? `/expenses/${item.id}` : `/transfers/${item.id}`
 }
 
-export type BalanceDirection = 'owed' | 'owe' | 'none'
-
-/** How an item moved the viewer's balance: `owed` = others owe the viewer more. */
-export function balanceDirection(value: string): BalanceDirection {
-  if (/^-?0*(\.0*)?$/.test(value)) {
-    return 'none'
-  }
-  return value.startsWith('-') ? 'owe' : 'owed'
-}
-
 export const balanceDirectionLabel: Record<BalanceDirection, string> = {
   owed: 'you lent',
   owe: 'you borrowed',
@@ -70,7 +62,7 @@ export function describeTransfer(
   viewerId: number,
 ): { actor: string; verb: string } {
   const payer = item.payer ?? item.payee
-  const actor = payer.id === viewerId ? 'You' : payer.displayName
+  const actor = nameForViewer(payer, viewerId)
   const target = item.payee.id === viewerId ? 'you' : item.payee.displayName
   return { actor, verb: `paid ${target}` }
 }

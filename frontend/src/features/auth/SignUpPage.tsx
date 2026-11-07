@@ -4,8 +4,8 @@ import { z } from 'zod'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useMe, useRegister } from '@/api/auth'
 import { ApiError } from '@/api/client'
-import { FieldError } from '@/components/FieldError'
-import { SubmitButton } from '@/components/SubmitButton'
+import { AlertLine, FieldError } from '@/components/FieldError'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -176,15 +176,16 @@ export function SignUpPage() {
           )}
         </div>
 
-        {errors.root && (
-          <p role="alert" className="text-sm text-destructive">
-            {errors.root.message}
-          </p>
-        )}
+        {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-        <SubmitButton isPending={isPending} pendingLabel="Creating account…">
+        <PrimaryButton
+          type="submit"
+          pending={isPending}
+          pendingLabel="Creating account…"
+          className="mt-2"
+        >
           Create account
-        </SubmitButton>
+        </PrimaryButton>
       </form>
     </AuthLayout>
   )

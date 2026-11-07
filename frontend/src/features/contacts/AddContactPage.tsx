@@ -1,18 +1,17 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate } from 'react-router'
-import { LoaderCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { useAddContact } from '@/api/contacts'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
-import { FieldError } from '@/components/FieldError'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
-import { Button } from '@/components/ui/button'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
-import type { ContactsLocationState } from './ContactsPage'
 
 const addContactSchema = z.object({
   email: z.string().trim().pipe(z.email('Enter a valid email address.')),
@@ -29,7 +28,7 @@ function isFormField(propertyPath: string): propertyPath is (typeof formFields)[
 
 export function AddContactPage() {
   const addContactMutation = useAddContact()
-  const navigate = useNavigate()
+  const { goBack } = useGoBack('/')
 
   const form = useForm<AddContactValues>({
     resolver: zodResolver(addContactSchema),
@@ -43,8 +42,8 @@ export function AddContactPage() {
       { email: values.email, nickname: values.nickname === '' ? null : values.nickname },
       {
         onSuccess: (contact) => {
-          const state: ContactsLocationState = { addedContactName: contact.person.displayName }
-          navigate('/', { replace: true, state })
+          toast.success(`${contact.person.displayName} added to your contacts`)
+          goBack()
         },
         onError: (error) => {
           if (!(error instanceof ApiError) || error.status !== 400) {
@@ -121,26 +120,11 @@ export function AddContactPage() {
             )}
           </div>
 
-          {errors.root && (
-            <p role="alert" className="text-sm text-destructive">
-              {errors.root.message}
-            </p>
-          )}
+          {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-          <Button
-            type="submit"
-            className="mt-2 h-12 rounded-full text-base font-semibold disabled:opacity-75 [&_svg]:size-4.5"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
-                Adding…
-              </>
-            ) : (
-              'Add contact'
-            )}
-          </Button>
+          <PrimaryButton type="submit" pending={isPending} pendingLabel="Adding…" className="mt-2">
+            Add contact
+          </PrimaryButton>
         </form>
       </div>
     </div>

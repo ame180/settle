@@ -1,17 +1,17 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
 import { useMe, useUpdateMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
-import { FieldError } from '@/components/FieldError'
+import { BackLink } from '@/components/BackLink'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
-import { SubmitButton } from '@/components/SubmitButton'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
-import type { ProfileLocationState } from './ProfilePage'
 
 const nameTooLongMessage = 'Use at most 64 characters.'
 
@@ -29,7 +29,7 @@ export function EditNamePage() {
 
 function EditNameForm({ currentName }: { currentName: string | null }) {
   const updateMeMutation = useUpdateMe()
-  const navigate = useNavigate()
+  const { goBack } = useGoBack('/profile')
 
   const form = useForm<EditNameValues>({
     resolver: zodResolver(editNameSchema),
@@ -41,8 +41,8 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
   const onSubmit = form.handleSubmit((values) => {
     updateMeMutation.mutate(values, {
       onSuccess: () => {
-        const state: ProfileLocationState = { nameSaved: true }
-        navigate('/profile', { replace: true, state })
+        toast.success('Name saved')
+        goBack()
       },
       onError: (error) => {
         const isNameViolation =
@@ -59,18 +59,7 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader
-        title="Your name"
-        leading={
-          <Link
-            to="/profile"
-            aria-label="Back to profile"
-            className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <ArrowLeft className="size-6" aria-hidden="true" />
-          </Link>
-        }
-      />
+      <PageHeader title="Your name" leading={<BackLink to="/profile" label="Back to profile" />} />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <p className="text-[15px] leading-[1.45] text-muted-foreground">
@@ -100,15 +89,11 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
             )}
           </div>
 
-          {errors.root && (
-            <p role="alert" className="text-sm text-destructive">
-              {errors.root.message}
-            </p>
-          )}
+          {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-          <SubmitButton isPending={isPending} pendingLabel="Saving…">
+          <PrimaryButton type="submit" pending={isPending} pendingLabel="Saving…" className="mt-2">
             Save name
-          </SubmitButton>
+          </PrimaryButton>
         </form>
       </div>
     </div>

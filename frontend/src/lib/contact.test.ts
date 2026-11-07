@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ContactListItem } from '@/api/types'
-import { contactSecondaryLine, settleUpPath, shortName } from './contact'
+import { contactSecondaryLine, settleUpPath } from './contact'
 
 function contact(overrides: Partial<ContactListItem> = {}): ContactListItem {
   return {
@@ -43,11 +43,5 @@ describe('contactSecondaryLine', () => {
       name: null,
     })
     expect(contactSecondaryLine(emailOnly)).toBe('')
-  })
-})
-
-describe('shortName', () => {
-  it('takes the first word', () => {
-    expect(shortName('Aleksandra Grzegorzewska-Nowak')).toBe('Aleksandra')
   })
 })

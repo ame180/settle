@@ -99,14 +99,20 @@ describe('AddContactPage', () => {
   })
 
   it('locks the form while the request is in flight', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})))
+    const fetchMock = vi.fn().mockReturnValue(new Promise(() => {}))
+    vi.stubGlobal('fetch', fetchMock)
     renderAddContact()
 
     await userEvent.type(screen.getByLabelText('Email'), 'jan@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Add contact' }))
 
-    expect(await screen.findByRole('button', { name: 'Adding…' })).toBeDisabled()
+    const pending = await screen.findByRole('button', { name: 'Adding…' })
+    expect(pending).toHaveAttribute('aria-disabled', 'true')
     expect(screen.getByLabelText('Email')).toHaveAttribute('readonly')
+
+    await userEvent.click(pending)
+    await userEvent.type(screen.getByLabelText('Email'), '{Enter}')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('sends a trimmed payload and returns to contacts with a confirmation', async () => {

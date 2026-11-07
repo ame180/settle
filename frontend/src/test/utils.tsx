@@ -15,11 +15,14 @@ export function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-export function renderRoutes(routes: RouteObject[], initialEntry: InitialEntry) {
+/** Pass several entries to start with in-app history, the last one being the current page. */
+export function renderRoutes(routes: RouteObject[], initialEntry: InitialEntry | InitialEntry[]) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
-  const router = createMemoryRouter(routes, { initialEntries: [initialEntry] })
+  const router = createMemoryRouter(routes, {
+    initialEntries: Array.isArray(initialEntry) ? initialEntry : [initialEntry],
+  })
   render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

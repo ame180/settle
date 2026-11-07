@@ -1,11 +1,6 @@
 import type { ContactListItem } from '@/api/types'
 import { isNegativeAmount } from './money'
 
-/** First word of the display name, for sentences like "Anna owes you". */
-export function shortName(displayName: string): string {
-  return displayName.trim().split(/\s+/)[0] ?? displayName
-}
-
 /** Their own name (when a nickname hides it) and email, without repeating the display name. */
 export function contactSecondaryLine(contact: ContactListItem): string {
   const { person, name } = contact

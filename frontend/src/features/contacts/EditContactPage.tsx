@@ -1,24 +1,25 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate, useParams } from 'react-router'
-import { CircleAlert, LoaderCircle, RefreshCw } from 'lucide-react'
+import { useParams } from 'react-router'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { useContact, useUpdateContact } from '@/api/contacts'
 import type { ContactListItem } from '@/api/types'
 import { BackLink } from '@/components/BackLink'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { StateMessage } from '@/components/StateMessage'
-import { Button } from '@/components/ui/button'
+import { LoadError } from '@/components/LoadError'
+import { Spinner } from '@/components/Spinner'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { shortName } from '@/lib/contact'
-import { hasInAppHistory } from '@/lib/history'
+import { getShortName } from '@/lib/person'
+import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
 import { ContactNotFound } from './ContactNotFound'
-import { parseUserId } from './parseUserId'
+import { parseIdParam } from '@/lib/parseIdParam'
 
 const editContactSchema = z.object({
   nickname: z.string().trim().max(64, 'Nickname can be at most 64 characters.'),
@@ -27,7 +28,7 @@ const editContactSchema = z.object({
 type EditContactValues = z.infer<typeof editContactSchema>
 
 export function EditContactPage() {
-  const userId = parseUserId(useParams().userId)
+  const userId = parseIdParam(useParams().userId)
 
   return userId === null ? <ContactNotFound /> : <EditContact userId={userId} />
 }
@@ -40,7 +41,7 @@ function EditContact({ userId }: { userId: number }) {
     return <ContactNotFound />
   }
 
-  const backLabel = contact ? `Back to ${shortName(contact.person.displayName)}` : 'Back'
+  const backLabel = contact ? `Back to ${getShortName(contact.person.displayName)}` : 'Back'
 
   return (
     <div className="flex h-full flex-col">
@@ -51,29 +52,14 @@ function EditContact({ userId }: { userId: number }) {
 
       <div className="flex-1 overflow-y-auto px-4 py-6">
         {contactQuery.isPending ? (
-          <div role="status" className="flex justify-center py-10 text-muted-foreground">
-            <LoaderCircle className="size-6 motion-safe:animate-spin" aria-hidden="true" />
-            <span className="sr-only">Loading contact</span>
-          </div>
+          <Spinner label="Loading contact" className="py-10" />
         ) : contact === undefined ? (
-          <StateMessage
+          <LoadError
             compact
-            role="alert"
-            icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
-            iconClassName="bg-destructive/10 text-destructive"
             title="Couldn't load contact"
-            description="Check your connection and try again."
-          >
-            <Button
-              variant="outline"
-              className="rounded-full px-5 text-[15px]"
-              onClick={() => contactQuery.refetch()}
-              disabled={contactQuery.isFetching}
-            >
-              <RefreshCw aria-hidden="true" />
-              Try again
-            </Button>
-          </StateMessage>
+            onRetry={() => contactQuery.refetch()}
+            isRetrying={contactQuery.isFetching}
+          />
         ) : (
           <EditContactForm contact={contact} />
         )}
@@ -85,7 +71,7 @@ function EditContact({ userId }: { userId: number }) {
 function EditContactForm({ contact }: { contact: ContactListItem }) {
   const { person } = contact
   const updateContactMutation = useUpdateContact(person.id)
-  const navigate = useNavigate()
+  const { goBack } = useGoBack(`/contacts/${person.id}`)
 
   const form = useForm<EditContactValues>({
     resolver: zodResolver(editContactSchema),
@@ -100,11 +86,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
       {
         onSuccess: () => {
           toast.success('Contact saved')
-          if (hasInAppHistory()) {
-            navigate(-1)
-            return
-          }
-          navigate(`/contacts/${person.id}`, { replace: true })
+          goBack()
         },
         onError: (error) => {
           const nicknameViolation =
@@ -150,13 +132,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
             {...form.register('nickname')}
           />
           {errors.nickname ? (
-            <p
-              id="contact-nickname-error"
-              className="flex items-center gap-1.5 text-[13px] text-destructive"
-            >
-              <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
-              {errors.nickname.message}
-            </p>
+            <FieldError id="contact-nickname-error" message={errors.nickname.message} />
           ) : (
             <p id="contact-nickname-hint" className="text-[13px] text-muted-foreground">
               Only you see this. Leave empty to use their name.
@@ -175,26 +151,11 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
           />
         </div>
 
-        {errors.root && (
-          <p role="alert" className="text-sm text-destructive">
-            {errors.root.message}
-          </p>
-        )}
+        {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-        <Button
-          type="submit"
-          className="mt-2 h-12 rounded-full text-base font-semibold disabled:opacity-75 [&_svg]:size-4.5"
-          disabled={isPending}
-        >
-          {isPending ? (
-            <>
-              <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
-              Saving…
-            </>
-          ) : (
-            'Save'
-          )}
-        </Button>
+        <PrimaryButton type="submit" pending={isPending} pendingLabel="Saving…" className="mt-2">
+          Save
+        </PrimaryButton>
       </form>
     </div>
   )

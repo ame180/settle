@@ -4,14 +4,12 @@ import type { ActivityItem } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
-import { formatMoney } from '@/lib/money'
+import { SignedAmount } from '@/components/SignedAmount'
+import { balanceDirection, formatMoney } from '@/lib/money'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import {
-  activityItemPath,
-  balanceDirection,
-  balanceDirectionLabel,
-  describeTransfer,
-} from './activityItems'
+import { nameForViewer } from '@/lib/person'
+import { activityItemPath, balanceDirectionLabel, describeTransfer } from './activityItems'
 
 const rowLinkClassName =
   'flex w-full items-center px-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset active:bg-muted'
@@ -37,7 +35,7 @@ export function ExpenseRow({
   now,
 }: ExpenseRowProps) {
   const { payee } = item
-  const payerLabel = payee.id === viewerId ? 'You' : payee.displayName
+  const payerLabel = nameForViewer(payee, viewerId)
   const subline = `${payerLabel} paid ${formatMoney(item.amount, item.currency)}`
 
   return (
@@ -53,26 +51,13 @@ export function ExpenseRow({
           {showDate ? `${formatShortDate(item.occurredOn, now)} · ${subline}` : subline}
         </span>
       </span>{' '}
-      <SignedAmount value={item.value} currency={item.currency} />
+      <SignedAmount
+        direction={balanceDirection(item.value)}
+        label={balanceDirectionLabel[balanceDirection(item.value)]}
+      >
+        {formatMoney(item.value, item.currency)}
+      </SignedAmount>
     </Link>
-  )
-}
-
-function SignedAmount({ value, currency }: { value: string; currency: string }) {
-  const direction = balanceDirection(value)
-
-  return (
-    <span
-      className={cn(
-        'flex shrink-0 flex-col items-end gap-0.5',
-        direction === 'owed' && 'text-positive',
-        direction === 'owe' && 'text-negative',
-        direction === 'none' && 'text-muted-foreground',
-      )}
-    >
-      <span className="text-xs">{balanceDirectionLabel[direction]}</span>{' '}
-      <span className="text-[17px] font-semibold tabular-nums">{formatMoney(value, currency)}</span>
-    </span>
   )
 }
 
@@ -122,5 +107,33 @@ export function DayHeader({ id, label }: { id?: string; label: string }) {
     >
       {label}
     </h2>
+  )
+}
+
+/** Placeholder for an activity row while the feed loads. */
+export function ActivityRowSkeleton({
+  titleWidth,
+  sublineWidth,
+  lead = 'avatar',
+}: {
+  titleWidth: string
+  sublineWidth: string
+  /** Same as the row's: the feed leads with avatars, a contact's view with category tiles. */
+  lead?: 'avatar' | 'category'
+}) {
+  return (
+    <div className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
+      <Skeleton
+        className={cn('size-11 shrink-0', lead === 'category' ? 'rounded-tile' : 'rounded-full')}
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <Skeleton className="h-3.5" style={{ width: titleWidth }} />
+        <Skeleton className="h-2.5" style={{ width: sublineWidth }} />
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <Skeleton className="h-2.5 w-14" />
+        <Skeleton className="h-3.5 w-19" />
+      </div>
+    </div>
   )
 }

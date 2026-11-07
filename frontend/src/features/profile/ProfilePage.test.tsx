@@ -60,9 +60,11 @@ describe('ProfilePage', () => {
 
     expect(await screen.findByRole('heading', { name: 'ame@example.com' })).toBeInTheDocument()
     expect(
-      screen.getByText('Your contacts see your email until you set a name.'),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Add your name/ })).toBeInTheDocument()
+      screen.getByRole('link', {
+        name: /Name\s*Add your name\s*Contacts see your email until you add one\./,
+      }),
+    ).toHaveAttribute('href', '/profile/name')
+    expect(screen.getAllByText('Add your name')).toHaveLength(1)
   })
 })
 

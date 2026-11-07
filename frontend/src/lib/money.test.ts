@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { findPlnAmount, formatMoney, formatPln, isNegativeAmount } from './money'
+import {
+  balanceDirection,
+  findPlnAmount,
+  formatGrosze,
+  formatMoney,
+  formatPln,
+  isNegativeAmount,
+  parseAmountInput,
+  sumAmounts,
+} from './money'
 
 describe('formatPln', () => {
   it.each([
@@ -37,5 +46,54 @@ describe('formatMoney', () => {
   it('uses zł for PLN and the currency code otherwise', () => {
     expect(formatMoney('-1234.5', 'PLN')).toBe('1\u00a0234.50\u00a0zł')
     expect(formatMoney('50', 'EUR')).toBe('50.00\u00a0EUR')
+  })
+})
+
+describe('parseAmountInput', () => {
+  it.each([
+    ['99', '99.00'],
+    ['99,5', '99.50'],
+    ['99.05', '99.05'],
+    ['1 535,64', '1535.64'],
+    ['007', '7.00'],
+    [',5', '0.50'],
+    ['12.', '12.00'],
+  ])('reads %j as %s', (input, expected) => {
+    expect(parseAmountInput(input)).toBe(expected)
+  })
+
+  it.each(['', 'abc', '1.234', '1,2,3', '-5', '.'])('rejects %j', (input) => {
+    expect(parseAmountInput(input)).toBeNull()
+  })
+})
+
+describe('formatGrosze', () => {
+  it('formats integer grosze, signless', () => {
+    expect(formatGrosze(4950n)).toBe(formatPln('49.50'))
+    expect(formatGrosze(-153564n)).toBe(formatPln('1535.64'))
+  })
+})
+
+describe('sumAmounts', () => {
+  it.each([
+    [['61.43', '61.43'], '122.86'],
+    [['0.1', '0.2'], '0.30'],
+    [['186.20'], '186.20'],
+    [[], '0.00'],
+    [['-5.00', '1.25'], '-3.75'],
+  ])('adds %j to %s', (amounts, expected) => {
+    expect(sumAmounts(amounts)).toBe(expected)
+  })
+})
+
+describe('balanceDirection', () => {
+  it.each([
+    ['12.50', 'owed'],
+    ['-0.01', 'owe'],
+    ['0.00', 'none'],
+    ['-0.00', 'none'],
+    ['0', 'none'],
+  ])('reads %s as %s', (value, expected) => {
+    expect(balanceDirection(value)).toBe(expected)
   })
 })

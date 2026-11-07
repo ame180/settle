@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { jsonResponse, renderRoutes } from '@/test/utils'
@@ -31,11 +31,8 @@ function stubContacts(response: ContactListResponse) {
   return fetchMock
 }
 
-function renderContacts(state?: unknown) {
-  return renderRoutes(
-    [{ path: '/', element: <ContactsPage /> }],
-    state === undefined ? '/' : { pathname: '/', state },
-  )
+function renderContacts() {
+  return renderRoutes([{ path: '/', element: <ContactsPage /> }], '/')
 }
 
 afterEach(() => {
@@ -62,10 +59,10 @@ describe('ContactsPage', () => {
     const rows = within(screen.getByRole('list')).getAllByRole('listitem')
     expect(rows).toHaveLength(3)
     expect(rows[0]).toHaveTextContent('Anna Kowalska')
-    expect(rows[0]).toHaveTextContent('owes you192.92 zł')
+    expect(rows[0]).toHaveTextContent('owes you 192.92 zł')
     expect(within(rows[0]).getByRole('link')).toHaveAttribute('href', '/contacts/1')
     expect(rows[1]).toHaveTextContent('Not on Settle yet')
-    expect(rows[2]).toHaveTextContent('you owe120.00 zł')
+    expect(rows[2]).toHaveTextContent('you owe 120.00 zł')
     expect(screen.queryByText('Julia Mazur')).not.toBeInTheDocument()
     expect(screen.getByText('Settled-up contacts are hidden.')).toBeInTheDocument()
   })
@@ -160,19 +157,12 @@ describe('ContactsPage', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('lists a newly added contact and confirms it with a toast that disappears', async () => {
+  it('lists a contact who is not on Settle yet with no balance', async () => {
     stubContacts({ totals: [], items: [contact(5, 'Jan', null, false, RECENTLY)] })
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    renderContacts({ addedContactName: 'Jan' })
+    renderContacts()
 
-    expect(
-      (await screen.findByText('Jan added to your contacts')).closest('[aria-live]'),
-    ).not.toBeNull()
-    expect(screen.getByText('Not on Settle yet').closest('li')).toHaveTextContent('no balance')
-
-    await vi.advanceTimersByTimeAsync(4000)
-    await waitFor(() =>
-      expect(screen.queryByText('Jan added to your contacts')).not.toBeInTheDocument(),
+    expect((await screen.findByText('Not on Settle yet')).closest('li')).toHaveTextContent(
+      'no balance',
     )
   })
 })

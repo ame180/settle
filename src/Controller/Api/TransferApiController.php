@@ -43,7 +43,7 @@ class TransferApiController extends AbstractController
         return $this->json($this->toResponse($user, $transfer), JsonResponse::HTTP_CREATED);
     }
 
-    #[Route('/transfers/{id}', name: 'api_transfers_show', methods: ['GET'])]
+    #[Route('/transfers/{id}', name: 'api_transfers_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function show(int $id): JsonResponse
     {
@@ -60,7 +60,7 @@ class TransferApiController extends AbstractController
         return $this->json($this->toResponse($user, $transfer));
     }
 
-    #[Route('/transfers/{id}', name: 'api_transfers_update', methods: ['PUT'])]
+    #[Route('/transfers/{id}', name: 'api_transfers_update', methods: ['PUT'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function update(
         int $id,
@@ -82,7 +82,7 @@ class TransferApiController extends AbstractController
         return $this->json($this->toResponse($user, $transfer));
     }
 
-    #[Route('/transfers/{id}', name: 'api_transfers_delete', methods: ['DELETE'])]
+    #[Route('/transfers/{id}', name: 'api_transfers_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function delete(int $id): JsonResponse
     {

@@ -3,6 +3,7 @@ import { UserX } from 'lucide-react'
 import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
+import { buttonClassName } from '@/components/ui/button-variants'
 
 export function ContactNotFound() {
   return (
@@ -20,10 +21,7 @@ export function ContactNotFoundMessage() {
       title="Contact not found"
       description="They may not be one of your contacts."
     >
-      <Link
-        to="/"
-        className="inline-flex h-11 items-center rounded-full border border-input bg-background px-5 text-[15px] font-medium hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-      >
+      <Link to="/" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
         Go to contacts
       </Link>
     </StateMessage>
