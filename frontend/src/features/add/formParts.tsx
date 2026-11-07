@@ -20,35 +20,6 @@ export function PillButton({
   )
 }
 
-/** The dark pill at the bottom of a form; shows a spinner and its pending label while saving. */
-export function PrimaryButton({
-  pending,
-  pendingLabel,
-  children,
-  className,
-  ...props
-}: React.ComponentProps<'button'> & { pending?: boolean; pendingLabel?: string }) {
-  return (
-    <button
-      aria-disabled={pending || undefined}
-      className={cn(
-        'flex h-12 w-full items-center justify-center gap-2.5 rounded-full bg-primary px-6 text-base font-semibold text-primary-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none active:bg-primary/85 disabled:opacity-50',
-        pending && 'bg-primary/80',
-        className,
-      )}
-      {...props}
-    >
-      {pending && (
-        <span
-          aria-hidden="true"
-          className="size-4.5 rounded-full motion-safe:animate-spin border-[2.5px] border-current border-r-transparent"
-        />
-      )}
-      <span>{pending ? pendingLabel : children}</span>
-    </button>
-  )
-}
-
 /** The pinned bottom of a form: the save-failed banner, anything else, then the button. */
 export function FormFooter({
   serverError,

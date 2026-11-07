@@ -12,7 +12,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { LoadError } from '@/components/LoadError'
 import { Spinner } from '@/components/Spinner'
-import { SubmitButton } from '@/components/SubmitButton'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getShortName } from '@/lib/person'
@@ -153,9 +153,9 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
 
         {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-        <SubmitButton isPending={isPending} pendingLabel="Saving…">
+        <PrimaryButton type="submit" pending={isPending} pendingLabel="Saving…" className="mt-2">
           Save
-        </SubmitButton>
+        </PrimaryButton>
       </form>
     </div>
   )

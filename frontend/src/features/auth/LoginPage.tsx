@@ -5,7 +5,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useLogin, useMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
 import { AlertLine, FieldError } from '@/components/FieldError'
-import { SubmitButton } from '@/components/SubmitButton'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthLayout, authLinkClassName } from './AuthLayout'
@@ -87,9 +87,14 @@ export function LoginPage() {
           )}
         </div>
         {serverError && <AlertLine message={serverError} />}
-        <SubmitButton isPending={loginMutation.isPending} pendingLabel="Signing in…">
+        <PrimaryButton
+          type="submit"
+          pending={loginMutation.isPending}
+          pendingLabel="Signing in…"
+          className="mt-2"
+        >
           Sign in
-        </SubmitButton>
+        </PrimaryButton>
       </form>
     </AuthLayout>
   )

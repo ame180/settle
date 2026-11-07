@@ -7,7 +7,7 @@ import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
 import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
-import { SubmitButton } from '@/components/SubmitButton'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useGoBack } from '@/lib/useGoBack'
@@ -122,9 +122,9 @@ export function AddContactPage() {
 
           {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-          <SubmitButton isPending={isPending} pendingLabel="Adding…">
+          <PrimaryButton type="submit" pending={isPending} pendingLabel="Adding…" className="mt-2">
             Add contact
-          </SubmitButton>
+          </PrimaryButton>
         </form>
       </div>
     </div>

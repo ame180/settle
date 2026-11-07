@@ -7,7 +7,7 @@ import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
 import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
-import { SubmitButton } from '@/components/SubmitButton'
+import { PrimaryButton } from '@/components/PrimaryButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useGoBack } from '@/lib/useGoBack'
@@ -91,9 +91,9 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
 
           {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-          <SubmitButton isPending={isPending} pendingLabel="Saving…">
+          <PrimaryButton type="submit" pending={isPending} pendingLabel="Saving…" className="mt-2">
             Save name
-          </SubmitButton>
+          </PrimaryButton>
         </form>
       </div>
     </div>
