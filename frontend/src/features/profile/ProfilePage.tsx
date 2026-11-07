@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { cn } from '@/lib/utils'
+import { ownDisplayName } from '@/lib/person'
 
 const rowClassName =
   'flex min-h-15 items-center gap-3 border-b border-border/60 px-4 py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset'
@@ -27,9 +28,9 @@ export function ProfilePage() {
             aria-label="You"
             className="flex flex-col items-center gap-3 px-4 pt-7 pb-6 text-center"
           >
-            <PersonAvatar id={me.id} name={me.name ?? me.email} className="size-18 text-2xl" />
+            <PersonAvatar id={me.id} name={ownDisplayName(me)} className="size-18 text-2xl" />
             <div className="flex max-w-full flex-col gap-1">
-              <h2 className="truncate text-xl font-semibold">{me.name ?? me.email}</h2>
+              <h2 className="truncate text-xl font-semibold">{ownDisplayName(me)}</h2>
               {me.name && <p className="truncate text-[13px] text-muted-foreground">{me.email}</p>}
             </div>
           </section>

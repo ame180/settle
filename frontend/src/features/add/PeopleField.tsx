@@ -7,7 +7,7 @@ import { useAddContact } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
 import { useCloseOnBack } from '@/lib/backLayers'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { getShortName } from '@/lib/person'
+import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { balanceLine, looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
 import { FieldError } from '@/components/FieldError'
@@ -191,7 +191,7 @@ export function PeopleField({
         onClick={() => (open ? inputRef.current?.focus() : openList())}
       >
         <span className="flex h-8 items-center gap-1.5 rounded-full bg-secondary pr-3 pl-1 text-[15px]">
-          <PersonAvatar id={me.id} name={me.name ?? me.email} size="sm" />
+          <PersonAvatar id={me.id} name={ownDisplayName(me)} size="sm" />
           You
         </span>
         {others.map((person) => (

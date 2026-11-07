@@ -7,6 +7,7 @@ import { formatShortDate } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { nameForViewer } from '@/lib/person'
 import {
   activityItemPath,
   balanceDirection,
@@ -38,7 +39,7 @@ export function ExpenseRow({
   now,
 }: ExpenseRowProps) {
   const { payee } = item
-  const payerLabel = payee.id === viewerId ? 'You' : payee.displayName
+  const payerLabel = nameForViewer(payee, viewerId)
   const subline = `${payerLabel} paid ${formatMoney(item.amount, item.currency)}`
 
   return (

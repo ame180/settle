@@ -1,6 +1,7 @@
 import type { ActivityItem } from '@/api/types'
 import { calendarDayKey } from '@/lib/dates'
 import { isZeroAmount } from '@/lib/money'
+import { nameForViewer } from '@/lib/person'
 
 export type ActivityDay = {
   /** `YYYY-MM-DD` */
@@ -71,7 +72,7 @@ export function describeTransfer(
   viewerId: number,
 ): { actor: string; verb: string } {
   const payer = item.payer ?? item.payee
-  const actor = payer.id === viewerId ? 'You' : payer.displayName
+  const actor = nameForViewer(payer, viewerId)
   const target = item.payee.id === viewerId ? 'you' : item.payee.displayName
   return { actor, verb: `paid ${target}` }
 }

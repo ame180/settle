@@ -4,6 +4,7 @@ import { Activity, Users } from 'lucide-react'
 import { useMe } from '@/api/auth'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { cn } from '@/lib/utils'
+import { ownDisplayName } from '@/lib/person'
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -65,7 +66,7 @@ export function AppShell() {
                   {me && (
                     <PersonAvatar
                       id={me.id}
-                      name={me.name ?? me.email}
+                      name={ownDisplayName(me)}
                       size="sm"
                       className={cn(isActive && 'ring-2 ring-foreground')}
                     />

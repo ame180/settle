@@ -6,7 +6,7 @@ import type { ExpenseRequest, MeResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { categoryInfo } from '@/lib/categories'
 import { formatGrosze, formatPln } from '@/lib/money'
-import { getShortName } from '@/lib/person'
+import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { AmountField } from './AmountField'
 import { CategorySheet } from './CategorySheet'
@@ -281,7 +281,7 @@ export function ExpenseForm({
                 <SplitCard
                   payer={{
                     id: payer.id,
-                    name: payerIsMe ? (me.name ?? me.email) : payer.displayName,
+                    name: payerIsMe ? ownDisplayName(me) : payer.displayName,
                   }}
                   payerName={payerIsMe ? 'You' : getShortName(payer.displayName)}
                   payerAction={

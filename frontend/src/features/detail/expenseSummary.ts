@@ -1,6 +1,7 @@
 import type { ExpenseResponse, PersonRef, SplitType } from '@/api/types'
 import type { BalanceDirection } from '@/features/activity/activityItems'
 import { isZeroAmount, sumAmounts } from '@/lib/money'
+import { nameForViewer } from '@/lib/person'
 
 export type ExpensePosition = {
   direction: BalanceDirection
@@ -50,11 +51,10 @@ export type SplitPerson = {
 
 /** Who paid comes first, then everyone else in the server's order. */
 export function splitPeople(expense: ExpenseResponse, viewerId: number): SplitPerson[] {
-  const nameOf = (person: PersonRef) => (person.id === viewerId ? 'You' : person.displayName)
   const payeeDebt = expense.debts.find((debt) => debt.payer.id === expense.payee.id)
   const payee: SplitPerson = {
     person: expense.payee,
-    name: nameOf(expense.payee),
+    name: nameForViewer(expense.payee, viewerId),
     isPayee: true,
     share: payeeDebt?.amount ?? null,
     splitLabel: payeeDebt ? splitValueLabel(expense.splitType, payeeDebt.splitValue) : null,
@@ -63,7 +63,7 @@ export function splitPeople(expense: ExpenseResponse, viewerId: number): SplitPe
     .filter((debt) => debt.payer.id !== expense.payee.id)
     .map((debt) => ({
       person: debt.payer,
-      name: nameOf(debt.payer),
+      name: nameForViewer(debt.payer, viewerId),
       isPayee: false,
       share: debt.amount,
       splitLabel: splitValueLabel(expense.splitType, debt.splitValue),

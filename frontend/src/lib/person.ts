@@ -1,3 +1,5 @@
+import type { MeResponse, PersonRef } from '@/api/types'
+
 const LETTER = /\p{L}/u
 
 export function getInitials(displayName: string): string {
@@ -23,4 +25,14 @@ export function getShortName(displayName: string): string {
   }
 
   return trimmed.split(/\s+/)[0] || trimmed
+}
+
+/** "You" for the viewer, otherwise the person's display name. */
+export function nameForViewer(person: Pick<PersonRef, 'id' | 'displayName'>, viewerId: number) {
+  return person.id === viewerId ? 'You' : person.displayName
+}
+
+/** What others see for the signed-in user: their name, or their email until they add one. */
+export function ownDisplayName(me: MeResponse): string {
+  return me.name ?? me.email
 }

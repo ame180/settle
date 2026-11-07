@@ -3,6 +3,7 @@ import { Check, ChevronDown, CircleCheck, Minus, Plus, TriangleAlert } from 'luc
 import type { MeResponse, PersonRef, SplitType } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
+import { ownDisplayName } from '@/lib/person'
 import {
   formatGrosze,
   formatPln,
@@ -114,7 +115,7 @@ function SplitEditor({
   const [focusedId, setFocusedId] = useState<number | null>(null)
 
   const people: Person[] = [
-    { id: me.id, name: 'You', avatarName: me.name ?? me.email },
+    { id: me.id, name: 'You', avatarName: ownDisplayName(me) },
     ...others.map((person) => ({
       id: person.id,
       name: person.displayName,

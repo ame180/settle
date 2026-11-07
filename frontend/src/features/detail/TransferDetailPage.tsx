@@ -9,6 +9,7 @@ import { formatMoney } from '@/lib/money'
 import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
 import { deleteWarning } from './expenseSummary'
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
+import { nameForViewer } from '@/lib/person'
 
 export function TransferDetailPage() {
   const id = Number(useParams().id)
@@ -56,16 +57,15 @@ export function TransferDetailPage() {
 
 function TransferDetail({ transfer, viewerId }: { transfer: TransferResponse; viewerId: number }) {
   const { payer, payee } = transfer
-  const nameOf = (person: PersonRef) => (person.id === viewerId ? 'You' : person.displayName)
-  const sentence = `${nameOf(payer)} paid ${payee.id === viewerId ? 'you' : payee.displayName}`
+  const sentence = `${nameForViewer(payer, viewerId)} paid ${payee.id === viewerId ? 'you' : payee.displayName}`
 
   return (
     <>
       <section className="flex flex-col items-center gap-3 px-4 pt-8 pb-5">
         <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <Party person={payer} name={nameOf(payer)} />
+          <Party person={payer} name={nameForViewer(payer, viewerId)} />
           <ArrowRight className="size-5.5 text-muted-foreground" aria-hidden="true" />
-          <Party person={payee} name={nameOf(payee)} />
+          <Party person={payee} name={nameForViewer(payee, viewerId)} />
         </div>
         <p className="text-[15px] text-foreground/75">{sentence}</p>
       </section>

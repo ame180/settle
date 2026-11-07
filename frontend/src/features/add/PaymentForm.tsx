@@ -5,7 +5,7 @@ import { useCreateTransfer, useUpdateTransfer } from '@/api/transfers'
 import type { MeResponse, PersonRef } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { findPlnAmount, formatGrosze, formatPln, fromGrosze, toGrosze } from '@/lib/money'
-import { getShortName } from '@/lib/person'
+import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { AmountField } from './AmountField'
 import { ContactPickerSheet } from './ContactPickerSheet'
@@ -174,7 +174,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
 
   const youSide = (
     <span className="flex h-11 min-w-0 items-center gap-2 rounded-[10px] border border-border bg-subtle px-2.5">
-      <PersonAvatar id={me.id} name={me.name ?? me.email} size="sm" />
+      <PersonAvatar id={me.id} name={ownDisplayName(me)} size="sm" />
       You
     </span>
   )
