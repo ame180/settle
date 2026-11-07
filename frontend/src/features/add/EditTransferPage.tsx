@@ -6,7 +6,8 @@ import { useTransfer } from '@/api/transfers'
 import type { MeResponse, TransferResponse } from '@/api/types'
 import { DiscardSheet } from './DiscardSheet'
 import { LoadFailed } from './LoadFailed'
-import { useGoBack, useLeaveGuard } from './navigation'
+import { useGoBack } from '@/lib/useGoBack'
+import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
 import { Frame, Header, Loading } from './ScreenFrame'
 
@@ -19,7 +20,7 @@ export function EditTransferPage() {
   const transferId = Number(id)
   const { data: me } = useMe()
   const transfer = useTransfer(transferId)
-  const goBack = useGoBack(`/transfers/${transferId}`)
+  const { goBack } = useGoBack(`/transfers/${transferId}`)
 
   if (!me || transfer.isPending) {
     return <Frame title="Edit payment" onClose={goBack} body={<Loading />} />

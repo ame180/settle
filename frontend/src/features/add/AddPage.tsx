@@ -11,7 +11,8 @@ import { cn } from '@/lib/utils'
 import { DiscardSheet } from './DiscardSheet'
 import { amountTotal, draftChanged, emptyDraft, type ExpenseDraft } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
-import { useGoBack, useLeaveGuard } from './navigation'
+import { useGoBack } from '@/lib/useGoBack'
+import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
 import { clearingPayer, type PaymentPayer } from './paymentModel'
 import { Header, Loading } from './ScreenFrame'
@@ -112,7 +113,7 @@ function AddTabs({
   const expenseDirty = draftChanged(expense, initial.expense)
   const dirty = expenseDirty || JSON.stringify(payment) !== JSON.stringify(initial.payment)
   const guard = useLeaveGuard(dirty)
-  const goBack = useGoBack(backFallback)
+  const { goBack } = useGoBack(backFallback)
 
   function switchTo(next: Tab) {
     if (next === tab) {

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { CircleAlert, LoaderCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getShortName } from '@/lib/person'
-import { hasInAppHistory } from '@/lib/history'
+import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
 import { ContactNotFound } from './ContactNotFound'
 import { parseUserId } from '@/lib/parseUserId'
@@ -85,7 +85,7 @@ function EditContact({ userId }: { userId: number }) {
 function EditContactForm({ contact }: { contact: ContactListItem }) {
   const { person } = contact
   const updateContactMutation = useUpdateContact(person.id)
-  const navigate = useNavigate()
+  const { goBack } = useGoBack(`/contacts/${person.id}`)
 
   const form = useForm<EditContactValues>({
     resolver: zodResolver(editContactSchema),
@@ -100,11 +100,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
       {
         onSuccess: () => {
           toast.success('Contact saved')
-          if (hasInAppHistory()) {
-            navigate(-1)
-            return
-          }
-          navigate(`/contacts/${person.id}`, { replace: true })
+          goBack()
         },
         onError: (error) => {
           const nicknameViolation =

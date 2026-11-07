@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import { useMe, useUpdateMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
+import { BackLink } from '@/components/BackLink'
 import { FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
 import { SubmitButton } from '@/components/SubmitButton'
@@ -59,18 +59,7 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader
-        title="Your name"
-        leading={
-          <Link
-            to="/profile"
-            aria-label="Back to profile"
-            className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <ArrowLeft className="size-6" aria-hidden="true" />
-          </Link>
-        }
-      />
+      <PageHeader title="Your name" leading={<BackLink to="/profile" label="Back to profile" />} />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <p className="text-[15px] leading-[1.45] text-muted-foreground">

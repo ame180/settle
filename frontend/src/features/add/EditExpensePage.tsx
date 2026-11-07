@@ -8,7 +8,8 @@ import { DiscardSheet } from './DiscardSheet'
 import { draftChanged, draftFromExpense } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
 import { LoadFailed } from './LoadFailed'
-import { useGoBack, useLeaveGuard } from './navigation'
+import { useGoBack } from '@/lib/useGoBack'
+import { useLeaveGuard } from './navigation'
 import { Frame, Header, Loading } from './ScreenFrame'
 
 /** /expenses/:id/edit: the Add expense form, loaded with the expense and saved with PUT. */
@@ -17,7 +18,7 @@ export function EditExpensePage() {
   const expenseId = Number(id)
   const { data: me } = useMe()
   const expense = useExpense(expenseId)
-  const goBack = useGoBack(`/expenses/${expenseId}`)
+  const { goBack } = useGoBack(`/expenses/${expenseId}`)
 
   if (!me || expense.isPending) {
     return <Frame title="Edit expense" onClose={goBack} body={<Loading />} />

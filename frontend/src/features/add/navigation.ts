@@ -1,21 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useIsMutating } from '@tanstack/react-query'
-import { useBlocker, useNavigate } from 'react-router'
+import { useBlocker } from 'react-router'
 import { saveMutationKey } from '@/api/expenses'
 import { closeTopLayer, hasOpenLayer } from '@/lib/backLayers'
-import { hasInAppHistory } from '@/lib/history'
-
-/** Back to wherever the user came from, or `fallback` when the app was opened on this page. */
-export function useGoBack(fallback: string) {
-  const navigate = useNavigate()
-  return useCallback(() => {
-    if (hasInAppHistory()) {
-      navigate(-1)
-    } else {
-      navigate(fallback, { replace: true })
-    }
-  }, [navigate, fallback])
-}
 
 export function useIsSaving(): boolean {
   return useIsMutating({ mutationKey: saveMutationKey }) > 0
