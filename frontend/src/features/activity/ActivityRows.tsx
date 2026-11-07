@@ -114,13 +114,18 @@ export function DayHeader({ id, label }: { id?: string; label: string }) {
 export function ActivityRowSkeleton({
   titleWidth,
   sublineWidth,
+  lead = 'avatar',
 }: {
   titleWidth: string
   sublineWidth: string
+  /** Same as the row's: the feed leads with avatars, a contact's view with category tiles. */
+  lead?: 'avatar' | 'category'
 }) {
   return (
     <div className="flex min-h-17 items-center gap-3.5 px-4 py-2.5">
-      <Skeleton className="size-11 shrink-0 rounded-tile" />
+      <Skeleton
+        className={cn('size-11 shrink-0', lead === 'category' ? 'rounded-tile' : 'rounded-full')}
+      />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <Skeleton className="h-3.5" style={{ width: titleWidth }} />
         <Skeleton className="h-2.5" style={{ width: sublineWidth }} />

@@ -281,7 +281,12 @@ function SkeletonRows() {
   return (
     <div className="pt-2">
       {skeletonRows.map(([titleWidth, sublineWidth]) => (
-        <ActivityRowSkeleton key={titleWidth} titleWidth={titleWidth} sublineWidth={sublineWidth} />
+        <ActivityRowSkeleton
+          key={titleWidth}
+          titleWidth={titleWidth}
+          sublineWidth={sublineWidth}
+          lead="category"
+        />
       ))}
     </div>
   )
