@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { anna, expenseItem, transferItem, viewer } from '@/test/activity'
-import {
-  balanceDirection,
-  describeTransfer,
-  flattenActivityPages,
-  groupActivityByDay,
-} from './activityItems'
+import { describeTransfer, flattenActivityPages, groupActivityByDay } from './activityItems'
 
 describe('groupActivityByDay', () => {
   it('groups consecutive items by calendar day, keeping their order', () => {
@@ -42,18 +37,6 @@ describe('flattenActivityPages', () => {
       'transfer-2',
       'expense-1',
     ])
-  })
-})
-
-describe('balanceDirection', () => {
-  it.each([
-    ['12.50', 'owed'],
-    ['-0.01', 'owe'],
-    ['0.00', 'none'],
-    ['-0.00', 'none'],
-    ['0', 'none'],
-  ])('reads %s as %s', (value, expected) => {
-    expect(balanceDirection(value)).toBe(expected)
   })
 })
 

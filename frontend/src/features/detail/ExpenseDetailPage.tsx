@@ -6,7 +6,7 @@ import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { categoryInfo } from '@/lib/categories'
 import { formatShortDate } from '@/lib/dates'
-import { formatMoney } from '@/lib/money'
+import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
 import {
@@ -81,7 +81,7 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
               <span
                 className={cn(
                   'font-semibold tabular-nums',
-                  position.direction === 'owed' ? 'text-positive' : 'text-negative',
+                  balanceTextClassName[position.direction],
                 )}
               >
                 {formatMoney(position.amount, expense.currency)}

@@ -24,6 +24,23 @@ export function isNegativeAmount(amount: string): boolean {
   return amount.startsWith('-')
 }
 
+/** Which way a signed balance leans for the viewer: `owed` = others owe the viewer. */
+export type BalanceDirection = 'owed' | 'owe' | 'none'
+
+export function balanceDirection(amount: string): BalanceDirection {
+  if (isZeroAmount(amount)) {
+    return 'none'
+  }
+  return isNegativeAmount(amount) ? 'owe' : 'owed'
+}
+
+/** Green when others owe the viewer, red when the viewer owes. */
+export const balanceTextClassName: Record<BalanceDirection, string> = {
+  owed: 'text-positive',
+  owe: 'text-negative',
+  none: 'text-muted-foreground',
+}
+
 /** The API omits zero balances, so a missing PLN entry means nothing is owed in PLN. */
 export function findPlnAmount(amounts: CurrencyAmount[]): string | null {
   return amounts.find((currencyAmount) => currencyAmount.currency === 'PLN')?.amount ?? null

@@ -1,6 +1,5 @@
 import type { ExpenseResponse, PersonRef, SplitType } from '@/api/types'
-import type { BalanceDirection } from '@/features/activity/activityItems'
-import { isZeroAmount, sumAmounts } from '@/lib/money'
+import { isZeroAmount, sumAmounts, type BalanceDirection } from '@/lib/money'
 import { trimDecimal } from '@/lib/decimal'
 import { joinNames, nameForViewer, peopleOtherThan } from '@/lib/person'
 

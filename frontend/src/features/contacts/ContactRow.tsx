@@ -1,7 +1,8 @@
 import { Link } from 'react-router'
 import type { ContactListItem } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
+import { SignedAmount } from '@/components/SignedAmount'
+import { balanceDirection, findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 import { cn } from '@/lib/utils'
 
 type ContactRowProps = {
@@ -34,26 +35,15 @@ export function ContactRow({ contact, settled = false }: ContactRowProps) {
             {settled ? 'settled up' : noPlnBalanceLabel(contact)}
           </span>
         ) : (
-          <BalanceAmount amount={plnBalance} />
+          <SignedAmount
+            direction={balanceDirection(plnBalance)}
+            label={isNegativeAmount(plnBalance) ? 'you owe' : 'owes you'}
+          >
+            {formatPln(plnBalance)}
+          </SignedAmount>
         )}
       </Link>
     </li>
-  )
-}
-
-function BalanceAmount({ amount }: { amount: string }) {
-  const youOwe = isNegativeAmount(amount)
-
-  return (
-    <span
-      className={cn(
-        'flex shrink-0 flex-col items-end gap-0.5',
-        youOwe ? 'text-negative' : 'text-positive',
-      )}
-    >
-      <span className="text-xs">{youOwe ? 'you owe' : 'owes you'}</span>
-      <span className="text-[17px] font-semibold tabular-nums">{formatPln(amount)}</span>
-    </span>
   )
 }
 

@@ -4,16 +4,12 @@ import type { ActivityItem } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
-import { formatMoney } from '@/lib/money'
+import { SignedAmount } from '@/components/SignedAmount'
+import { balanceDirection, formatMoney } from '@/lib/money'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { nameForViewer } from '@/lib/person'
-import {
-  activityItemPath,
-  balanceDirection,
-  balanceDirectionLabel,
-  describeTransfer,
-} from './activityItems'
+import { activityItemPath, balanceDirectionLabel, describeTransfer } from './activityItems'
 
 const rowLinkClassName =
   'flex w-full items-center px-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset active:bg-muted'
@@ -55,26 +51,13 @@ export function ExpenseRow({
           {showDate ? `${formatShortDate(item.occurredOn, now)} · ${subline}` : subline}
         </span>
       </span>{' '}
-      <SignedAmount value={item.value} currency={item.currency} />
+      <SignedAmount
+        direction={balanceDirection(item.value)}
+        label={balanceDirectionLabel[balanceDirection(item.value)]}
+      >
+        {formatMoney(item.value, item.currency)}
+      </SignedAmount>
     </Link>
-  )
-}
-
-function SignedAmount({ value, currency }: { value: string; currency: string }) {
-  const direction = balanceDirection(value)
-
-  return (
-    <span
-      className={cn(
-        'flex shrink-0 flex-col items-end gap-0.5',
-        direction === 'owed' && 'text-positive',
-        direction === 'owe' && 'text-negative',
-        direction === 'none' && 'text-muted-foreground',
-      )}
-    >
-      <span className="text-xs">{balanceDirectionLabel[direction]}</span>{' '}
-      <span className="text-[17px] font-semibold tabular-nums">{formatMoney(value, currency)}</span>
-    </span>
   )
 }
 

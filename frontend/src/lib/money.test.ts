@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  balanceDirection,
   findPlnAmount,
   formatGrosze,
   formatMoney,
@@ -82,5 +83,17 @@ describe('sumAmounts', () => {
     [['-5.00', '1.25'], '-3.75'],
   ])('adds %j to %s', (amounts, expected) => {
     expect(sumAmounts(amounts)).toBe(expected)
+  })
+})
+
+describe('balanceDirection', () => {
+  it.each([
+    ['12.50', 'owed'],
+    ['-0.01', 'owe'],
+    ['0.00', 'none'],
+    ['-0.00', 'none'],
+    ['0', 'none'],
+  ])('reads %s as %s', (value, expected) => {
+    expect(balanceDirection(value)).toBe(expected)
   })
 })
