@@ -4,7 +4,6 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/
 import { addDays, formatLongDate, fromIsoDate, todayIso, toIsoDate } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { PillButton } from './formParts'
 
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -54,15 +53,22 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
           <SheetTitle>Date</SheetTitle>
           <SheetDescription className="sr-only">Pick a date.</SheetDescription>
           <div className="flex gap-2">
-            <PillButton aria-pressed={value === today} onClick={() => pick(today)}>
+            <Button
+              variant="outline"
+              size="pill"
+              aria-pressed={value === today}
+              onClick={() => pick(today)}
+            >
               Today
-            </PillButton>
-            <PillButton
+            </Button>
+            <Button
+              variant="outline"
+              size="pill"
               aria-pressed={value === addDays(today, -1)}
               onClick={() => pick(addDays(today, -1))}
             >
               Yesterday
-            </PillButton>
+            </Button>
           </div>
           <div className="flex items-center gap-1">
             <h3 id="date-sheet-month" className="flex-1 font-semibold">

@@ -2,10 +2,10 @@ import { useState, type RefObject } from 'react'
 import { Textarea } from '@/components/ui/input'
 import { flushSync } from 'react-dom'
 import { Calendar, FileText } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { formatDateLabel } from '@/lib/dates'
 import { DateSheet } from './DateSheet'
 import { FieldError } from '@/components/FieldError'
-import { PillButton } from './formParts'
 
 type DateNoteFieldsProps = {
   idPrefix: string
@@ -38,12 +38,14 @@ export function DateNoteFields({
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <PillButton onClick={() => setDateOpen(true)}>
+        <Button variant="outline" size="pill" onClick={() => setDateOpen(true)}>
           <Calendar aria-hidden="true" />
           {formatDateLabel(occurredOn)}
-        </PillButton>
+        </Button>
         {!noteOpen && (
-          <PillButton
+          <Button
+            variant="outline"
+            size="pill"
             onClick={() => {
               // Synchronous so the focus happens inside the tap; iOS only opens the keyboard then.
               flushSync(() => setNoteOpen(true))
@@ -52,7 +54,7 @@ export function DateNoteFields({
           >
             <FileText aria-hidden="true" />
             Add note
-          </PillButton>
+          </Button>
         )}
       </div>
       {dateError && <FieldError message={dateError} />}

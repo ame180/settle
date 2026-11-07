@@ -8,7 +8,7 @@ const buttonVariants = cva(
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        outline: 'border border-input bg-background hover:bg-secondary',
+        outline: 'border border-border-strong bg-background hover:bg-secondary active:bg-secondary',
         ghost: 'hover:bg-secondary',
         destructive: 'bg-destructive text-white hover:bg-destructive/90',
       },
@@ -17,7 +17,7 @@ const buttonVariants = cva(
         sm: 'h-9 px-3',
         lg: 'h-12 px-6',
         icon: 'size-11 shrink-0 rounded-full [&_svg]:size-6',
-        pill: 'h-11 rounded-full px-5 text-[15px]',
+        pill: 'h-11 shrink-0 rounded-full px-5 text-[15px]',
       },
     },
     defaultVariants: {
