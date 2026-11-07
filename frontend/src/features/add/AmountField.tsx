@@ -1,7 +1,7 @@
 import { useId, useRef, type ReactNode, type RefObject } from 'react'
 import { parseAmountInput, sanitizeAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { FieldError } from './formParts'
+import { FieldError } from '@/components/FieldError'
 
 type AmountFieldProps = {
   value: string

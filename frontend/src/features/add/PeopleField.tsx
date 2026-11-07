@@ -10,7 +10,7 @@ import { PersonAvatar } from '@/components/PersonAvatar'
 import { getShortName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { balanceLine, looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
-import { FieldError } from './formParts'
+import { FieldError } from '@/components/FieldError'
 
 const RECENT_LIMIT = 6
 

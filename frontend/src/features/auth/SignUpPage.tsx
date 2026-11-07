@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useMe, useRegister } from '@/api/auth'
 import { ApiError } from '@/api/client'
-import { FieldError } from '@/components/FieldError'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { SubmitButton } from '@/components/SubmitButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -176,11 +176,7 @@ export function SignUpPage() {
           )}
         </div>
 
-        {errors.root && (
-          <p role="alert" className="text-sm text-destructive">
-            {errors.root.message}
-          </p>
-        )}
+        {errors.root?.message && <AlertLine message={errors.root.message} />}
 
         <SubmitButton isPending={isPending} pendingLabel="Creating account…">
           Create account

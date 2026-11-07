@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { useMe, useUpdateMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
-import { FieldError } from '@/components/FieldError'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
 import { SubmitButton } from '@/components/SubmitButton'
 import { Input } from '@/components/ui/input'
@@ -89,11 +89,7 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
             )}
           </div>
 
-          {errors.root && (
-            <p role="alert" className="text-sm text-destructive">
-              {errors.root.message}
-            </p>
-          )}
+          {errors.root?.message && <AlertLine message={errors.root.message} />}
 
           <SubmitButton isPending={isPending} pendingLabel="Saving…">
             Save name

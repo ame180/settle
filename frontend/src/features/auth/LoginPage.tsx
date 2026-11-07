@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useLogin, useMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
-import { FieldError } from '@/components/FieldError'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { SubmitButton } from '@/components/SubmitButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -86,11 +86,7 @@ export function LoginPage() {
             <FieldError id="signin-password-error" message={errors.password.message} />
           )}
         </div>
-        {serverError && (
-          <p role="alert" className="text-sm text-destructive">
-            {serverError}
-          </p>
-        )}
+        {serverError && <AlertLine message={serverError} />}
         <SubmitButton isPending={loginMutation.isPending} pendingLabel="Signing in…">
           Sign in
         </SubmitButton>

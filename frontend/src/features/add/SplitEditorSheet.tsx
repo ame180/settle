@@ -13,7 +13,8 @@ import {
   toGrosze,
 } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { AlertLine, CloseIcon, IconButton } from './formParts'
+import { AlertLine } from '@/components/FieldError'
+import { CloseIcon, IconButton } from './formParts'
 import {
   checkSplit,
   editSplit,

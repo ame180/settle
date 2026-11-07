@@ -11,7 +11,8 @@ import { AmountField } from './AmountField'
 import { ContactPickerSheet } from './ContactPickerSheet'
 import { DateNoteFields } from './DateNoteFields'
 import { amountError, amountTotal } from './expenseDraft'
-import { FieldError, FormFooter, PrimaryButton } from './formParts'
+import { FieldError } from '@/components/FieldError'
+import { FormFooter, PrimaryButton } from './formParts'
 import {
   clearingPayer,
   describeBalance,

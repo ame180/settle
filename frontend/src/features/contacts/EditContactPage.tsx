@@ -8,9 +8,11 @@ import { ApiError } from '@/api/client'
 import { useContact, useUpdateContact } from '@/api/contacts'
 import type { ContactListItem } from '@/api/types'
 import { BackLink } from '@/components/BackLink'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { StateMessage } from '@/components/StateMessage'
+import { SubmitButton } from '@/components/SubmitButton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -146,13 +148,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
             {...form.register('nickname')}
           />
           {errors.nickname ? (
-            <p
-              id="contact-nickname-error"
-              className="flex items-center gap-1.5 text-[13px] text-destructive"
-            >
-              <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
-              {errors.nickname.message}
-            </p>
+            <FieldError id="contact-nickname-error" message={errors.nickname.message} />
           ) : (
             <p id="contact-nickname-hint" className="text-[13px] text-muted-foreground">
               Only you see this. Leave empty to use their name.
@@ -171,26 +167,11 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
           />
         </div>
 
-        {errors.root && (
-          <p role="alert" className="text-sm text-destructive">
-            {errors.root.message}
-          </p>
-        )}
+        {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-        <Button
-          type="submit"
-          className="mt-2 h-12 rounded-full text-base font-semibold disabled:opacity-75 [&_svg]:size-4.5"
-          disabled={isPending}
-        >
-          {isPending ? (
-            <>
-              <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
-              Saving…
-            </>
-          ) : (
-            'Save'
-          )}
-        </Button>
+        <SubmitButton isPending={isPending} pendingLabel="Saving…">
+          Save
+        </SubmitButton>
       </form>
     </div>
   )

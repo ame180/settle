@@ -3,7 +3,8 @@ import { flushSync } from 'react-dom'
 import { Calendar, FileText } from 'lucide-react'
 import { formatDateLabel } from '@/lib/dates'
 import { DateSheet } from './DateSheet'
-import { FieldError, PillButton } from './formParts'
+import { FieldError } from '@/components/FieldError'
+import { PillButton } from './formParts'
 
 type DateNoteFieldsProps = {
   idPrefix: string

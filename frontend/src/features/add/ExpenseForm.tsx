@@ -23,7 +23,8 @@ import {
   type ExpenseField,
   type FieldErrors,
 } from './expenseDraft'
-import { FieldError, FormFooter, PrimaryButton } from './formParts'
+import { FieldError } from '@/components/FieldError'
+import { FormFooter, PrimaryButton } from './formParts'
 import { PeopleField } from './PeopleField'
 import { describeSaveError } from './saveErrors'
 import { SplitCard } from './SplitCard'

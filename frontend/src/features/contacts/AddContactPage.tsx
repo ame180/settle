@@ -1,14 +1,13 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { LoaderCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAddContact } from '@/api/contacts'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
-import { FieldError } from '@/components/FieldError'
+import { AlertLine, FieldError } from '@/components/FieldError'
 import { PageHeader } from '@/components/PageHeader'
-import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/SubmitButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useGoBack } from '@/lib/useGoBack'
@@ -121,26 +120,11 @@ export function AddContactPage() {
             )}
           </div>
 
-          {errors.root && (
-            <p role="alert" className="text-sm text-destructive">
-              {errors.root.message}
-            </p>
-          )}
+          {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-          <Button
-            type="submit"
-            className="mt-2 h-12 rounded-full text-base font-semibold disabled:opacity-75 [&_svg]:size-4.5"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
-                Adding…
-              </>
-            ) : (
-              'Add contact'
-            )}
-          </Button>
+          <SubmitButton isPending={isPending} pendingLabel="Adding…">
+            Add contact
+          </SubmitButton>
         </form>
       </div>
     </div>
