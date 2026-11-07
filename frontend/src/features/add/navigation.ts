@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useIsMutating } from '@tanstack/react-query'
 import { useBlocker } from 'react-router'
-import { saveMutationKey } from '@/api/expenses'
+import { saveMutationKey } from '@/api/ledger'
 import { closeTopLayer, hasOpenLayer } from '@/lib/backLayers'
 
 export function useIsSaving(): boolean {

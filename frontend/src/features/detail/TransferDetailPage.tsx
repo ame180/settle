@@ -1,7 +1,7 @@
 import { useParams } from 'react-router'
 import { ArrowRight } from 'lucide-react'
 import { useMe } from '@/api/auth'
-import { useDeleteTransfer, useTransfer } from '@/api/detail'
+import { useDeleteTransfer, useTransfer } from '@/api/transfers'
 import type { PersonRef, TransferResponse } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'

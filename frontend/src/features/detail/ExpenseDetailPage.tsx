@@ -1,6 +1,6 @@
 import { useParams } from 'react-router'
 import { useMe } from '@/api/auth'
-import { useDeleteExpense, useExpense } from '@/api/detail'
+import { useDeleteExpense, useExpense } from '@/api/expenses'
 import type { ExpenseResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'

@@ -1,35 +1,17 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiRequest } from './client'
-import { contactsQueryKey } from './contacts'
+import { deleteIgnoringMissing, invalidateBalances, saveMutationKey } from './ledger'
 import type { ExpenseRequest, ExpenseResponse } from './types'
-
-export const activityQueryKey = ['activity'] as const
-
-/** Tags expense and payment saves, so screens can tell when one is in flight. */
-export const saveMutationKey = ['save'] as const
 
 export function expenseQueryKey(id: number) {
   return ['expenses', id] as const
 }
 
-export function fetchExpense(id: number, signal?: AbortSignal): Promise<ExpenseResponse> {
-  return apiRequest<ExpenseResponse>(`/api/expenses/${id}`, { signal })
-}
-
 export function useExpense(id: number) {
   return useQuery({
     queryKey: expenseQueryKey(id),
-    queryFn: ({ signal }) => fetchExpense(id, signal),
+    queryFn: ({ signal }) => apiRequest<ExpenseResponse>(`/api/expenses/${id}`, { signal }),
   })
-}
-
-/** Everything a saved expense or payment changes: the feed, balances and its own detail. */
-export function invalidateAfterSave(queryClient: QueryClient, detailKey?: readonly unknown[]) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: activityQueryKey }),
-    queryClient.invalidateQueries({ queryKey: contactsQueryKey }),
-    detailKey ? queryClient.invalidateQueries({ queryKey: detailKey }) : undefined,
-  ])
 }
 
 export function useCreateExpense() {
@@ -38,7 +20,7 @@ export function useCreateExpense() {
     mutationKey: saveMutationKey,
     mutationFn: (request: ExpenseRequest) =>
       apiRequest<ExpenseResponse>('/api/expenses', { method: 'POST', body: request }),
-    onSuccess: () => invalidateAfterSave(queryClient),
+    onSuccess: () => invalidateBalances(queryClient),
   })
 }
 
@@ -48,6 +30,21 @@ export function useUpdateExpense(id: number) {
     mutationKey: saveMutationKey,
     mutationFn: (request: ExpenseRequest) =>
       apiRequest<ExpenseResponse>(`/api/expenses/${id}`, { method: 'PUT', body: request }),
-    onSuccess: () => invalidateAfterSave(queryClient, expenseQueryKey(id)),
+    onSuccess: () =>
+      Promise.all([
+        invalidateBalances(queryClient),
+        queryClient.invalidateQueries({ queryKey: expenseQueryKey(id) }),
+      ]),
+  })
+}
+
+export function useDeleteExpense(id: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => deleteIgnoringMissing(`/api/expenses/${id}`),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: expenseQueryKey(id), exact: true })
+      return invalidateBalances(queryClient)
+    },
   })
 }
