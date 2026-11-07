@@ -235,13 +235,7 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
           </li>
         ))}
       </ul>
-      <ActivityListFooter
-        hasNextPage={activityQuery.hasNextPage}
-        isFetchingNextPage={activityQuery.isFetchingNextPage}
-        isFetching={activityQuery.isFetching}
-        isNextPageError={activityQuery.isFetchNextPageError}
-        fetchNextPage={() => activityQuery.fetchNextPage({ cancelRefetch: false })}
-      />
+      <ActivityListFooter query={activityQuery} />
     </section>
   )
 }

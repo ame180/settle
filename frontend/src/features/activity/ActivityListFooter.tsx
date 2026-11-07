@@ -1,28 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { RefreshCw } from 'lucide-react'
+import type { useActivity } from '@/api/activity'
 import { Spinner } from '@/components/Spinner'
 import { Button } from '@/components/ui/button'
 
-type ActivityListFooterProps = {
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  isFetching: boolean
-  isNextPageError: boolean
-  fetchNextPage: () => void
-}
-
 /** The end of an infinite activity list: spinner, retry after a failed page, or the scroll sentinel. */
-export function ActivityListFooter({
-  hasNextPage,
-  isFetchingNextPage,
-  isFetching,
-  isNextPageError,
-  fetchNextPage,
-}: ActivityListFooterProps) {
-  if (isFetchingNextPage) {
+export function ActivityListFooter({ query }: { query: ReturnType<typeof useActivity> }) {
+  const fetchNextPage = () => query.fetchNextPage({ cancelRefetch: false })
+
+  if (query.isFetchingNextPage) {
     return <Spinner label="Loading more activity" className="py-5" />
   }
-  if (isNextPageError) {
+  if (query.isFetchNextPageError) {
     return (
       <div role="alert" className="flex flex-col items-center gap-3 px-4 pt-6">
         <p className="text-sm text-muted-foreground">Couldn't load more activity.</p>
@@ -34,7 +23,9 @@ export function ActivityListFooter({
     )
   }
   // Remounting after a background refetch re-arms the observer, which only fires on change.
-  return hasNextPage && !isFetching ? <LoadMoreSentinel onVisible={fetchNextPage} /> : null
+  return query.hasNextPage && !query.isFetching ? (
+    <LoadMoreSentinel onVisible={fetchNextPage} />
+  ) : null
 }
 
 /** Fetches the next page once the end of the list scrolls into view. */

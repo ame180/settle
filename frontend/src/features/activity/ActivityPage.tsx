@@ -34,11 +34,7 @@ export function ActivityPage() {
             viewerId={me?.id ?? 0}
             // Today/Yesterday follow the last fetch, so a feed left open overnight relabels on refetch.
             now={new Date(activityQuery.dataUpdatedAt)}
-            hasNextPage={activityQuery.hasNextPage}
-            isFetchingNextPage={activityQuery.isFetchingNextPage}
-            isFetching={activityQuery.isFetching}
-            isNextPageError={activityQuery.isFetchNextPageError}
-            fetchNextPage={() => activityQuery.fetchNextPage({ cancelRefetch: false })}
+            query={activityQuery}
           />
         )}
       </div>
@@ -52,23 +48,10 @@ type ActivityFeedProps = {
   items: ReturnType<typeof flattenActivityPages>
   viewerId: number
   now: Date
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  isFetching: boolean
-  isNextPageError: boolean
-  fetchNextPage: () => void
+  query: ReturnType<typeof useActivity>
 }
 
-function ActivityFeed({
-  items,
-  viewerId,
-  now,
-  hasNextPage,
-  isFetchingNextPage,
-  isFetching,
-  isNextPageError,
-  fetchNextPage,
-}: ActivityFeedProps) {
+function ActivityFeed({ items, viewerId, now, query }: ActivityFeedProps) {
   if (items.length === 0) {
     return (
       <StateMessage
@@ -94,13 +77,7 @@ function ActivityFeed({
         </section>
       ))}
 
-      <ActivityListFooter
-        hasNextPage={hasNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        isFetching={isFetching}
-        isNextPageError={isNextPageError}
-        fetchNextPage={fetchNextPage}
-      />
+      <ActivityListFooter query={query} />
     </>
   )
 }
