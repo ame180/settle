@@ -14,13 +14,13 @@ vi.mock('sonner', async (importOriginal) => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }))
 
-function renderTransfer() {
+function renderTransfer(path = '/transfers/3') {
   return renderRoutes(
     [
       { path: '/transfers/:id', element: <TransferDetailPage /> },
       { path: '/activity', element: <p>Activity feed</p> },
     ],
-    '/transfers/3',
+    path,
   )
 }
 
@@ -36,6 +36,18 @@ afterEach(() => {
 })
 
 describe('TransferDetailPage', () => {
+  it('shows not found for an id that is not a number, without asking the API', async () => {
+    const fetchMock = stubDetailApi({})
+    renderTransfer('/transfers/abc')
+
+    expect(
+      await screen.findByRole('heading', { name: 'This payment doesn’t exist' }),
+    ).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith('/api/transfers'))).toBe(
+      false,
+    )
+  })
+
   it('shows who paid whom, the amount, date and note', async () => {
     stubDetailApi({ 'GET /api/transfers/3': { status: 200, body: transferResponse() } })
     renderTransfer()

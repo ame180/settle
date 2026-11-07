@@ -9,7 +9,7 @@ import { draftChanged, draftFromExpense } from './expenseDraft'
 import { ExpenseForm } from './ExpenseForm'
 import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
-import { DetailError, DetailLoading } from '@/features/detail/DetailParts'
+import { ItemError, ItemLoading } from '@/components/ItemStates'
 import { Frame, Header, NotFoundFrame } from './ScreenFrame'
 
 /** /expenses/:id/edit: the Add expense form, loaded with the expense and saved with PUT. */
@@ -31,11 +31,7 @@ function EditExpenseLoader({ expenseId }: { expenseId: number }) {
 
   if (!me || expense.isPending) {
     return (
-      <Frame
-        title="Edit expense"
-        onClose={goBack}
-        body={<DetailLoading label="Loading expense" />}
-      />
+      <Frame title="Edit expense" onClose={goBack} body={<ItemLoading label="Loading expense" />} />
     )
   }
   if (expense.isError) {
@@ -44,7 +40,7 @@ function EditExpenseLoader({ expenseId }: { expenseId: number }) {
         title="Edit expense"
         onClose={goBack}
         body={
-          <DetailError
+          <ItemError
             error={expense.error}
             noun="expense"
             onRetry={() => expense.refetch()}

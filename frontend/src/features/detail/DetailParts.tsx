@@ -1,15 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { Lock, SearchX, Trash2 } from 'lucide-react'
-import { ApiError } from '@/api/client'
+import { Trash2 } from 'lucide-react'
 import { BackLink } from '@/components/BackLink'
 import { ConfirmSheet } from '@/components/ConfirmSheet'
 import { PageHeader } from '@/components/PageHeader'
-import { LoadError } from '@/components/LoadError'
-import { Spinner } from '@/components/Spinner'
-import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
-import { buttonClassName } from '@/components/ui/button-variants'
 import type { DeleteAndGoBack } from './useDeleteAndGoBack'
 
 export const detailBackFallback = '/activity'
@@ -33,63 +28,6 @@ export function DetailScreen({ title, trailing, children }: DetailScreenProps) {
         {children}
       </main>
     </div>
-  )
-}
-
-export function DetailLoading({ label }: { label: string }) {
-  return <Spinner label={label} className="pt-40" />
-}
-
-type DetailErrorProps = {
-  error: Error
-  /** "expense" or "payment" */
-  noun: string
-  onRetry: () => void
-  isRetrying: boolean
-}
-
-export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorProps) {
-  const status = error instanceof ApiError ? error.status : undefined
-
-  if (status === 404) {
-    return <DetailNotFound noun={noun} />
-  }
-
-  if (status === 403) {
-    return (
-      <StateMessage
-        icon={<Lock className="size-7.5" aria-hidden="true" />}
-        title={`You can’t see this ${noun}`}
-        description="Only the people in it can open it."
-      >
-        <BackToActivity />
-      </StateMessage>
-    )
-  }
-
-  return (
-    <LoadError title={`Couldn’t load this ${noun}`} onRetry={onRetry} isRetrying={isRetrying} />
-  )
-}
-
-/** Also shown, without asking the API, when the URL's id isn't an id at all. */
-export function DetailNotFound({ noun }: { noun: string }) {
-  return (
-    <StateMessage
-      icon={<SearchX className="size-7.5" aria-hidden="true" />}
-      title={`This ${noun} doesn’t exist`}
-      description="It may have been deleted."
-    >
-      <BackToActivity />
-    </StateMessage>
-  )
-}
-
-function BackToActivity() {
-  return (
-    <Link to="/activity" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
-      Go to activity
-    </Link>
   )
 }
 

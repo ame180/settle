@@ -9,14 +9,8 @@ import { categoryInfo } from '@/lib/categories'
 import { formatShortDate } from '@/lib/dates'
 import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import {
-  DetailActions,
-  DetailError,
-  DetailLoading,
-  DetailNotFound,
-  DetailScreen,
-  NoteBlock,
-} from './DetailParts'
+import { ItemError, ItemLoading, ItemNotFound } from '@/components/ItemStates'
+import { DetailActions, DetailScreen, NoteBlock } from './DetailParts'
 import {
   deleteWarning,
   expensePosition,
@@ -31,7 +25,7 @@ export function ExpenseDetailPage() {
 
   return id === null ? (
     <DetailScreen title="Expense">
-      <DetailNotFound noun="expense" />
+      <ItemNotFound noun="expense" />
     </DetailScreen>
   ) : (
     <ExpenseDetailScreen id={id} />
@@ -68,14 +62,14 @@ function ExpenseDetailScreen({ id }: { id: number }) {
       {expense && me ? (
         <ExpenseDetail expense={expense} viewerId={me.id} />
       ) : expenseQuery.isError ? (
-        <DetailError
+        <ItemError
           error={expenseQuery.error}
           noun="expense"
           onRetry={() => expenseQuery.refetch()}
           isRetrying={expenseQuery.isFetching}
         />
       ) : (
-        <DetailLoading label="Loading expense" />
+        <ItemLoading label="Loading expense" />
       )}
     </DetailScreen>
   )

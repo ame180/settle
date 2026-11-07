@@ -7,14 +7,8 @@ import type { PersonRef, TransferResponse } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
-import {
-  DetailActions,
-  DetailError,
-  DetailLoading,
-  DetailNotFound,
-  DetailScreen,
-  NoteBlock,
-} from './DetailParts'
+import { ItemError, ItemLoading, ItemNotFound } from '@/components/ItemStates'
+import { DetailActions, DetailScreen, NoteBlock } from './DetailParts'
 import { deleteWarning } from './expenseSummary'
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
 import { nameForViewer, peopleOtherThan } from '@/lib/person'
@@ -24,7 +18,7 @@ export function TransferDetailPage() {
 
   return id === null ? (
     <DetailScreen title="Payment">
-      <DetailNotFound noun="payment" />
+      <ItemNotFound noun="payment" />
     </DetailScreen>
   ) : (
     <TransferDetailScreen id={id} />
@@ -65,14 +59,14 @@ function TransferDetailScreen({ id }: { id: number }) {
       {transfer && me ? (
         <TransferDetail transfer={transfer} viewerId={me.id} />
       ) : transferQuery.isError ? (
-        <DetailError
+        <ItemError
           error={transferQuery.error}
           noun="payment"
           onRetry={() => transferQuery.refetch()}
           isRetrying={transferQuery.isFetching}
         />
       ) : (
-        <DetailLoading label="Loading payment" />
+        <ItemLoading label="Loading payment" />
       )}
     </DetailScreen>
   )

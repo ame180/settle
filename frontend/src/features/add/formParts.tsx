@@ -1,5 +1,4 @@
 import type * as React from 'react'
-import { X } from 'lucide-react'
 import { AlertLine } from '@/components/FieldError'
 import { cn } from '@/lib/utils'
 
@@ -19,10 +18,6 @@ export function PillButton({
       {...props}
     />
   )
-}
-
-export function CloseIcon() {
-  return <X className="size-6" aria-hidden="true" />
 }
 
 /** The dark pill at the bottom of a form; shows a spinner and its pending label while saving. */
@@ -46,7 +41,7 @@ export function PrimaryButton({
       {pending && (
         <span
           aria-hidden="true"
-          className="size-4.5 animate-spin rounded-full border-[2.5px] border-current border-r-transparent"
+          className="size-4.5 rounded-full motion-safe:animate-spin border-[2.5px] border-current border-r-transparent"
         />
       )}
       <span>{pending ? pendingLabel : children}</span>

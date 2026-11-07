@@ -9,7 +9,7 @@ import { calendarDayKey } from '@/lib/dates'
 import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
-import { DetailError, DetailLoading } from '@/features/detail/DetailParts'
+import { ItemError, ItemLoading } from '@/components/ItemStates'
 import { Frame, Header, NotFoundFrame } from './ScreenFrame'
 
 /**
@@ -34,11 +34,7 @@ function EditTransferLoader({ transferId }: { transferId: number }) {
 
   if (!me || transfer.isPending) {
     return (
-      <Frame
-        title="Edit payment"
-        onClose={goBack}
-        body={<DetailLoading label="Loading payment" />}
-      />
+      <Frame title="Edit payment" onClose={goBack} body={<ItemLoading label="Loading payment" />} />
     )
   }
   if (transfer.isError) {
@@ -47,7 +43,7 @@ function EditTransferLoader({ transferId }: { transferId: number }) {
         title="Edit payment"
         onClose={goBack}
         body={
-          <DetailError
+          <ItemError
             error={transfer.error}
             noun="payment"
             onRetry={() => transfer.refetch()}

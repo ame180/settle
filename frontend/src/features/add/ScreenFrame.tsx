@@ -1,9 +1,9 @@
+import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { PageHeader } from '@/components/PageHeader'
-import { DetailNotFound } from '@/features/detail/DetailParts'
+import { ItemNotFound } from '@/components/ItemStates'
 import { useGoBack } from '@/lib/useGoBack'
 import { Button } from '@/components/ui/button'
-import { CloseIcon } from './formParts'
 import { useIsSaving } from './navigation'
 
 /**
@@ -17,7 +17,7 @@ export function Header({ title, onClose }: { title: string; onClose: () => void 
       title={title}
       leading={
         <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose} disabled={saving}>
-          <CloseIcon />
+          <X aria-hidden="true" />
         </Button>
       }
     />
@@ -44,5 +44,5 @@ export function Frame({
 /** An edit screen whose URL has no usable id. */
 export function NotFoundFrame({ title, noun }: { title: string; noun: string }) {
   const { goBack } = useGoBack('/activity')
-  return <Frame title={title} onClose={goBack} body={<DetailNotFound noun={noun} />} />
+  return <Frame title={title} onClose={goBack} body={<ItemNotFound noun={noun} />} />
 }
