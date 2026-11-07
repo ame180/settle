@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiRequest } from './client'
-import { deleteIgnoringMissing, invalidateBalances, saveMutationKey } from './ledger'
+import { deleteIgnoringMissing, invalidateAfterChange, saveMutationKey } from './ledger'
 import type { TransferRequest, TransferResponse, TransferUpdateRequest } from './types'
 
 export function transferQueryKey(id: number) {
@@ -20,7 +20,7 @@ export function useCreateTransfer() {
     mutationKey: saveMutationKey,
     mutationFn: (request: TransferRequest) =>
       apiRequest<TransferResponse>('/api/transfers', { method: 'POST', body: request }),
-    onSuccess: () => invalidateBalances(queryClient),
+    onSuccess: () => invalidateAfterChange(queryClient),
   })
 }
 
@@ -30,7 +30,7 @@ export function useUpdateTransfer(id: number) {
     mutationKey: saveMutationKey,
     mutationFn: (request: TransferUpdateRequest) =>
       apiRequest<TransferResponse>(`/api/transfers/${id}`, { method: 'PUT', body: request }),
-    onSuccess: () => invalidateBalances(queryClient, transferQueryKey(id)),
+    onSuccess: () => invalidateAfterChange(queryClient, transferQueryKey(id)),
   })
 }
 
@@ -40,7 +40,7 @@ export function useDeleteTransfer(id: number) {
     mutationFn: () => deleteIgnoringMissing(`/api/transfers/${id}`),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: transferQueryKey(id), exact: true })
-      return invalidateBalances(queryClient)
+      return invalidateAfterChange(queryClient)
     },
   })
 }
