@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
+import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
 import { useExpense } from '@/api/expenses'
 import type { ExpenseResponse, MeResponse } from '@/api/types'
@@ -9,12 +10,20 @@ import { ExpenseForm } from './ExpenseForm'
 import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { DetailError, DetailLoading } from '@/features/detail/DetailParts'
-import { Frame, Header } from './ScreenFrame'
+import { Frame, Header, NotFoundFrame } from './ScreenFrame'
 
 /** /expenses/:id/edit: the Add expense form, loaded with the expense and saved with PUT. */
 export function EditExpensePage() {
-  const { id } = useParams()
-  const expenseId = Number(id)
+  const expenseId = parseIdParam(useParams().id)
+
+  return expenseId === null ? (
+    <NotFoundFrame title="Edit expense" noun="expense" />
+  ) : (
+    <EditExpenseLoader expenseId={expenseId} />
+  )
+}
+
+function EditExpenseLoader({ expenseId }: { expenseId: number }) {
   const { data: me } = useMe()
   const expense = useExpense(expenseId)
   const fallback = `/expenses/${expenseId}`

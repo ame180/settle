@@ -1,4 +1,5 @@
 import { useParams } from 'react-router'
+import { parseIdParam } from '@/lib/parseIdParam'
 import { ArrowRight } from 'lucide-react'
 import { useMe } from '@/api/auth'
 import { useDeleteTransfer, useTransfer } from '@/api/transfers'
@@ -6,13 +7,31 @@ import type { PersonRef, TransferResponse } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { formatShortDate } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
-import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
+import {
+  DetailActions,
+  DetailError,
+  DetailLoading,
+  DetailNotFound,
+  DetailScreen,
+  NoteBlock,
+} from './DetailParts'
 import { deleteWarning } from './expenseSummary'
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
 import { nameForViewer, peopleOtherThan } from '@/lib/person'
 
 export function TransferDetailPage() {
-  const id = Number(useParams().id)
+  const id = parseIdParam(useParams().id)
+
+  return id === null ? (
+    <DetailScreen title="Payment">
+      <DetailNotFound noun="payment" />
+    </DetailScreen>
+  ) : (
+    <TransferDetailScreen id={id} />
+  )
+}
+
+function TransferDetailScreen({ id }: { id: number }) {
   const transferQuery = useTransfer(id)
   const { data: me } = useMe()
   const transfer = transferQuery.data

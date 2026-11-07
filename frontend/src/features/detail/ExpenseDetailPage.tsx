@@ -1,4 +1,5 @@
 import { useParams } from 'react-router'
+import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
 import { useDeleteExpense, useExpense } from '@/api/expenses'
 import type { ExpenseResponse } from '@/api/types'
@@ -8,7 +9,14 @@ import { categoryInfo } from '@/lib/categories'
 import { formatShortDate } from '@/lib/dates'
 import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { DetailActions, DetailError, DetailLoading, DetailScreen, NoteBlock } from './DetailParts'
+import {
+  DetailActions,
+  DetailError,
+  DetailLoading,
+  DetailNotFound,
+  DetailScreen,
+  NoteBlock,
+} from './DetailParts'
 import {
   deleteWarning,
   expensePosition,
@@ -19,7 +27,18 @@ import {
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
 
 export function ExpenseDetailPage() {
-  const id = Number(useParams().id)
+  const id = parseIdParam(useParams().id)
+
+  return id === null ? (
+    <DetailScreen title="Expense">
+      <DetailNotFound noun="expense" />
+    </DetailScreen>
+  ) : (
+    <ExpenseDetailScreen id={id} />
+  )
+}
+
+function ExpenseDetailScreen({ id }: { id: number }) {
   const expenseQuery = useExpense(id)
   const { data: me } = useMe()
   const expense = expenseQuery.data

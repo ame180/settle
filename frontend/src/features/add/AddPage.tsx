@@ -5,7 +5,7 @@ import { useContacts } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
 import { todayIso } from '@/lib/dates'
 import { findPlnAmount, toGrosze } from '@/lib/money'
-import { parseUserId } from '@/lib/parseUserId'
+import { parseIdParam } from '@/lib/parseIdParam'
 import { cn } from '@/lib/utils'
 import { DiscardSheet } from './DiscardSheet'
 import { amountTotal, draftChanged, emptyDraft, type ExpenseDraft } from './expenseDraft'
@@ -41,7 +41,7 @@ type Prefill = {
 
 function AddScreen({ me }: { me: MeResponse }) {
   const [searchParams] = useSearchParams()
-  const contactId = parseUserId(searchParams.get('contact') ?? undefined)
+  const contactId = parseIdParam(searchParams.get('contact') ?? undefined)
   const { data: contacts, isError } = useContacts()
 
   // Wait for contacts before prefilling, so the form mounts with its starting state.

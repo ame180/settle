@@ -14,7 +14,7 @@ vi.mock('sonner', async (importOriginal) => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }))
 
-function renderExpense(history: string[] = []) {
+function renderExpense(history: string[] = [], path = '/expenses/7') {
   return renderRoutes(
     [
       { path: '/expenses/:id', element: <ExpenseDetailPage /> },
@@ -22,7 +22,7 @@ function renderExpense(history: string[] = []) {
       { path: '/activity', element: <p>Activity feed</p> },
       { path: '/contacts/:userId', element: <p>Contact view</p> },
     ],
-    [...history, '/expenses/7'],
+    [...history, path],
   )
 }
 
@@ -116,6 +116,18 @@ describe('ExpenseDetailPage', () => {
     renderExpense()
 
     expect(await screen.findByText('No balance')).toHaveTextContent(/^No balance$/)
+  })
+
+  it('shows not found for an id that is not a number, without asking the API', async () => {
+    const fetchMock = stubDetailApi({})
+    renderExpense([], '/expenses/abc')
+
+    expect(
+      await screen.findByRole('heading', { name: 'This expense doesn’t exist' }),
+    ).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith('/api/expenses'))).toBe(
+      false,
+    )
   })
 
   it.each([

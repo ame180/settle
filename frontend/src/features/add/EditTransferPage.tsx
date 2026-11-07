@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
+import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
 import { useTransfer } from '@/api/transfers'
 import type { MeResponse, TransferResponse } from '@/api/types'
@@ -9,15 +10,23 @@ import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
 import { DetailError, DetailLoading } from '@/features/detail/DetailParts'
-import { Frame, Header } from './ScreenFrame'
+import { Frame, Header, NotFoundFrame } from './ScreenFrame'
 
 /**
  * /transfers/:id/edit: the payment form, loaded with the payment and saved with PUT. The API
  * only changes amount, date and note, so who paid whom is shown but fixed.
  */
 export function EditTransferPage() {
-  const { id } = useParams()
-  const transferId = Number(id)
+  const transferId = parseIdParam(useParams().id)
+
+  return transferId === null ? (
+    <NotFoundFrame title="Edit payment" noun="payment" />
+  ) : (
+    <EditTransferLoader transferId={transferId} />
+  )
+}
+
+function EditTransferLoader({ transferId }: { transferId: number }) {
   const { data: me } = useMe()
   const transfer = useTransfer(transferId)
   const fallback = `/transfers/${transferId}`

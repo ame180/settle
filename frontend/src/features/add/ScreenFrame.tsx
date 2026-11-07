@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { PageHeader } from '@/components/PageHeader'
+import { DetailNotFound } from '@/features/detail/DetailParts'
+import { useGoBack } from '@/lib/useGoBack'
 import { Button } from '@/components/ui/button'
 import { CloseIcon } from './formParts'
 import { useIsSaving } from './navigation'
@@ -37,4 +39,10 @@ export function Frame({
       {body}
     </div>
   )
+}
+
+/** An edit screen whose URL has no usable id. */
+export function NotFoundFrame({ title, noun }: { title: string; noun: string }) {
+  const { goBack } = useGoBack('/activity')
+  return <Frame title={title} onClose={goBack} body={<DetailNotFound noun={noun} />} />
 }

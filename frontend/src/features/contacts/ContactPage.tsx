@@ -26,10 +26,10 @@ import { ActivityListFooter } from '@/features/activity/ActivityListFooter'
 import { ActivityRow, ActivityRowSkeleton } from '@/features/activity/ActivityRows'
 import { activityItemKey, flattenActivityPages } from '@/features/activity/activityItems'
 import { ContactNotFound, ContactNotFoundMessage } from './ContactNotFound'
-import { parseUserId } from '@/lib/parseUserId'
+import { parseIdParam } from '@/lib/parseIdParam'
 
 export function ContactPage() {
-  const userId = parseUserId(useParams().userId)
+  const userId = parseIdParam(useParams().userId)
 
   return userId === null ? <ContactNotFound /> : <ContactView userId={userId} />
 }

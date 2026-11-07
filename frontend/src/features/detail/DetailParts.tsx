@@ -52,15 +52,7 @@ export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorPro
   const status = error instanceof ApiError ? error.status : undefined
 
   if (status === 404) {
-    return (
-      <StateMessage
-        icon={<SearchX className="size-7.5" aria-hidden="true" />}
-        title={`This ${noun} doesn’t exist`}
-        description="It may have been deleted."
-      >
-        <BackToActivity />
-      </StateMessage>
-    )
+    return <DetailNotFound noun={noun} />
   }
 
   if (status === 403) {
@@ -77,6 +69,19 @@ export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorPro
 
   return (
     <LoadError title={`Couldn’t load this ${noun}`} onRetry={onRetry} isRetrying={isRetrying} />
+  )
+}
+
+/** Also shown, without asking the API, when the URL's id isn't an id at all. */
+export function DetailNotFound({ noun }: { noun: string }) {
+  return (
+    <StateMessage
+      icon={<SearchX className="size-7.5" aria-hidden="true" />}
+      title={`This ${noun} doesn’t exist`}
+      description="It may have been deleted."
+    >
+      <BackToActivity />
+    </StateMessage>
   )
 }
 

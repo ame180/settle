@@ -19,7 +19,7 @@ import { getShortName } from '@/lib/person'
 import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
 import { ContactNotFound } from './ContactNotFound'
-import { parseUserId } from '@/lib/parseUserId'
+import { parseIdParam } from '@/lib/parseIdParam'
 
 const editContactSchema = z.object({
   nickname: z.string().trim().max(64, 'Nickname can be at most 64 characters.'),
@@ -28,7 +28,7 @@ const editContactSchema = z.object({
 type EditContactValues = z.infer<typeof editContactSchema>
 
 export function EditContactPage() {
-  const userId = parseUserId(useParams().userId)
+  const userId = parseIdParam(useParams().userId)
 
   return userId === null ? <ContactNotFound /> : <EditContact userId={userId} />
 }
