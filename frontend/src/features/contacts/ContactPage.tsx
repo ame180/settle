@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
+import { buttonClassName } from '@/components/ui/button-variants'
 import { addExpenseWithPath, contactSecondaryLine, settleUpPath } from '@/lib/contact'
 import { getShortName } from '@/lib/person'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
@@ -19,8 +20,6 @@ import { ActivityRow } from '@/features/activity/ActivityRows'
 import { activityItemKey, flattenActivityPages } from '@/features/activity/activityItems'
 import { ContactNotFound, ContactNotFoundMessage } from './ContactNotFound'
 import { parseUserId } from '@/lib/parseUserId'
-
-const pillClassName = 'rounded-full px-5 text-[15px]'
 
 export function ContactPage() {
   const userId = parseUserId(useParams().userId)
@@ -41,9 +40,13 @@ function ContactView({ userId }: { userId: number }) {
             <Link
               to={`/contacts/${userId}/edit`}
               aria-label="Edit contact"
-              className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClassName({
+                variant: 'ghost',
+                size: 'icon',
+                className: '[&_svg]:size-5.5',
+              })}
             >
-              <Pencil className="size-5.5" aria-hidden="true" />
+              <Pencil aria-hidden="true" />
             </Link>
           )
         }
@@ -62,7 +65,7 @@ function ContactView({ userId }: { userId: number }) {
           >
             <Button
               variant="outline"
-              className={pillClassName}
+              size="pill"
               onClick={() => contactQuery.refetch()}
               disabled={contactQuery.isFetching}
             >
@@ -211,7 +214,7 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
       >
         <Button
           variant="outline"
-          className={pillClassName}
+          size="pill"
           onClick={() => activityQuery.refetch()}
           disabled={activityQuery.isFetching}
         >

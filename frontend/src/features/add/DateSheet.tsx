@@ -3,7 +3,8 @@ import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { addDays, formatLongDate, fromIsoDate, todayIso, toIsoDate } from '@/lib/dates'
 import { cn } from '@/lib/utils'
-import { IconButton, PillButton } from './formParts'
+import { Button } from '@/components/ui/button'
+import { PillButton } from './formParts'
 
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -67,12 +68,24 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
             <h3 id="date-sheet-month" className="flex-1 font-semibold">
               {monthLabel}
             </h3>
-            <IconButton aria-label="Previous month" onClick={() => setMonth(shiftMonth(month, -1))}>
-              <ChevronLeft className="size-5" aria-hidden="true" />
-            </IconButton>
-            <IconButton aria-label="Next month" onClick={() => setMonth(shiftMonth(month, 1))}>
-              <ChevronRight className="size-5" aria-hidden="true" />
-            </IconButton>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="[&_svg]:size-5"
+              aria-label="Previous month"
+              onClick={() => setMonth(shiftMonth(month, -1))}
+            >
+              <ChevronLeft aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="[&_svg]:size-5"
+              aria-label="Next month"
+              onClick={() => setMonth(shiftMonth(month, 1))}
+            >
+              <ChevronRight aria-hidden="true" />
+            </Button>
           </div>
           <div
             role="group"

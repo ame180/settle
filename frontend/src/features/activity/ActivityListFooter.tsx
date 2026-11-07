@@ -30,7 +30,7 @@ export function ActivityListFooter({
     return (
       <div role="alert" className="flex flex-col items-center gap-3 px-4 pt-6">
         <p className="text-sm text-muted-foreground">Couldn't load more activity.</p>
-        <Button variant="outline" className="rounded-full px-5 text-[15px]" onClick={fetchNextPage}>
+        <Button variant="outline" size="pill" onClick={fetchNextPage}>
           <RefreshCw aria-hidden="true" />
           Try again
         </Button>

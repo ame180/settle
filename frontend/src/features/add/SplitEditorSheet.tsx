@@ -14,7 +14,8 @@ import {
 } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { AlertLine } from '@/components/FieldError'
-import { CloseIcon, IconButton } from './formParts'
+import { Button } from '@/components/ui/button'
+import { CloseIcon } from './formParts'
 import {
   checkSplit,
   editSplit,
@@ -133,9 +134,9 @@ function SplitEditor({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center gap-1 px-2 pt-1">
-        <IconButton aria-label="Close" onClick={onCancel}>
+        <Button variant="ghost" size="icon" aria-label="Close" onClick={onCancel}>
           <CloseIcon />
-        </IconButton>
+        </Button>
         <SheetTitle>{total ? `Split ${formatPln(total)}` : 'Split'}</SheetTitle>
       </div>
       <SheetDescription className="sr-only">

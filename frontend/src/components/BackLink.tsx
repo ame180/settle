@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
+import { buttonClassName } from '@/components/ui/button-variants'
 import { useGoBack } from '@/lib/useGoBack'
 
 type BackLinkProps = {
@@ -25,7 +26,7 @@ export function BackLink({ to, label }: BackLinkProps) {
         goBack()
       }}
       aria-label={label}
-      className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className={buttonClassName({ variant: 'ghost', size: 'icon' })}
     >
       <ArrowLeft className="size-6" aria-hidden="true" />
     </Link>

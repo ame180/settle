@@ -68,7 +68,7 @@ function EditContact({ userId }: { userId: number }) {
           >
             <Button
               variant="outline"
-              className="rounded-full px-5 text-[15px]"
+              size="pill"
               onClick={() => contactQuery.refetch()}
               disabled={contactQuery.isFetching}
             >

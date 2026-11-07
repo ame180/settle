@@ -10,8 +10,6 @@ import { ActivityListFooter } from './ActivityListFooter'
 import { ActivityRow, DayHeader } from './ActivityRows'
 import { activityItemKey, flattenActivityPages, groupActivityByDay } from './activityItems'
 
-const pillClassName = 'rounded-full px-5 text-[15px]'
-
 export function ActivityPage() {
   const activityQuery = useActivity()
   const { data: me } = useMe()
@@ -33,7 +31,7 @@ export function ActivityPage() {
           >
             <Button
               variant="outline"
-              className={pillClassName}
+              size="pill"
               onClick={() => activityQuery.refetch()}
               disabled={activityQuery.isFetching}
             >

@@ -21,23 +21,6 @@ export function PillButton({
   )
 }
 
-export function IconButton({
-  className,
-  type = 'button',
-  ...props
-}: React.ComponentProps<'button'>) {
-  return (
-    <button
-      type={type}
-      className={cn(
-        'flex size-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-40',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
 export function CloseIcon() {
   return <X className="size-6" aria-hidden="true" />
 }

@@ -61,7 +61,7 @@ export function ProfilePage() {
       <div className="px-4 pt-7 pb-4">
         <Button
           variant="outline"
-          className="rounded-full px-5 text-[15px]"
+          size="pill"
           onClick={handleLogout}
           disabled={logoutMutation.isPending}
         >

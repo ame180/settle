@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { PageHeader } from '@/components/PageHeader'
-import { CloseIcon, IconButton } from './formParts'
+import { Button } from '@/components/ui/button'
+import { CloseIcon } from './formParts'
 import { useIsSaving } from './navigation'
 
 /**
@@ -13,9 +14,9 @@ export function Header({ title, onClose }: { title: string; onClose: () => void 
     <PageHeader
       title={title}
       leading={
-        <IconButton aria-label="Close" onClick={onClose} disabled={saving}>
+        <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose} disabled={saving}>
           <CloseIcon />
-        </IconButton>
+        </Button>
       }
     />
   )

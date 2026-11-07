@@ -7,12 +7,11 @@ import { AddExpenseButton } from '@/components/AddExpenseButton'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
+import { buttonClassName } from '@/components/ui/button-variants'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { ContactRow } from './ContactRow'
 import { isHiddenAsSettled } from './contactVisibility'
-
-const pillClassName = 'rounded-full px-5 text-[15px]'
 
 export function ContactsPage() {
   const contactsQuery = useContacts()
@@ -25,7 +24,7 @@ export function ContactsPage() {
           <Link
             to="/contacts/new"
             aria-label="Add contact"
-            className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClassName({ variant: 'ghost', size: 'icon' })}
           >
             <UserPlus className="size-6" aria-hidden="true" />
           </Link>
@@ -45,7 +44,7 @@ export function ContactsPage() {
           >
             <Button
               variant="outline"
-              className={pillClassName}
+              size="pill"
               onClick={() => contactsQuery.refetch()}
               disabled={contactsQuery.isFetching}
             >
@@ -61,9 +60,13 @@ export function ContactsPage() {
           >
             <Link
               to="/contacts/new"
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-input bg-background px-5 text-[15px] font-medium hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClassName({
+                variant: 'outline',
+                size: 'pill',
+                className: '[&_svg]:size-4.5',
+              })}
             >
-              <UserPlus className="size-4.5" aria-hidden="true" />
+              <UserPlus aria-hidden="true" />
               Add contact
             </Link>
           </StateMessage>
@@ -105,7 +108,7 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
           title="Nothing to settle"
           description="Nobody owes you and you owe nobody."
         >
-          <Button variant="outline" className={pillClassName} onClick={() => setShowSettled(true)}>
+          <Button variant="outline" size="pill" onClick={() => setShowSettled(true)}>
             {showSettledLabel}
           </Button>
         </StateMessage>
@@ -142,11 +145,7 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
             ))}
           </ul>
           <div className="flex justify-center px-4 pt-4">
-            <Button
-              variant="outline"
-              className={pillClassName}
-              onClick={() => setShowSettled(false)}
-            >
+            <Button variant="outline" size="pill" onClick={() => setShowSettled(false)}>
               Hide settled-up contacts
             </Button>
           </div>
@@ -156,7 +155,7 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
       {settled.length > 0 && !showSettled && (
         <div className="flex flex-col items-center gap-3 px-4 pt-6">
           <p className="text-sm text-muted-foreground">Settled-up contacts are hidden.</p>
-          <Button variant="outline" className={pillClassName} onClick={() => setShowSettled(true)}>
+          <Button variant="outline" size="pill" onClick={() => setShowSettled(true)}>
             {showSettledLabel}
           </Button>
         </div>

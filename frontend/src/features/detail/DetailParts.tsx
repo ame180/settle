@@ -6,6 +6,7 @@ import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
+import { buttonClassName } from '@/components/ui/button-variants'
 import {
   Sheet,
   SheetClose,
@@ -94,12 +95,7 @@ export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorPro
       title={`Couldn’t load this ${noun}`}
       description="Check your connection and try again."
     >
-      <Button
-        variant="outline"
-        className="rounded-full px-5 text-[15px]"
-        onClick={onRetry}
-        disabled={isRetrying}
-      >
+      <Button variant="outline" size="pill" onClick={onRetry} disabled={isRetrying}>
         <RefreshCw aria-hidden="true" />
         Try again
       </Button>
@@ -109,10 +105,7 @@ export function DetailError({ error, noun, onRetry, isRetrying }: DetailErrorPro
 
 function BackToActivity() {
   return (
-    <Link
-      to="/activity"
-      className="inline-flex h-11 items-center rounded-full border border-input px-5 text-[15px] font-medium hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
+    <Link to="/activity" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
       Go to activity
     </Link>
   )
@@ -155,13 +148,9 @@ export function DetailActions({
     <>
       <Sheet open={isConfirmOpen} onOpenChange={(next) => !isPending && setConfirmOpen(next)}>
         <SheetTrigger asChild>
-          <button
-            type="button"
-            aria-label={deleteLabel}
-            className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <Trash2 className="size-5.5" aria-hidden="true" />
-          </button>
+          <Button variant="ghost" size="icon" className="[&_svg]:size-5.5" aria-label={deleteLabel}>
+            <Trash2 aria-hidden="true" />
+          </Button>
         </SheetTrigger>
         <SheetContent>
           <SheetHeader className="pt-3">
