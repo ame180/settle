@@ -66,7 +66,8 @@ export function formatShortDate(isoDate: string, now: Date = new Date()): string
 }
 
 /** "Today", "Yesterday", "20 Oct", or "20 Oct 2025" outside the current year. */
-export function formatDateLabel(isoDate: string, today = todayIso()): string {
+export function formatDateLabel(isoDate: string, now: Date = new Date()): string {
+  const today = todayIso(now)
   return relativeDayLabel(isoDate, today) ?? formatDate(isoDate, today, false)
 }
 

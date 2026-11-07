@@ -7,6 +7,8 @@ import {
   parseAmountInput,
   toGrosze,
 } from '@/lib/money'
+import { expenseCategories } from '@/lib/categories'
+import { calendarDayKey } from '@/lib/dates'
 import { trimDecimal } from '@/lib/decimal'
 import { peopleOtherThan } from '@/lib/person'
 import { checkSplit, defaultSplit, splitDebts, type SplitDraft } from './splitModel'
@@ -69,7 +71,7 @@ export function draftFromExpense(expense: ExpenseResponse, meId: number): Expens
     category: expense.category,
     categoryPicked: true,
     amount: expense.amount,
-    occurredOn: expense.occurredOn.slice(0, 10),
+    occurredOn: calendarDayKey(expense.occurredOn),
     note: expense.description ?? '',
     split: {
       payerId: expense.payee.id,
@@ -96,16 +98,7 @@ export const expenseRequestSchema = z.object({
     .min(1),
   occurredOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a date'),
   splitType: z.enum(['exact', 'percentage', 'shares', 'equal']),
-  category: z.enum([
-    'groceries',
-    'food_and_drink',
-    'transport',
-    'home_and_bills',
-    'entertainment',
-    'gifts',
-    'health',
-    'general',
-  ]),
+  category: z.enum(expenseCategories),
   description: z.string().nullish(),
 })
 

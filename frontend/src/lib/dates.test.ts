@@ -36,6 +36,6 @@ describe('formatDateLabel', () => {
     ['2026-10-20', '20 Oct'],
     ['2025-12-31', '31 Dec 2025'],
   ])('labels %s as %s', (isoDate, expected) => {
-    expect(formatDateLabel(isoDate, '2026-11-05')).toBe(expected)
+    expect(formatDateLabel(isoDate, now)).toBe(expected)
   })
 })

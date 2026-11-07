@@ -5,6 +5,7 @@ import { useMe } from '@/api/auth'
 import { useTransfer } from '@/api/transfers'
 import type { MeResponse, TransferResponse } from '@/api/types'
 import { DiscardSheet } from './DiscardSheet'
+import { calendarDayKey } from '@/lib/dates'
 import { useGoBack } from '@/lib/useGoBack'
 import { useLeaveGuard } from './navigation'
 import { PaymentForm, type PaymentDraft } from './PaymentForm'
@@ -65,7 +66,7 @@ function EditTransferForm({
     person: payer === 'me' ? transfer.payee : transfer.payer,
     payer,
     amount: transfer.amount,
-    occurredOn: transfer.occurredOn.slice(0, 10),
+    occurredOn: calendarDayKey(transfer.occurredOn),
     note: transfer.description ?? '',
   }))
   const [draft, setDraft] = useState(initialDraft)
