@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { useState } from 'react'
+import { Link } from 'react-router'
 import { CircleAlert, CircleCheck, RefreshCw, UserPlus, Users } from 'lucide-react'
-import { toast } from 'sonner'
 import { useContacts } from '@/api/contacts'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { AddExpenseButton } from '@/components/AddExpenseButton'
@@ -13,28 +12,10 @@ import { cn } from '@/lib/utils'
 import { ContactRow } from './ContactRow'
 import { isHiddenAsSettled } from './contactVisibility'
 
-export type ContactsLocationState = { addedContactName?: string } | null
-
 const pillClassName = 'rounded-full px-5 text-[15px]'
 
 export function ContactsPage() {
   const contactsQuery = useContacts()
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (location.state === null) {
-      return
-    }
-    const addedContactName = (location.state as ContactsLocationState)?.addedContactName
-    if (addedContactName) {
-      // Keyed by navigation so StrictMode's double effect run doesn't stack two toasts.
-      toast.success(`${addedContactName} added to your contacts`, {
-        id: `contact-added-${location.key}`,
-      })
-    }
-    navigate(location.pathname, { replace: true, state: null })
-  }, [location.state, location.key, location.pathname, navigate])
 
   return (
     <>

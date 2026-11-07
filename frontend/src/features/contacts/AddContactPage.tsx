@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate } from 'react-router'
 import { LoaderCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { useAddContact } from '@/api/contacts'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
@@ -11,8 +11,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
-import type { ContactsLocationState } from './ContactsPage'
 
 const addContactSchema = z.object({
   email: z.string().trim().pipe(z.email('Enter a valid email address.')),
@@ -29,7 +29,7 @@ function isFormField(propertyPath: string): propertyPath is (typeof formFields)[
 
 export function AddContactPage() {
   const addContactMutation = useAddContact()
-  const navigate = useNavigate()
+  const { goBack } = useGoBack('/')
 
   const form = useForm<AddContactValues>({
     resolver: zodResolver(addContactSchema),
@@ -43,8 +43,8 @@ export function AddContactPage() {
       { email: values.email, nickname: values.nickname === '' ? null : values.nickname },
       {
         onSuccess: (contact) => {
-          const state: ContactsLocationState = { addedContactName: contact.person.displayName }
-          navigate('/', { replace: true, state })
+          toast.success(`${contact.person.displayName} added to your contacts`)
+          goBack()
         },
         onError: (error) => {
           if (!(error instanceof ApiError) || error.status !== 400) {

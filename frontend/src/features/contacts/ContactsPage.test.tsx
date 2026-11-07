@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { jsonResponse, renderRoutes } from '@/test/utils'
@@ -31,11 +31,8 @@ function stubContacts(response: ContactListResponse) {
   return fetchMock
 }
 
-function renderContacts(state?: unknown) {
-  return renderRoutes(
-    [{ path: '/', element: <ContactsPage /> }],
-    state === undefined ? '/' : { pathname: '/', state },
-  )
+function renderContacts() {
+  return renderRoutes([{ path: '/', element: <ContactsPage /> }], '/')
 }
 
 afterEach(() => {
@@ -160,19 +157,12 @@ describe('ContactsPage', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('lists a newly added contact and confirms it with a toast that disappears', async () => {
+  it('lists a contact who is not on Settle yet with no balance', async () => {
     stubContacts({ totals: [], items: [contact(5, 'Jan', null, false, RECENTLY)] })
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    renderContacts({ addedContactName: 'Jan' })
+    renderContacts()
 
-    expect(
-      (await screen.findByText('Jan added to your contacts')).closest('[aria-live]'),
-    ).not.toBeNull()
-    expect(screen.getByText('Not on Settle yet').closest('li')).toHaveTextContent('no balance')
-
-    await vi.advanceTimersByTimeAsync(4000)
-    await waitFor(() =>
-      expect(screen.queryByText('Jan added to your contacts')).not.toBeInTheDocument(),
+    expect((await screen.findByText('Not on Settle yet')).closest('li')).toHaveTextContent(
+      'no balance',
     )
   })
 })

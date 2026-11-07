@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
 import { z } from 'zod'
-import { useNavigate } from 'react-router'
 import { useMe, useUpdateMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
@@ -10,8 +10,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { SubmitButton } from '@/components/SubmitButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
-import type { ProfileLocationState } from './ProfilePage'
 
 const nameTooLongMessage = 'Use at most 64 characters.'
 
@@ -29,7 +29,7 @@ export function EditNamePage() {
 
 function EditNameForm({ currentName }: { currentName: string | null }) {
   const updateMeMutation = useUpdateMe()
-  const navigate = useNavigate()
+  const { goBack } = useGoBack('/profile')
 
   const form = useForm<EditNameValues>({
     resolver: zodResolver(editNameSchema),
@@ -41,8 +41,8 @@ function EditNameForm({ currentName }: { currentName: string | null }) {
   const onSubmit = form.handleSubmit((values) => {
     updateMeMutation.mutate(values, {
       onSuccess: () => {
-        const state: ProfileLocationState = { nameSaved: true }
-        navigate('/profile', { replace: true, state })
+        toast.success('Name saved')
+        goBack()
       },
       onError: (error) => {
         const isNameViolation =
