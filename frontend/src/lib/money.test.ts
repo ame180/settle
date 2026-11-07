@@ -6,6 +6,7 @@ import {
   formatPln,
   isNegativeAmount,
   parseAmountInput,
+  sumAmounts,
 } from './money'
 
 describe('formatPln', () => {
@@ -69,5 +70,17 @@ describe('formatGrosze', () => {
   it('formats integer grosze, signless', () => {
     expect(formatGrosze(4950n)).toBe(formatPln('49.50'))
     expect(formatGrosze(-153564n)).toBe(formatPln('1535.64'))
+  })
+})
+
+describe('sumAmounts', () => {
+  it.each([
+    [['61.43', '61.43'], '122.86'],
+    [['0.1', '0.2'], '0.30'],
+    [['186.20'], '186.20'],
+    [[], '0.00'],
+    [['-5.00', '1.25'], '-3.75'],
+  ])('adds %j to %s', (amounts, expected) => {
+    expect(sumAmounts(amounts)).toBe(expected)
   })
 })

@@ -4,10 +4,11 @@ import { RequireAuth } from './RequireAuth'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignUpPage } from '@/features/auth/SignUpPage'
 import { ActivityPage } from '@/features/activity/ActivityPage'
-import { DetailPlaceholderPage } from '@/features/activity/DetailPlaceholderPage'
 import { AddPage } from '@/features/add/AddPage'
 import { EditExpensePage } from '@/features/add/EditExpensePage'
 import { EditTransferPage } from '@/features/add/EditTransferPage'
+import { ExpenseDetailPage } from '@/features/detail/ExpenseDetailPage'
+import { TransferDetailPage } from '@/features/detail/TransferDetailPage'
 import { ContactsPage } from '@/features/contacts/ContactsPage'
 import { AddContactPage } from '@/features/contacts/AddContactPage'
 import { ContactPage } from '@/features/contacts/ContactPage'
@@ -33,8 +34,8 @@ export const router = createBrowserRouter([
       { path: 'contacts/new', element: <AddContactPage /> },
       { path: 'contacts/:userId/edit', element: <EditContactPage /> },
       { path: 'profile/name', element: <EditNamePage /> },
-      { path: 'expenses/:id', element: <DetailPlaceholderPage title="Expense" /> },
-      { path: 'transfers/:id', element: <DetailPlaceholderPage title="Payment" /> },
+      { path: 'expenses/:id', element: <ExpenseDetailPage /> },
+      { path: 'transfers/:id', element: <TransferDetailPage /> },
       { path: 'add', element: <AddPage /> },
       { path: 'expenses/:id/edit', element: <EditExpensePage /> },
       { path: 'transfers/:id/edit', element: <EditTransferPage /> },

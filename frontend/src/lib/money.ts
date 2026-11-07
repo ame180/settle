@@ -15,6 +15,11 @@ export function formatPlnNumber(amount: string): string {
   return `${groupedIntegerPart}.${fractionPart.padEnd(2, '0')}`
 }
 
+/** True for '0', '0.00', '-0.00' and the like. */
+export function isZeroAmount(amount: string): boolean {
+  return /^-?0*(\.0*)?$/.test(amount)
+}
+
 export function isNegativeAmount(amount: string): boolean {
   return amount.startsWith('-')
 }
@@ -69,4 +74,9 @@ const allowedInput = new RegExp(`^\\d{0,${MAX_AMOUNT_INTEGER_DIGITS}}(?:[.,]\\d{
 export function sanitizeAmountInput(next: string, previous: string): string {
   const compact = next.replace(/\s/g, '')
   return allowedInput.test(compact) ? compact : previous
+}
+
+/** Adds 2-decimal money strings exactly (no float math): ['61.43', '61.43'] → '122.86'. */
+export function sumAmounts(amounts: string[]): string {
+  return fromGrosze(amounts.reduce((sum, amount) => sum + toGrosze(amount), 0n))
 }
