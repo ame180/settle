@@ -12,10 +12,18 @@ Expense sharing for ad-hoc groups of friends. Symfony 7.4 JSON API plus a React 
 
 Quality gates, run locally (not in the container): `composer checkup`, `composer test` (needs the database container up), and in `frontend/`: `npm run lint`, `npm run format:check`, `npm run typecheck`, `npx vitest run`, `npm run build`.
 
-## Production image
+## Production
+
+`docker/Dockerfile` has two production targets:
+
+- `prod`: PHP-FPM with vendor dependencies, the built frontend under `public/app` and a warmed cache. It runs as `www-data` and applies migrations on start.
+- `web`: nginx serving `public/` and passing PHP requests to the `php` service.
+
+`compose.prod.yaml` runs both with MariaDB behind [nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) and acme-companion:
 
 ```bash
-docker build -f docker/Dockerfile --target prod -t settle .
+cp .env.prod.example .env   # fill in secrets and VIRTUAL_HOST
+docker compose -f compose.prod.yaml up -d
 ```
 
-The image contains PHP-FPM, vendor dependencies and the built frontend under `public/app`. Serve `public/` with nginx in front of it and run `bin/console doctrine:migrations:migrate` as a release step.
+The `web` service joins the external proxy network (`PROXY_NETWORK`). Give each stack on a host its own `COMPOSE_PROJECT_NAME`. The images are amd64-only because the nginx base image is; on Apple Silicon build them with `DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f compose.prod.yaml build`.

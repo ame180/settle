@@ -1,0 +1,62 @@
+# Production stack behind nginx-proxy + acme-companion.
+# Run with: docker compose -f compose.prod.yaml --env-file .env up -d
+# Staging and prod on one host need different COMPOSE_PROJECT_NAME values.
+
+services:
+  # nginx-php proxies to `php:9000`, so this service keeps the name `php`.
+  php:
+    image: ${APP_IMAGE:-ghcr.io/ame180/settle}:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: prod
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - sessions:/app/var/sessions
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  web:
+    image: ${WEB_IMAGE:-ghcr.io/ame180/settle-web}:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: web
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+    restart: unless-stopped
+    depends_on:
+      - php
+    networks:
+      - default
+      - proxy
+
+  mariadb:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MYSQL_DATABASE}
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - mariadb:/var/lib/mysql
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-nginx-proxy}
+
+volumes:
+  mariadb:
+  sessions:
