@@ -6,6 +6,8 @@ framework:
     session:
         cookie_secure: auto
         cookie_samesite: lax
+        # Outside the cache dir, so sessions survive cache clears and image rebuilds.
+        save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'
 
     #esi: true
     #fragments: true
