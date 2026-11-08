@@ -17,3 +17,5 @@ frontend/dist
 frontend/coverage
 public/app
 public/bundles
+config/secrets/*/*.decrypt.private.php
+frontend/.env*
