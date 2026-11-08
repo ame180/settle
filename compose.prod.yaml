@@ -1,0 +1,69 @@
+# Production stack: docker compose -f compose.prod.yaml --env-file .env.prod up -d
+# See .env.prod.example for the values it needs.
+
+services:
+  # nginx-php proxies to `php:9000`, so this service keeps the name `php`.
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: prod
+    # Explicit list rather than env_file, so the DB root password never reaches the app.
+    environment:
+      APP_SECRET: ${APP_SECRET:?set APP_SECRET}
+      MYSQL_HOST: mariadb
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      # Required by the messenger and mailer config, though nothing sends messages or mail yet.
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      MAILER_DSN: null://null
+    restart: unless-stopped
+    volumes:
+      - sessions:/app/var/sessions
+    # php-fpm only listens once migrations have run, so this also gates web on them.
+    # The long start_period leaves room for slow migrations; a passing check ends it early.
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
+      start_period: 120s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: web
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    restart: unless-stopped
+    depends_on:
+      php:
+        condition: service_healthy
+
+  mariadb:
+    # Keep in step with app.mysql_server_version in config/services.yaml.
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
+      MARIADB_USER: ${MYSQL_USER:?set MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - mariadb:/var/lib/mysql
+
+volumes:
+  mariadb:
+  sessions:
