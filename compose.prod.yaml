@@ -10,7 +10,17 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       target: prod
-    env_file: .env
+    # Explicit list rather than env_file, so the DB root password never reaches the app.
+    environment:
+      APP_SECRET: ${APP_SECRET:?set APP_SECRET}
+      SYMFONY_TRUSTED_PROXIES: ${SYMFONY_TRUSTED_PROXIES:-PRIVATE_SUBNETS}
+      MYSQL_HOST: ${MYSQL_HOST:-mariadb}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
+      MAILER_DSN: ${MAILER_DSN:-null://null}
     restart: unless-stopped
     volumes:
       - sessions:/app/var/sessions
@@ -38,8 +48,7 @@ services:
   mariadb:
     image: mariadb:10.11
     environment:
-      # The app only uses its own user, so root gets a random password nobody needs to hold.
-      MARIADB_RANDOM_ROOT_PASSWORD: 1
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
       MARIADB_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
       MARIADB_USER: ${MYSQL_USER:?set MYSQL_USER}
       MARIADB_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
