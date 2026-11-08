@@ -25,9 +25,9 @@ services:
       dockerfile: docker/Dockerfile
       target: web
     environment:
-      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_HOST: ${VIRTUAL_HOST:?set VIRTUAL_HOST}
       VIRTUAL_PORT: 80
-      LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST:?set VIRTUAL_HOST}
     restart: unless-stopped
     depends_on:
       - php
@@ -38,10 +38,11 @@ services:
   mariadb:
     image: mariadb:10.11
     environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${MYSQL_DATABASE}
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+      # The app only uses its own user, so root gets a random password nobody needs to hold.
+      MARIADB_RANDOM_ROOT_PASSWORD: 1
+      MARIADB_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
+      MARIADB_USER: ${MYSQL_USER:?set MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]

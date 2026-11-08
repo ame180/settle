@@ -7,6 +7,15 @@ COPY frontend/ ./
 RUN npm run build
 
 
+# nginx-php hardcodes `fastcgi_pass php:9000`, so the app service must be reachable as `php`.
+FROM ghcr.io/ame180/nginx-php:latest AS web
+
+ENV APP_PATH=/app
+
+COPY public /app/public
+COPY --from=frontend-build /app/public/app /app/public/app
+
+
 FROM php:8.4-fpm AS base
 
 # Install composer
@@ -23,6 +32,7 @@ RUN git config --global --add safe.directory /app
 WORKDIR /app
 
 
+# Last stage, so a build without --target produces the app image.
 FROM base AS prod
 
 ENV APP_ENV=prod
@@ -51,11 +61,3 @@ RUN APP_SECRET=build MYSQL_DATABASE=settle MYSQL_HOST=mysql MYSQL_PORT=3306 MYSQ
 
 ENTRYPOINT ["docker/entrypoint.prod.sh"]
 CMD ["php-fpm"]
-
-
-# nginx-php hardcodes `fastcgi_pass php:9000`, so the app service must be reachable as `php`.
-FROM ghcr.io/ame180/nginx-php:latest AS web
-
-ENV APP_PATH=/app
-
-COPY --from=prod /app/public /app/public

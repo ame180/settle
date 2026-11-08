@@ -14,9 +14,9 @@ Quality gates, run locally (not in the container): `composer checkup`, `composer
 
 ## Production
 
-`docker/Dockerfile` has two production targets:
+`docker/Dockerfile` has two production targets (`prod` is the default when no `--target` is given):
 
-- `prod`: PHP-FPM with vendor dependencies, the built frontend under `public/app` and a warmed cache. It runs as `www-data` and applies migrations on start.
+- `prod`: PHP-FPM with vendor dependencies, the built frontend under `public/app` and a warmed cache. It runs as `www-data` and applies migrations on every start, so a failing migration keeps the container restarting until it is fixed or rolled back.
 - `web`: nginx serving `public/` and passing PHP requests to the `php` service.
 
 `compose.prod.yaml` runs both with MariaDB behind [nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) and acme-companion:
