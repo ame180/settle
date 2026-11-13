@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ dev, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ dev, main ]
+    branches: [ main ]
+  # Lets deploy.yml run the same gates before it builds images.
+  workflow_call:
 
 env:
   PHP_VERSION: '8.4'
