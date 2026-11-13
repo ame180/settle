@@ -20,7 +20,7 @@ Settle ships as two images built from `docker/Dockerfile`, run with Docker Compo
 2. Builds both images for amd64 and pushes them to GHCR.
 3. Copies `deploy/compose.yaml` to the environment's directory on the server as `compose.yaml`.
 4. Over SSH: sets `IMAGE_TAG` in the server's `.env`, then `docker compose pull` and `docker compose up -d --wait`. The run fails if a service doesn't become healthy within 5 minutes, and prints the service logs.
-5. Removes this app's images that no container uses any more (skipping ones built in the last hour).
+5. Removes this app's images that no container uses any more (skipping recent ones, so a deploy of the other environment running at the same time keeps its images).
 
 Runs are serialized per environment and never cancelled halfway.
 

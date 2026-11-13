@@ -114,5 +114,5 @@ jobs:
               exit 1
             }
             # Exact tags never become dangling, so remove this app's unused images explicitly.
-            # Skipping recent builds leaves alone images another environment's deploy has just pulled.
+            # Skipping recent images leaves alone ones another environment's deploy has just pulled.
             docker image prune -af --filter "label=org.opencontainers.image.source=$IMAGE_SOURCE" --filter until=1h
