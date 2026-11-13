@@ -1,8 +1,13 @@
 name: Deploy
 
-# Staging: run manually from any branch. Production: push a v* tag (or run manually from one).
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [ staging, production ]
+        default: staging
   push:
     tags: [ 'v*' ]
 
@@ -10,11 +15,12 @@ permissions:
   contents: read
 
 env:
-  IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || format('sha-{0}', github.sha) }}
+  # Production releases run under their version tag; everything else under the commit.
+  IMAGE_TAG: ${{ github.ref_type == 'tag' && (inputs.environment || 'production') == 'production' && github.ref_name || format('sha-{0}', github.sha) }}
   IMAGE_SOURCE: ${{ github.server_url }}/${{ github.repository }}
 
 concurrency:
-  group: deploy-${{ github.ref_type == 'tag' && 'production' || 'staging' }}
+  group: deploy-${{ inputs.environment || 'production' }}
   cancel-in-progress: false
 
 jobs:
@@ -51,6 +57,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Docker metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ matrix.image }}
+          tags: |
+            type=sha,format=long
+            type=raw,value=${{ env.IMAGE_TAG }},enable=${{ env.IMAGE_TAG != format('sha-{0}', github.sha) }}
+
       - name: Build and push ${{ matrix.image }}
         uses: docker/build-push-action@v6
         with:
@@ -59,19 +74,16 @@ jobs:
           target: ${{ matrix.target }}
           push: true
           pull: true
-          # The source label links the package to this repo and scopes the server's image prune.
-          labels: org.opencontainers.image.source=${{ env.IMAGE_SOURCE }}
-          tags: |
-            ${{ matrix.image }}:sha-${{ github.sha }}
-            ${{ github.ref_type == 'tag' && format('{0}:{1}', matrix.image, github.ref_name) || '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=${{ matrix.target }}
 
   deploy:
-    name: Deploy to ${{ github.ref_type == 'tag' && 'production' || 'staging' }}
+    name: Deploy to ${{ inputs.environment || 'production' }}
     needs: build
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_type == 'tag' && 'production' || 'staging' }}
+    environment: ${{ inputs.environment || 'production' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -113,6 +125,5 @@ jobs:
               docker compose logs --tail 50
               exit 1
             }
-            # Exact tags never become dangling, so remove this app's unused images explicitly.
-            # Skipping recent images leaves alone ones another environment's deploy has just pulled.
+            # Exact tags never become dangling. The age filter spares images the other environment just pulled.
             docker image prune -af --filter "label=org.opencontainers.image.source=$IMAGE_SOURCE" --filter until=1h

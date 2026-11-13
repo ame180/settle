@@ -1,5 +1,3 @@
-# Runs on the server as compose.yaml, next to an .env made from .env.example. See DEPLOYMENT.md.
-
 services:
   # nginx-php proxies to `php:9000`, so this service keeps the name `php`.
   php:
@@ -12,7 +10,6 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
-      # web publishes no port, so requests only arrive through a reverse proxy on a private network.
       SYMFONY_TRUSTED_PROXIES: private_ranges
       # Required by the messenger and mailer config, though nothing sends messages or mail yet.
       MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
@@ -33,7 +30,6 @@ services:
 
   web:
     image: ghcr.io/ame180/settle-web:${IMAGE_TAG:?set IMAGE_TAG}
-    # Picked up by an nginx-proxy that joins this stack's network; inert without one.
     environment:
       VIRTUAL_HOST: ${APP_HOST:?set APP_HOST}
       LETSENCRYPT_HOST: ${APP_HOST:?set APP_HOST}
@@ -49,14 +45,12 @@ services:
         condition: service_healthy
 
   mariadb:
-    # Keep in step with app.mysql_server_version in config/services.yaml.
     image: ghcr.io/ame180/mariadb:12.3
     environment:
       MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
       MARIADB_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
       MARIADB_USER: ${MYSQL_USER:?set MYSQL_USER}
       MARIADB_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
-      # The 12.3 tag moves with patch releases; this applies their system table changes on start.
       MARIADB_AUTO_UPGRADE: 1
     restart: unless-stopped
     healthcheck:

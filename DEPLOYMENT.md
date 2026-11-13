@@ -9,8 +9,8 @@ Settle ships as two images built from `docker/Dockerfile`, run with Docker Compo
 
 | Environment | Deployed by | Image tag |
 | --- | --- | --- |
-| `staging` | Running the Deploy workflow on any branch | `sha-<commit>` |
-| `production` | Pushing a `v*` tag, or running the workflow on one | `v1.2.3` (plus `sha-<commit>`) |
+| `staging` | Running the Deploy workflow on any branch or tag | `sha-<commit>` |
+| `production` | Pushing a `v*` tag, or running the workflow on one with `environment=production` | `v1.2.3` (plus `sha-<commit>`) |
 
 ## How a deploy works
 
@@ -108,10 +108,10 @@ docker compose exec php bin/console app:user:create <email> <password>
 
 ## Deploying
 
-Staging, from any branch:
+Staging, from any branch or tag:
 
 ```bash
-gh workflow run deploy.yml --ref <branch>
+gh workflow run deploy.yml --ref <branch or tag>
 ```
 
 Production, by releasing a version:
@@ -119,6 +119,8 @@ Production, by releasing a version:
 ```bash
 gh release create v0.1.0 --generate-notes
 ```
+
+To redeploy a release to production, run the workflow on its tag with `-f environment=production`. The `production` environment only accepts `v*` tags, so a production run from a branch stops before its deploy job.
 
 ## Rolling back
 
