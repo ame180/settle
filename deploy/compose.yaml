@@ -1,13 +1,9 @@
-# Production stack: docker compose -f compose.prod.yaml --env-file .env.prod up -d
-# See .env.prod.example for the values it needs.
+# Runs on the server as compose.yaml, next to an .env made from .env.example. See DEPLOYMENT.md.
 
 services:
   # nginx-php proxies to `php:9000`, so this service keeps the name `php`.
   php:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      target: prod
+    image: ghcr.io/ame180/settle-php:${IMAGE_TAG:?set IMAGE_TAG}
     # Explicit list rather than env_file, so the DB root password never reaches the app.
     environment:
       APP_SECRET: ${APP_SECRET:?set APP_SECRET}
@@ -16,6 +12,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      # web publishes no port, so requests only arrive through a reverse proxy on a private network.
+      SYMFONY_TRUSTED_PROXIES: private_ranges
       # Required by the messenger and mailer config, though nothing sends messages or mail yet.
       MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
       MAILER_DSN: null://null
@@ -23,7 +21,6 @@ services:
     volumes:
       - sessions:/app/var/sessions
     # php-fpm only listens once migrations have run, so this also gates web on them.
-    # The long start_period leaves room for slow migrations; a passing check ends it early.
     healthcheck:
       test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
       start_period: 120s
@@ -35,25 +32,32 @@ services:
         condition: service_healthy
 
   web:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      target: web
-    ports:
-      - "${NGINX_PORT:-80}:80"
+    image: ghcr.io/ame180/settle-web:${IMAGE_TAG:?set IMAGE_TAG}
+    # Picked up by an nginx-proxy that joins this stack's network; inert without one.
+    environment:
+      VIRTUAL_HOST: ${APP_HOST:?set APP_HOST}
+      LETSENCRYPT_HOST: ${APP_HOST:?set APP_HOST}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost/"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
     depends_on:
       php:
         condition: service_healthy
 
   mariadb:
     # Keep in step with app.mysql_server_version in config/services.yaml.
-    image: mariadb:10.11
+    image: ghcr.io/ame180/mariadb:12.3
     environment:
       MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
       MARIADB_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE}
       MARIADB_USER: ${MYSQL_USER:?set MYSQL_USER}
       MARIADB_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      # The 12.3 tag moves with patch releases; this applies their system table changes on start.
+      MARIADB_AUTO_UPGRADE: 1
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]

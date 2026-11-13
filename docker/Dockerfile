@@ -7,7 +7,6 @@ COPY frontend/ ./
 RUN npm run build
 
 
-# nginx-php hardcodes `fastcgi_pass php:9000`, so the app service must be reachable as `php`.
 FROM ghcr.io/ame180/nginx-php:latest AS web
 
 ENV APP_PATH=/app

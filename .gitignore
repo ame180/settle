@@ -1,5 +1,4 @@
 .env
-.env.prod
 .idea/
 .vscode/
 config/secrets/prod/prod.decrypt.private.php
