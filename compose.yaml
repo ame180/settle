@@ -25,8 +25,9 @@ services:
       - php
 
   mysql:
-    image: ghcr.io/ame180/mariadb:latest
+    image: ghcr.io/ame180/mariadb:12.3
     environment:
+      MARIADB_AUTO_UPGRADE: 1
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
