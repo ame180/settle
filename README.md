@@ -14,17 +14,4 @@ Quality gates, run locally (not in the container): `composer checkup`, `composer
 
 ## Production
 
-`docker/Dockerfile` has two production targets (`prod` is the default when no `--target` is given):
-
-- `prod`: PHP-FPM with vendor dependencies, the built frontend under `public/app` and a warmed cache. It runs as `www-data` and applies migrations on every start, so a failing migration keeps the container restarting until it is fixed or rolled back.
-- `web`: nginx serving `public/` and passing PHP requests to the `php` service.
-
-`compose.prod.yaml` runs both with MariaDB:
-
-```bash
-cp .env.prod.example .env.prod   # fill in the secrets
-docker compose -f compose.prod.yaml --env-file .env.prod up -d
-docker compose -f compose.prod.yaml --env-file .env.prod exec php bin/console app:user:create <email> <password>
-```
-
-The nginx base image is amd64-only; on Apple Silicon prefix the build with `DOCKER_DEFAULT_PLATFORM=linux/amd64`.
+`docker/Dockerfile` builds the production images (`prod`: PHP-FPM app, `web`: nginx), which are deployed with Docker Compose over SSH. See [DEPLOYMENT.md](DEPLOYMENT.md).
