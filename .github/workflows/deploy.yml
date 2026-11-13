@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || format('sha-{0}', github.sha) }}
@@ -27,6 +26,10 @@ jobs:
     name: Build images
     needs: ci
     runs-on: ubuntu-latest
+    # Only this job can push images; the CI gates run dependency code with a read-only token.
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         include:
@@ -111,4 +114,5 @@ jobs:
               exit 1
             }
             # Exact tags never become dangling, so remove this app's unused images explicitly.
-            docker image prune -af --filter "label=org.opencontainers.image.source=$IMAGE_SOURCE"
+            # Skipping recent builds leaves alone images another environment's deploy has just pulled.
+            docker image prune -af --filter "label=org.opencontainers.image.source=$IMAGE_SOURCE" --filter until=1h

@@ -20,7 +20,7 @@ Settle ships as two images built from `docker/Dockerfile`, run with Docker Compo
 2. Builds both images for amd64 and pushes them to GHCR.
 3. Copies `deploy/compose.yaml` to the environment's directory on the server as `compose.yaml`.
 4. Over SSH: sets `IMAGE_TAG` in the server's `.env`, then `docker compose pull` and `docker compose up -d --wait`. The run fails if a service doesn't become healthy within 5 minutes, and prints the service logs.
-5. Removes this app's images that no container uses any more.
+5. Removes this app's images that no container uses any more (skipping ones built in the last hour).
 
 Runs are serialized per environment and never cancelled halfway.
 
@@ -73,10 +73,10 @@ gh secret set SSH_HOST --env staging --body '<ssh host>'
 gh secret set SSH_USER --env staging --body '<ssh user>'
 gh secret set APP_PATH --env staging --body '/home/<ssh user>/settle-staging'
 gh secret set SSH_KEY --env staging < settle-staging-deploy
-gh secret set SSH_FINGERPRINT --env staging --body "$(ssh-keyscan -t ed25519 <ssh host> 2>/dev/null | ssh-keygen -lf - | awk '{print $2}')"
+gh secret set SSH_FINGERPRINT --env staging --body "$(ssh-keyscan -t ecdsa <ssh host> 2>/dev/null | ssh-keygen -lf - | awk '{print $2}')"
 ```
 
-`SSH_FINGERPRINT` pins the server's host key; check it against `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the server.
+`SSH_FINGERPRINT` pins the server's host key; check it against `ssh-keygen -lf /etc/ssh/ssh_host_ecdsa_key.pub` on the server. The deploy actions prefer the ECDSA host key, then RSA, then Ed25519, so pin the first of those the server has.
 
 Limit `production` to version tags, so no branch can deploy there:
 
@@ -88,7 +88,7 @@ gh api -X POST repos/{owner}/{repo}/environments/production/deployment-branch-po
 
 ### 4. First deploy
 
-Run the workflow (see [Deploying](#deploying)). On the first push, GHCR creates the `settle-php` and `settle-web` packages; make sure they are public (package settings) so the server can pull them without credentials.
+Run the workflow (see [Deploying](#deploying)). The first build creates the `settle-php` and `settle-web` packages on GHCR, private by default. Make them public in each package's settings so the server can pull them without credentials; if the first run failed at `docker compose pull`, re-run its deploy job afterwards.
 
 ### 5. Connect the proxy
 
@@ -125,7 +125,7 @@ gh release create v0.1.0 --generate-notes
 On the server, point `IMAGE_TAG` in `.env` at an earlier tag and restart:
 
 ```bash
-cd ~/settle && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v0.1.0/' .env && docker compose up -d --wait
+cd ~/settle-staging && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v0.1.0/' .env && docker compose up -d --wait
 ```
 
 Rolling back code does not roll back the database. Migrations run on every start of `php`, so they must stay backward-compatible: the previous release has to work against the newer schema. A failing migration keeps `php` restarting (and `web` waiting) until it is fixed or rolled back.
@@ -144,7 +144,7 @@ All commands run in the environment's directory.
   docker compose up -d --wait
   ```
 
-- MariaDB: the `ghcr.io/ame180/mariadb:12.3` tag follows patch releases, applied automatically on start (`MARIADB_AUTO_UPGRADE`). Moving to another release series means changing the tag in `deploy/compose.yaml` (and `app.mysql_server_version`), ideally after a backup.
+- MariaDB: the `ghcr.io/ame180/mariadb:12.3` tag follows patch releases, applied automatically on start (`MARIADB_AUTO_UPGRADE`). Moving to another release series means changing the tag in `deploy/compose.yaml`, `compose.yaml` and `.github/workflows/ci.yml`, plus `app.mysql_server_version` in `config/services.yaml`, ideally after a backup.
 - Tearing an environment down: remove its network from the proxy's compose file first. While the network is listed there, recreating the proxy fails once the network is gone.
 
 ## Building locally
