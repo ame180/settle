@@ -92,13 +92,16 @@ Run the workflow (see [Deploying](#deploying)). The first build creates the `set
 
 ### 5. Connect the proxy
 
-The first deploy creates the project network, `<directory>_default` (e.g. `settle-staging_default`). Connect the proxy to it without restarting the proxy:
+The first deploy creates the project network, `<directory>_default` (e.g. `settle-staging_default`). Connect the proxy to it without restarting the proxy, then restart `web`:
 
 ```bash
 docker network connect settle-staging_default <proxy container>
+docker compose restart web
 ```
 
-Also add the network to the proxy's own compose file as an external network, so the proxy rejoins it when it's recreated. acme-companion then issues the certificate; the site answers on `https://<APP_HOST>` once it has.
+nginx-proxy only regenerates its config when a container starts or stops, not when a network is connected. Until `web` restarts, the proxy keeps it marked unreachable and answers 502.
+
+Also add the network to the proxy's own compose file as an external network, so the proxy rejoins it when it's recreated. acme-companion issues the certificate; the site answers on `https://<APP_HOST>` once it has.
 
 ### 6. First user
 
