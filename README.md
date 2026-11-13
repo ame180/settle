@@ -12,10 +12,6 @@ Expense sharing for ad-hoc groups of friends. Symfony 7.4 JSON API plus a React 
 
 Quality gates, run locally (not in the container): `composer checkup`, `composer test` (needs the database container up), and in `frontend/`: `npm run lint`, `npm run format:check`, `npm run typecheck`, `npx vitest run`, `npm run build`.
 
-## Production image
+## Production
 
-```bash
-docker build -f docker/Dockerfile --target prod -t settle .
-```
-
-The image contains PHP-FPM, vendor dependencies and the built frontend under `public/app`. Serve `public/` with nginx in front of it and run `bin/console doctrine:migrations:migrate` as a release step.
+`docker/Dockerfile` builds the production images (`prod`: PHP-FPM app, `web`: nginx), which are deployed with Docker Compose over SSH. See [DEPLOYMENT.md](DEPLOYMENT.md).

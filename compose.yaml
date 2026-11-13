@@ -25,14 +25,21 @@ services:
       - php
 
   mysql:
-    image: ghcr.io/ame180/mysql:latest
+    image: ghcr.io/ame180/mariadb:12.3
     environment:
+      MARIADB_AUTO_UPGRADE: 1
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "${MYSQL_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
       - mysql:/var/lib/mysql
 
