@@ -1,0 +1,4 @@
+# Keys are the English messages of the app's own constraints; Symfony's built-in ones ship in Polish.
+'This value must be a number with at most 2 decimal places.': 'Ta wartość może mieć najwyżej 2 miejsca po przecinku.'
+'This value must have at most 8 digits before the decimal point.': 'Ta wartość może mieć najwyżej 8 cyfr przed przecinkiem.'
+'Send an empty string to clear the name.': 'Wyślij pusty tekst, aby usunąć imię.'

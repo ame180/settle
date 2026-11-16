@@ -373,6 +373,50 @@ class ExpenseApiControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(400);
     }
 
+    /**
+     * @return iterable<string, array{string, string, string}>
+     */
+    public static function acceptLanguageProvider(): iterable
+    {
+        yield 'Polish, own constraint' => ['pl-PL,pl;q=0.9,en;q=0.8', 'amount', 'Ta wartość może mieć najwyżej 8 cyfr przed przecinkiem.'];
+        yield 'Polish, built-in constraint' => ['pl', 'title', 'Ta wartość nie powinna być pusta.'];
+        yield 'unsupported language falls back to English' => ['de-DE', 'amount', 'This value must have at most 8 digits before the decimal point.'];
+    }
+
+    /**
+     * @dataProvider acceptLanguageProvider
+     */
+    public function testValidationMessagesFollowAcceptLanguage(string $acceptLanguage, string $propertyPath, string $expectedTitle): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+
+        $creator = UserFactory::createUser();
+        $entityManager->persist($creator);
+        $entityManager->flush();
+
+        $client->loginUser($creator);
+
+        $this->requestJson($client, 'POST', '/api/expenses', [
+            'title' => '',
+            'amount' => '100000000.00',
+            'payeeId' => $creator->getId(),
+            'occurredOn' => '2026-01-01',
+            'debts' => [
+                ['payerId' => $creator->getId(), 'value' => '1.00'],
+            ],
+        ], ['HTTP_ACCEPT_LANGUAGE' => $acceptLanguage]);
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertContains('Accept-Language', $client->getResponse()->getVary());
+        $titles = array_column(
+            array_filter($this->getJsonResponse()['violations'], static fn (array $violation): bool => $violation['propertyPath'] === $propertyPath),
+            'title',
+        );
+        $this->assertContains($expectedTitle, $titles);
+    }
+
     public function testUpdateNotLoggedIn(): void
     {
         $client = static::createClient();
