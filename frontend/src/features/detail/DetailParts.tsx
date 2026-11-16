@@ -5,6 +5,7 @@ import { BackLink } from '@/components/BackLink'
 import { ConfirmSheet } from '@/components/ConfirmSheet'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { DeleteAndGoBack } from './useDeleteAndGoBack'
 
 export const detailBackFallback = '/activity'
@@ -13,10 +14,12 @@ type DetailScreenProps = {
   title: string
   /** Header actions; shown only once the item has loaded. */
   trailing?: ReactNode
+  /** Pinned below the scrolling content, such as a comment input. */
+  footer?: ReactNode
   children: ReactNode
 }
 
-export function DetailScreen({ title, trailing, children }: DetailScreenProps) {
+export function DetailScreen({ title, trailing, footer, children }: DetailScreenProps) {
   return (
     <div className="flex h-full flex-col">
       <PageHeader
@@ -24,9 +27,15 @@ export function DetailScreen({ title, trailing, children }: DetailScreenProps) {
         leading={<BackLink to={detailBackFallback} label="Back" />}
         trailing={trailing}
       />
-      <main className="flex flex-1 flex-col overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+      <main
+        className={cn(
+          'flex flex-1 flex-col overflow-y-auto',
+          footer ? 'pb-4' : 'pb-[calc(1.5rem+env(safe-area-inset-bottom))]',
+        )}
+      >
         {children}
       </main>
+      {footer}
     </div>
   )
 }
