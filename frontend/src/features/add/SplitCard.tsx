@@ -7,8 +7,8 @@ import type { QuickChoice } from './splitModel'
 
 type SplitCardProps = {
   payer: { id: number; name: string }
-  /** "You" or the payer's short name; only the name truncates, the rest of the sentence stays. */
-  payerName: string
+  /** The payer's short name, or null when the viewer paid; only the name truncates. */
+  payerName: string | null
   /** 1:1 flips who paid in place; groups open the editor to choose. */
   payerAction: { kind: 'switch'; onClick: () => void } | { kind: 'change'; onClick: () => void }
   split:
@@ -52,9 +52,13 @@ export function SplitCard({
       <div className="flex min-h-11 items-center gap-2.5 pl-1">
         <PersonAvatar id={payer.id} name={payer.name} size="sm" />
         <span className="flex min-w-0 flex-1 gap-1 whitespace-nowrap">
-          <Trans>
-            <span className="min-w-0 truncate">{payerName}</span> paid
-          </Trans>
+          {payerName === null ? (
+            <Trans>You paid</Trans>
+          ) : (
+            <Trans>
+              <span className="min-w-0 truncate">{payerName}</span> paid
+            </Trans>
+          )}
         </span>
         <button
           type="button"

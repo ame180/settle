@@ -61,7 +61,9 @@ export function ItemNotFound({ kind }: { kind: ItemKind }) {
     <StateMessage
       icon={<SearchX className="size-7.5" aria-hidden="true" />}
       title={isPayment ? t`This payment doesn’t exist` : t`This expense doesn’t exist`}
-      description={t`It may have been deleted.`}
+      description={
+        isPayment ? t`This payment may have been deleted.` : t`This expense may have been deleted.`
+      }
     >
       <BackToActivity />
     </StateMessage>

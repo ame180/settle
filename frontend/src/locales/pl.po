@@ -10,590 +10,590 @@ msgstr ""
 #. placeholder {0}: settled.length
 #: src/features/contacts/ContactsPage.tsx
 msgid "{0, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
-msgstr ""
+msgstr "{0, plural, one {Pokaż # rozliczony kontakt} few {Pokaż # rozliczone kontakty} many {Pokaż # rozliczonych kontaktów} other {Pokaż # rozliczonego kontaktu}}"
 
 #: src/features/add/PaymentForm.tsx
 msgid "{amount} payment recorded."
-msgstr ""
+msgstr "Zapisano płatność {amount}."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{assignedLabel} assigned"
-msgstr ""
+msgstr "Przypisano {assignedLabel}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{assignedNumber} of {totalAmount}"
-msgstr ""
+msgstr "{assignedNumber} z {totalAmount}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{assignedPercent}% of 100%"
-msgstr ""
+msgstr "{assignedPercent}% ze 100%"
 
 #: src/features/detail/expenseSummary.ts
 msgid "{count, plural, one {Split equally between #} other {Split equally between #}}"
-msgstr ""
+msgstr "{count, plural, one {Po równo na # osobę} few {Po równo na # osoby} many {Po równo na # osób} other {Po równo na # osoby}}"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "{date} · {subline}"
-msgstr ""
+msgstr "{date} · {subline}"
 
 #: src/features/add/splitModel.ts
 msgid "{debtorName} owes you"
-msgstr ""
+msgstr "{debtorName} ma ci do oddania"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differenceAmount} left to assign"
-msgstr ""
+msgstr "Do przypisania: {differenceAmount}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differenceAmount} too much"
-msgstr ""
+msgstr "{differenceAmount} za dużo"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differencePercent}% left to assign"
-msgstr ""
+msgstr "Do przypisania: {differencePercent}%"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differencePercent}% too much"
-msgstr ""
+msgstr "{differencePercent}% za dużo"
 
 #: src/features/contacts/AddContactPage.tsx
 msgid "{displayName} added to your contacts"
-msgstr ""
+msgstr "Dodano do kontaktów: {displayName}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{each} each"
-msgstr ""
+msgstr "Po {each}"
 
 #: src/features/add/DateSheet.tsx
 msgid "{futureDate} is in the future. It still counts towards your balances straight away."
-msgstr ""
+msgstr "{futureDate} to data z przyszłości. Mimo to od razu wlicza się do sald."
 
 #: src/features/add/DateSheet.tsx
 msgid "{longDate}, today"
-msgstr ""
+msgstr "{longDate}, dzisiaj"
 
 #: src/features/add/splitModel.ts
 msgid "{name} owes it all"
-msgstr ""
+msgstr "{name} ma do oddania całość"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "{name} owes you"
-msgstr ""
+msgstr "{name} ma ci do oddania"
 
 #: src/features/add/paymentModel.ts
 msgid "{name} owes you {amount} now."
-msgstr ""
+msgstr "Teraz {name} ma ci do oddania {amount}."
 
 #: src/features/add/PaymentForm.tsx
 msgid "{name} paid you"
-msgstr ""
+msgstr "Płatność od: {name}, dla ciebie"
 
 #: src/features/add/paymentModel.ts
 msgid "{name} will owe you {amount}"
-msgstr ""
+msgstr "Po płatności {name} ma ci do oddania {amount}"
 
 #: src/features/add/paymentModel.ts
 msgid "{name} will still owe you {remaining}"
-msgstr ""
+msgstr "Po płatności {name} nadal ma ci do oddania {remaining}"
 
 #: src/features/add/splitModel.ts
 msgid "{names} owe you {each} each"
-msgstr ""
+msgstr "{names} mają ci do oddania po {each}"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "{payerName} paid {amount}"
-msgstr ""
+msgstr "{payerName} płaci {amount}"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "{payerName} paid {payeeName}"
-msgstr ""
+msgstr "Płatność od: {payerName}, dla: {payeeName}"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "{payerName} paid you"
-msgstr ""
+msgstr "Płatność od: {payerName}, dla ciebie"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{peopleCount, plural, one {{sharing} of # person sharing} other {{sharing} of # people sharing}}"
-msgstr ""
+msgstr "{peopleCount, plural, one {{sharing} z # osoby w podziale} few {{sharing} z # osób w podziale} many {{sharing} z # osób w podziale} other {{sharing} z # osoby w podziale}}"
 
 #: src/features/add/splitModel.ts
 msgid "{peopleCount, plural, other {Split equally between {sharingCount} of #}}"
-msgstr ""
+msgstr "{peopleCount, plural, one {Po równo na {sharingCount} z # osoby} few {Po równo na {sharingCount} z # osób} many {Po równo na {sharingCount} z # osób} other {Po równo na {sharingCount} z # osoby}}"
 
 #: src/features/add/splitModel.ts
 msgid "{peopleCount, plural, other {Split equally between #}}"
-msgstr ""
+msgstr "{peopleCount, plural, one {Po równo na # osobę} few {Po równo na # osoby} many {Po równo na # osób} other {Po równo na # osoby}}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{perShareLabel} per share"
-msgstr ""
+msgstr "{perShareLabel} za udział"
 
 #: src/features/add/PaymentForm.tsx
 msgid "{personDisplayName}. Change person"
-msgstr ""
+msgstr "{personDisplayName}. Zmień osobę"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{personName} shares the cost"
-msgstr ""
+msgstr "Udział w koszcie: {personName}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{personName}, amount in zł"
-msgstr ""
+msgstr "{personName}, kwota w zł"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{personName}, percent"
-msgstr ""
+msgstr "{personName}, procent"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{recipients} will see your changes."
-msgstr ""
+msgstr "Zmiany będą widoczne dla: {recipients}."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{shareCount, plural, one {{personName}: # share} other {{personName}: # shares}}"
-msgstr ""
+msgstr "{shareCount, plural, one {{personName}: # udział} few {{personName}: # udziały} many {{personName}: # udziałów} other {{personName}: # udziału}}"
 
 #: src/features/add/SplitEditorSheet.tsx
 #: src/features/detail/expenseSummary.ts
 msgid "{shareCount, plural, one {# share} other {# shares}}"
-msgstr ""
+msgstr "{shareCount, plural, one {# udział} few {# udziały} many {# udziałów} other {# udziału}}"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added."
-msgstr ""
+msgstr "Dodano „{title}”."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added. {debtorName} owes you {amount}."
-msgstr ""
+msgstr "Dodano „{title}”. {debtorName} ma ci do oddania {amount}."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added. You lent {amount}."
-msgstr ""
+msgstr "Dodano „{title}”. Należy ci się {amount}."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added. You owe {payerName} {amount}."
-msgstr ""
+msgstr "Dodano „{title}”. {payerName} ma od ciebie dostać {amount}."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "%"
-msgstr ""
+msgstr "%"
 
 #: src/features/add/SplitCard.tsx
 msgid "<0>{payerName}</0> paid"
-msgstr ""
+msgstr "Płaci: <0>{payerName}</0>"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "<0>{payerName}</0> paid {payeeName} <1>{amount}</1>"
-msgstr ""
+msgstr "<0>{payerName}</0> → {payeeName}: <1>{amount}</1>"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "<0>{payerName}</0> paid you <1>{amount}</1>"
-msgstr ""
+msgstr "<0>{payerName}</0> → Ty: <1>{amount}</1>"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "<0>You</0> paid {payeeName} <1>{amount}</1>"
-msgstr ""
+msgstr "<0>Ty</0> → {payeeName}: <1>{amount}</1>"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "0% of 100%"
-msgstr ""
+msgstr "0% ze 100%"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "8 to 64 characters."
-msgstr ""
+msgstr "Od 8 do 64 znaków."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "about {perShareLabel} per share"
-msgstr ""
+msgstr "ok. {perShareLabel} za udział"
 
 #: src/app/AppShell.tsx
 #: src/features/activity/ActivityPage.tsx
 msgid "Activity"
-msgstr ""
+msgstr "Aktywność"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Activity with {name}"
-msgstr ""
+msgstr "Wspólna aktywność: {name}"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Add {totalLabel} expense"
-msgstr ""
+msgstr "Dodaj wydatek {totalLabel}"
 
 #: src/features/add/PeopleField.tsx
 msgid "Add {trimmedQuery} as a new contact"
-msgstr ""
+msgstr "Dodaj {trimmedQuery} jako nowy kontakt"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Add an expense with someone, or add a contact by email."
-msgstr ""
+msgstr "Dodaj wydatek z kimś albo dodaj kontakt przez adres e-mail."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Add at least one share"
-msgstr ""
+msgstr "Dodaj co najmniej jeden udział"
 
 #: src/features/contacts/AddContactPage.tsx
 #: src/features/contacts/ContactsPage.tsx
 msgid "Add contact"
-msgstr ""
+msgstr "Dodaj kontakt"
 
 #: src/components/AddExpenseButton.tsx
 #: src/features/add/AddPage.tsx
 #: src/features/add/ExpenseForm.tsx
 msgid "Add expense"
-msgstr ""
+msgstr "Dodaj wydatek"
 
 #: src/features/add/DateNoteFields.tsx
 msgid "Add note"
-msgstr ""
+msgstr "Dodaj notatkę"
 
 #: src/features/add/expenseDraft.ts
 msgid "Add what it was for"
-msgstr ""
+msgstr "Wpisz, na co był wydatek"
 
 #: src/features/add/expenseDraft.ts
 msgid "Add who you split this with"
-msgstr ""
+msgstr "Dodaj osoby, z którymi dzielisz wydatek"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Add who you split this with to see who owes what"
-msgstr ""
+msgstr "Dodaj osoby, z którymi dzielisz wydatek, aby zobaczyć, kto ile ma do oddania"
 
 #: src/features/profile/ProfilePage.tsx
 msgid "Add your name"
-msgstr ""
+msgstr "Dodaj swoje imię"
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PeopleField.tsx
 #: src/features/contacts/AddContactPage.tsx
 msgid "Adding…"
-msgstr ""
+msgstr "Dodawanie…"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Adds up"
-msgstr ""
+msgstr "Zgadza się"
 
 #: src/features/add/expenseDraft.ts
 msgid "Adds up to {assigned} of {total}. Tap to fix."
-msgstr ""
+msgstr "Suma to {assigned} z {total}. Dotknij, aby poprawić."
 
 #: src/features/add/expenseDraft.ts
 msgid "Adds up to {assigned}%, not 100%. Tap to fix."
-msgstr ""
+msgstr "Suma to {assigned}%, a nie 100%. Dotknij, aby poprawić."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Adds up to {totalLabel}"
-msgstr ""
+msgstr "Zgadza się: {totalLabel}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "All of it assigned"
-msgstr ""
+msgstr "Przypisano całość"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Already have an account? <0>Sign in</0>"
-msgstr ""
+msgstr "Masz już konto? <0>Zaloguj się</0>"
 
 #: src/features/add/AmountField.tsx
 msgid "Amount"
-msgstr ""
+msgstr "Kwota"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Amounts"
-msgstr ""
+msgstr "Kwoty"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "An account with this email already exists."
-msgstr ""
+msgstr "Konto z tym adresem e-mail już istnieje."
 
 #: src/features/contacts/EditContactPage.tsx
 #: src/features/detail/DetailParts.tsx
 msgid "Back"
-msgstr ""
+msgstr "Wstecz"
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Back to {shortName}"
-msgstr ""
+msgstr "Wróć do: {shortName}"
 
 #: src/features/contacts/AddContactPage.tsx
 #: src/features/contacts/ContactNotFound.tsx
 #: src/features/contacts/ContactPage.tsx
 msgid "Back to contacts"
-msgstr ""
+msgstr "Wróć do kontaktów"
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Back to profile"
-msgstr ""
+msgstr "Wróć do profilu"
 
 #: src/features/add/splitModel.ts
 msgid "By % · {values}"
-msgstr ""
+msgstr "Procentowo · {values}"
 
 #: src/features/add/splitModel.ts
 msgid "By amounts · {values}"
-msgstr ""
+msgstr "Według kwot · {values}"
 
 #: src/features/add/splitModel.ts
 msgid "By shares · {values}"
-msgstr ""
+msgstr "Według udziałów · {values}"
 
 #: src/components/ConfirmSheet.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #: src/features/add/CategorySheet.tsx
 msgid "Category"
-msgstr ""
+msgstr "Kategoria"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Category: {currentCategory}. Change category"
-msgstr ""
+msgstr "Kategoria: {currentCategory}. Zmień kategorię"
 
 #: src/features/add/SplitCard.tsx
 msgid "Change"
-msgstr ""
+msgstr "Zmień"
 
 #: src/features/add/SplitCard.tsx
 msgid "Change who paid"
-msgstr ""
+msgstr "Zmień osobę płacącą"
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
 msgid "Changes saved."
-msgstr ""
+msgstr "Zapisano zmiany."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Check the numbers"
-msgstr ""
+msgstr "Sprawdź wartości"
 
 #: src/features/add/expenseDraft.ts
 msgid "Check the numbers in the split."
-msgstr ""
+msgstr "Sprawdź wartości w podziale."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Check the split"
-msgstr ""
+msgstr "Sprawdź podział"
 
 #: src/components/LoadError.tsx
 msgid "Check your connection and try again."
-msgstr ""
+msgstr "Sprawdź połączenie i spróbuj ponownie."
 
 #: src/features/add/PaymentForm.tsx
 msgid "Choose"
-msgstr ""
+msgstr "Wybierz"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Choose a person"
-msgstr ""
+msgstr "Wybierz osobę"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Choose who paid and how the cost is shared."
-msgstr ""
+msgstr "Wybierz, kto płaci i jak podzielić koszt."
 
 #: src/features/add/PaymentForm.tsx
 msgid "Choose who paid you"
-msgstr ""
+msgstr "Wybierz, od kogo jest płatność"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Choose who you paid"
-msgstr ""
+msgstr "Wybierz, dla kogo jest płatność"
 
 #: src/features/add/ScreenFrame.tsx
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Close"
-msgstr ""
+msgstr "Zamknij"
 
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Contact not found"
-msgstr ""
+msgstr "Nie znaleziono kontaktu"
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Contact saved"
-msgstr ""
+msgstr "Zapisano kontakt"
 
 #: src/app/AppShell.tsx
 #: src/features/add/ContactPickerSheet.tsx
 #: src/features/add/PeopleField.tsx
 #: src/features/contacts/ContactsPage.tsx
 msgid "Contacts"
-msgstr ""
+msgstr "Kontakty"
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Contacts see this name instead of your email. A nickname they set for you still wins on their side."
-msgstr ""
+msgstr "Kontakty widzą to imię zamiast twojego adresu e-mail. Jeśli ktoś z nich nada ci pseudonim, u siebie nadal zobaczy pseudonim."
 
 #: src/features/profile/ProfilePage.tsx
 msgid "Contacts see your email until you add one."
-msgstr ""
+msgstr "Dopóki go nie dodasz, kontakty widzą twój adres e-mail."
 
 #: src/features/contacts/AddContactPage.tsx
 msgid "Couldn't add contact. Try again."
-msgstr ""
+msgstr "Nie udało się dodać kontaktu. Spróbuj ponownie."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
-msgstr ""
+msgstr "Nie udało się dodać wydatku. Niczego nie zapisano, a wpisane dane są nadal tutaj. Spróbuj ponownie."
 
 #: src/features/add/PeopleField.tsx
 msgid "Couldn’t add this contact. Try again."
-msgstr ""
+msgstr "Nie udało się dodać tego kontaktu. Spróbuj ponownie."
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Couldn't create your account. Try again."
-msgstr ""
+msgstr "Nie udało się założyć konta. Spróbuj ponownie."
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Couldn’t delete the expense. Try again."
-msgstr ""
+msgstr "Nie udało się usunąć wydatku. Spróbuj ponownie."
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Couldn’t delete the payment. Try again."
-msgstr ""
+msgstr "Nie udało się usunąć płatności. Spróbuj ponownie."
 
 #: src/features/activity/ActivityPage.tsx
 #: src/features/contacts/ContactPage.tsx
 msgid "Couldn't load activity"
-msgstr ""
+msgstr "Nie udało się wczytać aktywności"
 
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Couldn't load contact"
-msgstr ""
+msgstr "Nie udało się wczytać kontaktu"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Couldn't load contacts"
-msgstr ""
+msgstr "Nie udało się wczytać kontaktów"
 
 #: src/features/activity/ActivityListFooter.tsx
 msgid "Couldn't load more activity."
-msgstr ""
+msgstr "Nie udało się wczytać starszej aktywności."
 
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this expense"
-msgstr ""
+msgstr "Nie udało się wczytać wydatku"
 
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this payment"
-msgstr ""
+msgstr "Nie udało się wczytać płatności"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Couldn’t record the payment. Nothing was saved and your entries are still here. Try again."
-msgstr ""
+msgstr "Nie udało się zapisać płatności. Niczego nie zapisano, a wpisane dane są nadal tutaj. Spróbuj ponownie."
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
 msgid "Couldn’t save your changes. Nothing was changed and your entries are still here. Try again."
-msgstr ""
+msgstr "Nie udało się zapisać zmian. Niczego nie zmieniono, a wpisane dane są nadal tutaj. Spróbuj ponownie."
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Couldn't save your name. Try again."
-msgstr ""
+msgstr "Nie udało się zapisać imienia. Spróbuj ponownie."
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Couldn't save. Try again."
-msgstr ""
+msgstr "Nie udało się zapisać. Spróbuj ponownie."
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Create account"
-msgstr ""
+msgstr "Załóż konto"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Create an account"
-msgstr ""
+msgstr "Załóż konto"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Creating account…"
-msgstr ""
+msgstr "Zakładanie konta…"
 
 #: src/features/add/SplitCard.tsx
 msgid "Custom"
-msgstr ""
+msgstr "Własny"
 
 #: src/features/add/DateSheet.tsx
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Delete “{expenseTitle}”?"
-msgstr ""
+msgstr "Usunąć „{expenseTitle}”?"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Delete expense"
-msgstr ""
+msgstr "Usuń wydatek"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Delete payment"
-msgstr ""
+msgstr "Usuń płatność"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Delete this payment?"
-msgstr ""
+msgstr "Usunąć tę płatność?"
 
 #: src/features/detail/DetailParts.tsx
 msgid "Deleting…"
-msgstr ""
+msgstr "Usuwanie…"
 
 #: src/features/add/DiscardSheet.tsx
 msgid "Discard"
-msgstr ""
+msgstr "Odrzuć"
 
 #: src/features/add/AddPage.tsx
 msgid "Discard this expense?"
-msgstr ""
+msgstr "Odrzucić ten wydatek?"
 
 #: src/features/add/AddPage.tsx
 msgid "Discard this payment?"
-msgstr ""
+msgstr "Odrzucić tę płatność?"
 
 #: src/features/add/AddPage.tsx
 msgid "Discard what you’ve entered?"
-msgstr ""
+msgstr "Odrzucić wpisane dane?"
 
 #: src/features/add/EditExpensePage.tsx
 #: src/features/add/EditTransferPage.tsx
 msgid "Discard your changes?"
-msgstr ""
+msgstr "Odrzucić zmiany?"
 
 #: src/features/add/DateSheet.tsx
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Done"
-msgstr ""
+msgstr "Gotowe"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "e.g. Ame"
-msgstr ""
+msgstr "np. Ame"
 
 #: src/features/add/PaymentForm.tsx
 msgid "e.g. BLIK"
-msgstr ""
+msgstr "np. BLIK"
 
 #: src/features/contacts/AddContactPage.tsx
 msgid "e.g. Jan"
-msgstr ""
+msgstr "np. Jan"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "e.g. Pizza, Uber, Groceries"
-msgstr ""
+msgstr "np. Pizza, Uber, Zakupy"
 
 #: src/features/detail/DetailParts.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Edytuj"
 
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Edit contact"
-msgstr ""
+msgstr "Edytuj kontakt"
 
 #: src/features/add/EditExpensePage.tsx
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Edit expense"
-msgstr ""
+msgstr "Edytuj wydatek"
 
 #: src/features/add/EditTransferPage.tsx
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Edit payment"
-msgstr ""
+msgstr "Edytuj płatność"
 
 #: src/features/add/SplitCard.tsx
 msgid "Edit split:"
-msgstr ""
+msgstr "Edytuj podział:"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/SignUpPage.tsx
@@ -601,751 +601,755 @@ msgstr ""
 #: src/features/contacts/EditContactPage.tsx
 #: src/features/profile/ProfilePage.tsx
 msgid "Email"
-msgstr ""
+msgstr "E-mail"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Enter a valid email address"
-msgstr ""
+msgstr "Wpisz poprawny adres e-mail"
 
 #: src/features/auth/SignUpPage.tsx
 #: src/features/contacts/AddContactPage.tsx
 msgid "Enter a valid email address."
-msgstr ""
+msgstr "Wpisz poprawny adres e-mail."
 
 #: src/features/add/expenseDraft.ts
 msgid "Enter an amount above 0"
-msgstr ""
+msgstr "Wpisz kwotę większą od 0"
 
 #: src/features/add/expenseDraft.ts
 msgid "Enter an amount like 12.50"
-msgstr ""
+msgstr "Wpisz kwotę, np. 12,50"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Enter an amount to see who owes what"
-msgstr ""
+msgstr "Wpisz kwotę, aby zobaczyć, kto ile ma do oddania"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Enter how much each person’s share is."
-msgstr ""
+msgstr "Wpisz udział każdej osoby."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Enter the amount to check it adds up"
-msgstr ""
+msgstr "Wpisz kwotę, aby sprawdzić, czy suma się zgadza"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Enter the amount to see each share"
-msgstr ""
+msgstr "Wpisz kwotę, aby zobaczyć udziały"
 
 #: src/lib/categories.ts
 msgid "Entertainment"
-msgstr ""
+msgstr "Rozrywka"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Equal"
-msgstr ""
+msgstr "Po równo"
 
 #: src/features/add/SplitCard.tsx
 msgid "Equally"
-msgstr ""
+msgstr "Po równo"
 
 #: src/features/add/AddPage.tsx
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Expense"
-msgstr ""
+msgstr "Wydatek"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Expense deleted"
-msgstr ""
+msgstr "Usunięto wydatek"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Expenses and payments with {name} show up here."
-msgstr ""
+msgstr "Tu pojawią się wydatki i płatności, w których uczestniczycie ty i {name}."
 
 #: src/features/activity/ActivityPage.tsx
 msgid "Expenses and payments you take part in show up here, newest first."
-msgstr ""
+msgstr "Tu pojawią się wydatki i płatności, w których uczestniczysz, od najnowszych."
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Expenses you split with {name} show up here. When {name} signs up with this email, they'll see them too."
-msgstr ""
+msgstr "Tu pojawią się wydatki, które dzielicie ty i {name}. Gdy {name} założy konto na ten adres e-mail, też je zobaczy."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Fill the {remaining} left"
-msgstr ""
+msgstr "Uzupełnij brakujące {remaining}"
 
 #: src/lib/categories.ts
 msgid "Food & drink"
-msgstr ""
+msgstr "Jedzenie i picie"
 
 #: src/features/add/SplitCard.tsx
 msgid "Full amount"
-msgstr ""
+msgstr "Całość"
 
 #: src/lib/categories.ts
 msgid "General"
-msgstr ""
+msgstr "Ogólne"
 
 #: src/lib/categories.ts
 msgid "Gifts"
-msgstr ""
+msgstr "Prezenty"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Give someone a share"
-msgstr ""
+msgstr "Przydziel komuś udział"
 
 #: src/components/ItemStates.tsx
 msgid "Go to activity"
-msgstr ""
+msgstr "Przejdź do aktywności"
 
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Go to contacts"
-msgstr ""
+msgstr "Przejdź do kontaktów"
 
 #: src/lib/categories.ts
 msgid "Groceries"
-msgstr ""
+msgstr "Zakupy spożywcze"
 
 #: src/features/add/CategorySheet.tsx
 msgid "Guessed from the title. Pick another and it stays."
-msgstr ""
+msgstr "Dobrano na podstawie tytułu. Wybierz inną, a już się nie zmieni."
 
 #: src/lib/categories.ts
 msgid "Health"
-msgstr ""
+msgstr "Zdrowie"
 
 #: src/features/auth/PasswordInput.tsx
 msgid "Hide password"
-msgstr ""
+msgstr "Ukryj hasło"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Hide settled-up contacts"
-msgstr ""
+msgstr "Ukryj rozliczone kontakty"
 
 #: src/lib/categories.ts
 msgid "Home & bills"
-msgstr ""
+msgstr "Dom i rachunki"
 
 #: src/features/add/SplitCard.tsx
 msgid "How to split"
-msgstr ""
+msgstr "Jak podzielić"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Invalid email or password."
-msgstr ""
+msgstr "Nieprawidłowy e-mail lub hasło."
 
 #: src/features/detail/expenseSummary.ts
 msgid "It disappears for {names} too, and balances change. This can’t be undone."
-msgstr ""
-
-#: src/components/ItemStates.tsx
-msgid "It may have been deleted."
-msgstr ""
+msgstr "Zniknie też dla: {names}, a salda się zmienią. Tego nie można cofnąć."
 
 #: src/features/add/DiscardSheet.tsx
 msgid "Keep editing"
-msgstr ""
+msgstr "Edytuj dalej"
 
 #: src/features/add/expenseDraft.ts
 msgid "Keep the title under 255 characters"
-msgstr ""
+msgstr "Tytuł musi mieć mniej niż 255 znaków"
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Leave empty to show your email."
-msgstr ""
+msgstr "Zostaw puste, aby pokazywać adres e-mail."
 
 #: src/features/add/AddPage.tsx
 msgid "Loading"
-msgstr ""
+msgstr "Wczytywanie"
 
 #: src/features/activity/ActivityPage.tsx
 #: src/features/contacts/ContactPage.tsx
 msgid "Loading activity"
-msgstr ""
+msgstr "Wczytywanie aktywności"
 
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Loading contact"
-msgstr ""
+msgstr "Wczytywanie kontaktu"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Loading contacts"
-msgstr ""
+msgstr "Wczytywanie kontaktów"
 
 #: src/features/add/ContactPickerSheet.tsx
 #: src/features/add/PeopleField.tsx
 msgid "Loading contacts…"
-msgstr ""
+msgstr "Wczytywanie kontaktów…"
 
 #: src/features/add/EditExpensePage.tsx
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Loading expense"
-msgstr ""
+msgstr "Wczytywanie wydatku"
 
 #: src/features/activity/ActivityListFooter.tsx
 msgid "Loading more activity"
-msgstr ""
+msgstr "Wczytywanie starszej aktywności"
 
 #: src/features/add/EditTransferPage.tsx
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Loading payment"
-msgstr ""
+msgstr "Wczytywanie płatności"
 
 #: src/app/RequireAuth.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Wczytywanie…"
 
 #: src/features/profile/ProfilePage.tsx
 msgid "Log out"
-msgstr ""
+msgstr "Wyloguj się"
 
 #: src/app/AppShell.tsx
 msgid "Main"
-msgstr ""
+msgstr "Nawigacja główna"
 
 #: src/features/profile/EditNamePage.tsx
 #: src/features/profile/ProfilePage.tsx
 msgid "Name"
-msgstr ""
+msgstr "Imię"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Name <0>(optional)</0>"
-msgstr ""
+msgstr "Imię <0>(opcjonalnie)</0>"
 
 #: src/features/add/PeopleField.tsx
 msgid "Name or email"
-msgstr ""
+msgstr "Imię lub e-mail"
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Name saved"
-msgstr ""
+msgstr "Zapisano imię"
 
 #: src/features/auth/LoginPage.tsx
 msgid "New to Settle? <0>Create an account</0>"
-msgstr ""
+msgstr "Pierwszy raz w Settle? <0>Załóż konto</0>"
 
 #: src/features/add/DateSheet.tsx
 msgid "Next month"
-msgstr ""
+msgstr "Następny miesiąc"
 
 #: src/features/contacts/AddContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Nickname <0>(optional)</0>"
-msgstr ""
+msgstr "Pseudonim <0>(opcjonalnie)</0>"
 
 #: src/features/contacts/AddContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Nickname can be at most 64 characters."
-msgstr ""
+msgstr "Pseudonim może mieć maksymalnie 64 znaki."
 
 #: src/features/activity/ActivityPage.tsx
 msgid "No activity yet"
-msgstr ""
+msgstr "Brak aktywności"
 
 #: src/features/activity/activityItems.ts
 #: src/features/contacts/ContactRow.tsx
 msgid "no balance"
-msgstr ""
+msgstr "brak salda"
 
 #: src/features/contacts/ContactPage.tsx
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "No balance"
-msgstr ""
+msgstr "Brak salda"
 
 #: src/features/add/ContactPickerSheet.tsx
 #: src/features/add/PeopleField.tsx
 msgid "No contacts match."
-msgstr ""
+msgstr "Brak pasujących kontaktów."
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "No contacts yet"
-msgstr ""
+msgstr "Brak kontaktów"
 
 #: src/features/add/ContactPickerSheet.tsx
 msgid "No contacts yet."
-msgstr ""
+msgstr "Nie masz jeszcze kontaktów."
 
 #: src/features/add/PeopleField.tsx
 msgid "No contacts yet. Type someone’s email to add them."
-msgstr ""
+msgstr "Nie masz jeszcze kontaktów. Wpisz adres e-mail, aby kogoś dodać."
 
 #: src/features/contacts/ContactPage.tsx
 msgid "No expenses with {name}"
-msgstr ""
+msgstr "Ty i {name} nie macie wspólnych wydatków"
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "No name on Settle yet"
-msgstr ""
+msgstr "Brak imienia w Settle"
 
 #: src/features/contacts/ContactRow.tsx
 msgid "no PLN balance"
-msgstr ""
+msgstr "brak salda w PLN"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "No PLN balance"
-msgstr ""
+msgstr "Brak salda w PLN"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "No share"
-msgstr ""
+msgstr "Bez udziału"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "No shared expenses yet"
-msgstr ""
+msgstr "Brak wspólnych wydatków"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "No shares yet"
-msgstr ""
+msgstr "Brak udziałów"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Nobody is sharing"
-msgstr ""
+msgstr "Nikt nie ma udziału"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Nobody owes you and you owe nobody."
-msgstr ""
+msgstr "Nikt nie ma ci nic do oddania, a ty nikomu."
 
 #: src/features/add/splitModel.ts
 msgid "Nobody owes you for this"
-msgstr ""
+msgstr "Nikt nie ma ci nic do oddania za ten wydatek"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Nobody shares this yet"
-msgstr ""
+msgstr "Nikt jeszcze nie ma udziału w wydatku"
 
 #: src/features/add/PeopleField.tsx
 msgid "Not in your contacts? Type their email."
-msgstr ""
+msgstr "Nie ma tej osoby w kontaktach? Wpisz jej adres e-mail."
 
 #: src/features/add/contactOptions.ts
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/ContactRow.tsx
 msgid "Not on Settle yet"
-msgstr ""
+msgstr "Jeszcze nie w Settle"
 
 #: src/features/contacts/AddContactPage.tsx
 msgid "Not on Settle yet? They can claim their account later by signing up with this email."
-msgstr ""
+msgstr "Ta osoba nie korzysta jeszcze z Settle? Może przejąć swoje konto później, zakładając je na ten adres e-mail."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Not sharing"
-msgstr ""
+msgstr "Bez udziału"
 
 #: src/features/detail/DetailParts.tsx
 msgid "Note"
-msgstr ""
+msgstr "Notatka"
 
 #: src/features/add/DateNoteFields.tsx
 msgid "Note <0>(optional)</0>"
-msgstr ""
+msgstr "Notatka <0>(opcjonalnie)</0>"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Nothing to settle"
-msgstr ""
+msgstr "Nie ma nic do rozliczenia"
 
 #: src/components/ui/toast.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Powiadomienia"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "One share less for {personName}"
-msgstr ""
+msgstr "Odejmij udział: {personName}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "One share more for {personName}"
-msgstr ""
+msgstr "Dodaj udział: {personName}"
 
 #: src/components/ItemStates.tsx
 msgid "Only the people in it can open it."
-msgstr ""
+msgstr "Dostęp mają tylko osoby, których to dotyczy."
 
 #: src/features/contacts/AddContactPage.tsx
 msgid "Only you see this name."
-msgstr ""
+msgstr "Ten pseudonim widzisz tylko ty."
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Only you see this. Leave empty to use their name."
-msgstr ""
+msgstr "Widzisz go tylko ty. Zostaw puste, aby używać imienia tej osoby."
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Overall, you are even"
-msgstr ""
+msgstr "Łącznie jesteś na zero"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Overall, you are owed <0>{amount}</0>"
-msgstr ""
+msgstr "Łącznie należy ci się <0>{amount}</0>"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Overall, you owe <0>{amount}</0>"
-msgstr ""
+msgstr "Łącznie masz do oddania <0>{amount}</0>"
 
 #: src/features/contacts/ContactRow.tsx
 msgid "owes you"
-msgstr ""
+msgstr "ma ci do oddania"
 
 #: src/features/add/contactOptions.ts
 msgid "Owes you {amount}"
-msgstr ""
+msgstr "Ma ci do oddania {amount}"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Paid {paidAmount}"
-msgstr ""
+msgstr "Płaci {paidAmount}"
 
 #: src/features/add/PaymentForm.tsx
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Paid by"
-msgstr ""
+msgstr "Płaci"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Paid to"
-msgstr ""
+msgstr "Otrzymuje"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/SignUpPage.tsx
 msgid "Password"
-msgstr ""
+msgstr "Hasło"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Password is required"
-msgstr ""
+msgstr "Wpisz hasło"
 
 #: src/features/add/AddPage.tsx
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Payment"
-msgstr ""
+msgstr "Płatność"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Payment deleted"
-msgstr ""
+msgstr "Usunięto płatność"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Payment recorded. You and {name} are settled up."
-msgstr ""
+msgstr "Zapisano płatność. Ty i {name} macie wszystko rozliczone."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Percentages"
-msgstr ""
+msgstr "Procenty"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Percentages have to add up to 100."
-msgstr ""
+msgstr "Procenty muszą sumować się do 100."
 
 #: src/features/add/ContactPickerSheet.tsx
 msgid "Pick a contact."
-msgstr ""
+msgstr "Wybierz kontakt."
 
 #: src/features/add/expenseDraft.ts
 msgid "Pick a date"
-msgstr ""
+msgstr "Wybierz datę"
 
 #: src/features/add/DateSheet.tsx
 msgid "Pick a date."
-msgstr ""
+msgstr "Wybierz datę."
 
 #: src/features/add/expenseDraft.ts
 msgid "Pick who shares the cost."
-msgstr ""
+msgstr "Wybierz, kto dzieli koszt."
 
 #: src/features/add/DateSheet.tsx
 msgid "Previous month"
-msgstr ""
+msgstr "Poprzedni miesiąc"
 
 #: src/app/AppShell.tsx
 #: src/features/profile/ProfilePage.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Profil"
 
 #: src/features/add/PeopleField.tsx
 msgid "Recent"
-msgstr ""
+msgstr "Ostatnie"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Record {payAmount} payment"
-msgstr ""
+msgstr "Zapisz płatność {payAmount}"
 
 #: src/features/add/AddPage.tsx
 #: src/features/add/PaymentForm.tsx
 msgid "Record payment"
-msgstr ""
+msgstr "Zapisz płatność"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Recording…"
-msgstr ""
+msgstr "Zapisywanie…"
 
 #: src/features/add/PeopleField.tsx
 msgid "Remove {displayName}"
-msgstr ""
+msgstr "Usuń: {displayName}"
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Save"
-msgstr ""
+msgstr "Zapisz"
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
 msgid "Save changes"
-msgstr ""
+msgstr "Zapisz zmiany"
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Save name"
-msgstr ""
+msgstr "Zapisz imię"
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
 #: src/features/contacts/EditContactPage.tsx
 #: src/features/profile/EditNamePage.tsx
 msgid "Saving…"
-msgstr ""
+msgstr "Zapisywanie…"
 
 #: src/features/add/ContactPickerSheet.tsx
 msgid "Search contacts"
-msgstr ""
+msgstr "Szukaj kontaktów"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Settle up"
-msgstr ""
+msgstr "Rozlicz się"
 
 #: src/features/contacts/ContactRow.tsx
 msgid "settled up"
-msgstr ""
+msgstr "rozliczone"
 
 #: src/features/add/contactOptions.ts
 #: src/features/contacts/ContactsPage.tsx
 msgid "Settled up"
-msgstr ""
+msgstr "Rozliczone"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Settled-up contacts are hidden."
-msgstr ""
+msgstr "Rozliczone kontakty są ukryte."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Shares"
-msgstr ""
+msgstr "Udziały"
 
 #: src/features/auth/PasswordInput.tsx
 msgid "Show password"
-msgstr ""
+msgstr "Pokaż hasło"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Shown to your contacts instead of your email."
-msgstr ""
+msgstr "Kontakty zobaczą je zamiast twojego adresu e-mail."
 
 #: src/features/auth/LoginPage.tsx
 msgid "Sign in"
-msgstr ""
+msgstr "Zaloguj się"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Sign in instead"
-msgstr ""
+msgstr "Zaloguj się"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Signing in…"
-msgstr ""
+msgstr "Logowanie…"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Someone already added you? Sign up with that same email and your shared expenses will be waiting."
-msgstr ""
+msgstr "Dodano cię już do Settle? Załóż konto na ten sam adres e-mail, a wspólne wydatki będą na ciebie czekać."
 
 #: src/features/auth/LoginPage.tsx
 msgid "Something went wrong. Please try again."
-msgstr ""
+msgstr "Coś poszło nie tak. Spróbuj ponownie."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Split"
-msgstr ""
+msgstr "Podział"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Split {totalLabel}"
-msgstr ""
+msgstr "Podział kwoty {totalLabel}"
 
 #: src/features/add/splitModel.ts
 #: src/features/detail/expenseSummary.ts
 msgid "Split by amounts"
-msgstr ""
+msgstr "Według kwot"
 
 #: src/features/add/splitModel.ts
 #: src/features/detail/expenseSummary.ts
 msgid "Split by percentages"
-msgstr ""
+msgstr "Procentowo"
 
 #: src/features/add/splitModel.ts
 #: src/features/detail/expenseSummary.ts
 msgid "Split by shares"
-msgstr ""
+msgstr "Według udziałów"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Split doesn’t add up yet"
-msgstr ""
+msgstr "Podział jeszcze się nie zgadza"
 
 #: src/features/add/splitModel.ts
 msgid "Split equally"
-msgstr ""
+msgstr "Po równo"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Split type"
-msgstr ""
+msgstr "Sposób podziału"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Swap who paid"
-msgstr ""
+msgstr "Zamień kierunek płatności"
 
 #: src/features/add/SplitCard.tsx
 msgid "Switch"
-msgstr ""
+msgstr "Zamień"
 
 #: src/features/add/SplitCard.tsx
 msgid "Switch who paid"
-msgstr ""
+msgstr "Zamień osobę płacącą"
 
 #: src/features/add/expenseDraft.ts
 msgid "That amount is too large"
-msgstr ""
+msgstr "Ta kwota jest za duża"
 
 #: src/features/add/paymentModel.ts
 msgid "That’s more than {name} owes you ({current})."
-msgstr ""
+msgstr "To więcej, niż {name} ma ci do oddania ({current})."
 
 #: src/features/add/paymentModel.ts
 msgid "That’s more than you owe {name} ({current})."
-msgstr ""
+msgstr "To więcej, niż {name} ma od ciebie dostać ({current})."
 
 #: src/features/add/PeopleField.tsx
 msgid "That’s your email. You’re always in it."
-msgstr ""
+msgstr "To twój adres e-mail. Zawsze bierzesz udział w wydatku."
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Their name on Settle"
-msgstr ""
+msgstr "Imię w Settle"
 
 #: src/features/add/PeopleField.tsx
 msgid "They can join Settle later. You can rename them."
-msgstr ""
+msgstr "Ta osoba może dołączyć do Settle później. Możesz nadać jej pseudonim."
 
 #: src/features/contacts/ContactNotFound.tsx
 msgid "They may not be one of your contacts."
-msgstr ""
+msgstr "Ta osoba może nie być w twoich kontaktach."
 
 #: src/features/add/paymentModel.ts
 msgid "This adds to what {name} already owes you ({current})."
-msgstr ""
+msgstr "Doliczy się to do kwoty, którą {name} już ma ci do oddania ({current})."
 
 #: src/features/add/paymentModel.ts
 msgid "This adds to what you already owe {name} ({current})."
-msgstr ""
+msgstr "Doliczy się to do kwoty, którą {name} już ma od ciebie dostać ({current})."
 
 #: src/features/detail/expenseSummary.ts
 msgid "This can’t be undone."
-msgstr ""
+msgstr "Tego nie można cofnąć."
 
 #: src/components/ItemStates.tsx
 msgid "This expense doesn’t exist"
-msgstr ""
+msgstr "Ten wydatek nie istnieje"
+
+#: src/components/ItemStates.tsx
+msgid "This expense may have been deleted."
+msgstr "Ten wydatek mógł zostać usunięty."
 
 #: src/components/ItemStates.tsx
 msgid "This payment doesn’t exist"
-msgstr ""
+msgstr "Ta płatność nie istnieje"
+
+#: src/components/ItemStates.tsx
+msgid "This payment may have been deleted."
+msgstr "Ta płatność mogła zostać usunięta."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick at least one person"
-msgstr ""
+msgstr "Zaznacz co najmniej jedną osobę"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick everyone who shares the cost."
-msgstr ""
+msgstr "Zaznacz osoby, które dzielą koszt."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick yourself or pay"
-msgstr ""
+msgstr "Zaznacz siebie lub zostań osobą płacącą"
 
 #: src/features/add/DateSheet.tsx
 #: src/lib/dates.ts
 msgid "Today"
-msgstr ""
+msgstr "Dzisiaj"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Too many sign-in attempts. Wait a few minutes and try again."
-msgstr ""
+msgstr "Zbyt wiele prób logowania. Odczekaj kilka minut i spróbuj ponownie."
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Too many sign-up attempts from this network. Try again later."
-msgstr ""
+msgstr "Zbyt wiele prób założenia konta z tej sieci. Spróbuj ponownie później."
 
 #: src/lib/categories.ts
 msgid "Transport"
-msgstr ""
+msgstr "Transport"
 
 #: src/components/LoadError.tsx
 #: src/features/activity/ActivityListFooter.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Spróbuj ponownie"
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Use 8 to 64 characters."
-msgstr ""
+msgstr "Użyj od 8 do 64 znaków."
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Use at least 8 characters."
-msgstr ""
+msgstr "Użyj co najmniej 8 znaków."
 
 #: src/features/add/expenseDraft.ts
 msgid "Use at most 2 decimal places"
-msgstr ""
+msgstr "Użyj maksymalnie 2 miejsc po przecinku"
 
 #: src/features/auth/SignUpPage.tsx
 #: src/features/profile/EditNamePage.tsx
 msgid "Use at most 64 characters."
-msgstr ""
+msgstr "Użyj maksymalnie 64 znaków."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Use digits, with up to 2 decimals"
-msgstr ""
+msgstr "Użyj cyfr, maks. 2 miejsca po przecinku"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Use full balance ({fullBalanceAmount})"
-msgstr ""
+msgstr "Użyj całego salda ({fullBalanceAmount})"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Use the email and password of your account."
-msgstr ""
+msgstr "Użyj adresu e-mail i hasła do swojego konta."
 
 #: src/features/add/AddPage.tsx
 msgid "What are you adding"
-msgstr ""
+msgstr "Co dodajesz"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "What was it for?"
-msgstr ""
+msgstr "Na co był wydatek?"
 
 #: src/features/add/DiscardSheet.tsx
 msgid "What you’ve entered won’t be saved."
-msgstr ""
+msgstr "Wpisane dane nie zostaną zapisane."
 
 #: src/features/add/PaymentForm.tsx
 msgid "Who did you pay?"
-msgstr ""
+msgstr "Dla kogo jest płatność?"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Who paid"
-msgstr ""
+msgstr "Kto płaci"
 
 #: src/features/add/SplitCard.tsx
 msgid "Who paid and how to split"
-msgstr ""
+msgstr "Kto płaci i jak podzielić"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Who paid you?"
-msgstr ""
+msgstr "Od kogo jest płatność?"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Whole numbers. 2 nights = 2 shares."
-msgstr ""
+msgstr "Liczby całkowite. 2 noce = 2 udziały."
 
 #: src/features/add/PeopleField.tsx
 msgid "With"
-msgstr ""
+msgstr "Z kim"
 
 #: src/features/add/DateSheet.tsx
 #: src/lib/dates.ts
 msgid "Yesterday"
-msgstr ""
+msgstr "Wczoraj"
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
@@ -1355,116 +1359,120 @@ msgstr ""
 #: src/features/profile/ProfilePage.tsx
 #: src/lib/person.ts
 msgid "You"
-msgstr ""
+msgstr "Ty"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "You and {name} are settled up"
-msgstr ""
+msgstr "Ty i {name} macie wszystko rozliczone"
 
 #: src/features/add/paymentModel.ts
 msgid "You and {name} are settled up now."
-msgstr ""
+msgstr "Teraz ty i {name} macie wszystko rozliczone."
 
 #: src/features/add/paymentModel.ts
 msgid "You and {name} will be settled up"
-msgstr ""
+msgstr "Po płatności ty i {name} będziecie mieć wszystko rozliczone"
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "You are all settled up"
-msgstr ""
+msgstr "Masz wszystko rozliczone"
 
 #: src/features/activity/activityItems.ts
 msgid "you borrowed"
-msgstr ""
+msgstr "masz do oddania"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "You borrowed <0>{positionAmount}</0>"
-msgstr ""
+msgstr "Masz do oddania <0>{positionAmount}</0>"
 
 #: src/features/contacts/AddContactPage.tsx
 msgid "You can’t add yourself as a contact."
-msgstr ""
+msgstr "Nie możesz dodać siebie jako kontaktu."
 
 #: src/components/ItemStates.tsx
 msgid "You can’t see this expense"
-msgstr ""
+msgstr "Nie masz dostępu do tego wydatku"
 
 #: src/components/ItemStates.tsx
 msgid "You can’t see this payment"
-msgstr ""
+msgstr "Nie masz dostępu do tej płatności"
 
 #: src/features/activity/activityItems.ts
 msgid "you lent"
-msgstr ""
+msgstr "należy ci się"
 
 #: src/features/add/splitModel.ts
 msgid "You lent"
-msgstr ""
+msgstr "Należy ci się"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "You lent <0>{positionAmount}</0>"
-msgstr ""
+msgstr "Należy ci się <0>{positionAmount}</0>"
 
 #: src/features/add/expenseDraft.ts
 msgid "You need to pay or share in this expense."
-msgstr ""
+msgstr "Musisz płacić albo mieć udział w tym wydatku."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "You need to pay or share in this expense. Tick yourself, or make yourself the payer."
-msgstr ""
+msgstr "Musisz płacić albo mieć udział w tym wydatku. Zaznacz siebie lub zostań osobą płacącą."
 
 #: src/features/contacts/ContactRow.tsx
 msgid "you owe"
-msgstr ""
+msgstr "masz do oddania"
 
 #: src/features/add/contactOptions.ts
 msgid "You owe {amount}"
-msgstr ""
+msgstr "Masz do oddania {amount}"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "You owe {name}"
-msgstr ""
+msgstr "{name} ma od ciebie dostać"
 
 #: src/features/add/paymentModel.ts
 msgid "You owe {name} {amount} now."
-msgstr ""
+msgstr "Teraz {name} ma od ciebie dostać {amount}."
 
 #: src/features/add/splitModel.ts
 msgid "You owe {payerName}"
-msgstr ""
+msgstr "{payerName} ma od ciebie dostać"
 
 #: src/features/add/splitModel.ts
 msgid "You owe it all"
-msgstr ""
+msgstr "Masz do oddania całość"
+
+#: src/features/add/SplitCard.tsx
+msgid "You paid"
+msgstr "Płacisz"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "You paid {amount}"
-msgstr ""
+msgstr "Płacisz {amount}"
 
 #: src/features/add/PaymentForm.tsx
 msgid "You paid {name}"
-msgstr ""
+msgstr "Płatność od ciebie, dla: {name}"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "You paid {payeeName}"
-msgstr ""
+msgstr "Płatność od ciebie, dla: {payeeName}"
 
 #: src/features/add/paymentModel.ts
 msgid "You’ll owe {name} {amount}"
-msgstr ""
+msgstr "Po płatności {name} ma od ciebie dostać {amount}"
 
 #: src/features/add/paymentModel.ts
 msgid "You’ll still owe {name} {remaining}"
-msgstr ""
+msgstr "Po płatności {name} nadal ma od ciebie dostać {remaining}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "You’re not in it"
-msgstr ""
+msgstr "Nie ma cię w podziale"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "You’re not in this expense"
-msgstr ""
+msgstr "Nie ma cię w tym wydatku"
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Your name"
-msgstr ""
+msgstr "Twoje imię"

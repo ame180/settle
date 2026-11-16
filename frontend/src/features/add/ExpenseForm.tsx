@@ -288,7 +288,7 @@ export function ExpenseForm({
                     id: payer.id,
                     name: payerIsMe ? ownDisplayName(me) : payer.displayName,
                   }}
-                  payerName={payerIsMe ? t`You` : getShortName(payer.displayName)}
+                  payerName={payerIsMe ? null : getShortName(payer.displayName)}
                   payerAction={
                     isOneToOne
                       ? {

@@ -737,10 +737,6 @@ msgstr "Invalid email or password."
 msgid "It disappears for {names} too, and balances change. This can’t be undone."
 msgstr "It disappears for {names} too, and balances change. This can’t be undone."
 
-#: src/components/ItemStates.tsx
-msgid "It may have been deleted."
-msgstr "It may have been deleted."
-
 #: src/features/add/DiscardSheet.tsx
 msgid "Keep editing"
 msgstr "Keep editing"
@@ -1240,8 +1236,16 @@ msgid "This expense doesn’t exist"
 msgstr "This expense doesn’t exist"
 
 #: src/components/ItemStates.tsx
+msgid "This expense may have been deleted."
+msgstr "This expense may have been deleted."
+
+#: src/components/ItemStates.tsx
 msgid "This payment doesn’t exist"
 msgstr "This payment doesn’t exist"
+
+#: src/components/ItemStates.tsx
+msgid "This payment may have been deleted."
+msgstr "This payment may have been deleted."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick at least one person"
@@ -1436,6 +1440,10 @@ msgstr "You owe {payerName}"
 #: src/features/add/splitModel.ts
 msgid "You owe it all"
 msgstr "You owe it all"
+
+#: src/features/add/SplitCard.tsx
+msgid "You paid"
+msgstr "You paid"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "You paid {amount}"
