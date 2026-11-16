@@ -1,18 +1,54 @@
 import type { CurrencyAmount } from '@/api/types'
+import { formattingLocale } from '@/i18n/i18n'
 import { fromScaled, toScaled } from './decimal'
 
-const NO_BREAK_SPACE = ' '
+const currencyFormats = new Map<string, Intl.NumberFormat>()
 
-export function formatPln(amount: string): string {
-  return `${formatPlnNumber(amount)}${NO_BREAK_SPACE}zł`
+function currencyFormat(currency: string): Intl.NumberFormat {
+  const locale = formattingLocale()
+  const key = `${locale}:${currency}`
+  let format = currencyFormats.get(key)
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { style: 'currency', currency })
+    currencyFormats.set(key, format)
+  }
+  return format
 }
 
-/** "1 535.64": grouped, 2 decimals, no sign and no currency. */
-export function formatPlnNumber(amount: string): string {
-  const [integerPart, fractionPart = ''] = amount.replace(/^-/, '').split('.')
-  const groupedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, NO_BREAK_SPACE)
+const amountFormats = new Map<string, Intl.NumberFormat>()
 
-  return `${groupedIntegerPart}.${fractionPart.padEnd(2, '0')}`
+function amountFormat(): Intl.NumberFormat {
+  const locale = formattingLocale()
+  let format = amountFormats.get(locale)
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    amountFormats.set(locale, format)
+  }
+  return format
+}
+
+// Intl formats a decimal string exactly, without going through a float.
+function unsignedDecimal(amount: string): Intl.StringNumericLiteral {
+  return amount.replace(/^-/, '') as Intl.StringNumericLiteral
+}
+
+/** Signless, in the active locale's format: "12,00 zł" in Polish, "PLN 12.00" in English. */
+export function formatMoney(amount: string, currency: string): string {
+  return currencyFormat(currency).format(unsignedDecimal(amount))
+}
+
+export function formatPln(amount: string): string {
+  return formatMoney(amount, 'PLN')
+}
+
+/** "12,50–1500,00 zł" in Polish; signless. */
+export function formatPlnRange(min: string, max: string): string {
+  return currencyFormat('PLN').formatRange(unsignedDecimal(min), unsignedDecimal(max))
+}
+
+/** Grouped, 2 decimals, no sign and no currency. */
+export function formatAmountNumber(amount: string): string {
+  return amountFormat().format(unsignedDecimal(amount))
 }
 
 /** True for '0', '0.00', '-0.00' and the like. */
@@ -44,12 +80,6 @@ export const balanceTextClassName: Record<BalanceDirection, string> = {
 /** The API omits zero balances, so a missing PLN entry means nothing is owed in PLN. */
 export function findPlnAmount(amounts: CurrencyAmount[]): string | null {
   return amounts.find((currencyAmount) => currencyAmount.currency === 'PLN')?.amount ?? null
-}
-
-/** PLN reads "12.00 zł"; other currencies keep their code: "12.00 EUR". Drops the sign. */
-export function formatMoney(amount: string, currency: string): string {
-  const formatted = formatPln(amount)
-  return currency === 'PLN' ? formatted : formatted.replace(/zł$/, currency)
 }
 
 /** Integer digits the API's Decimal(precision: 10, scale: 2) allows before the point. */

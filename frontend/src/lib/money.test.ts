@@ -1,25 +1,52 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { activateLocale } from '@/i18n/i18n'
 import {
   balanceDirection,
   findPlnAmount,
   formatGrosze,
   formatMoney,
+  formatAmountNumber,
   formatPln,
+  formatPlnRange,
   isNegativeAmount,
   parseAmountInput,
   sumAmounts,
 } from './money'
 
+afterEach(async () => {
+  await activateLocale('en')
+})
+
 describe('formatPln', () => {
   it.each([
-    ['12.00', '12.00 zł'],
-    ['-120.00', '120.00 zł'],
-    ['2552.03', '2 552.03 zł'],
-    ['123456.78', '123 456.78 zł'],
-    ['1000000.5', '1 000 000.50 zł'],
-    ['7', '7.00 zł'],
-  ])('formats %s as %s', (amount, expected) => {
+    ['12.00', 'PLN\u00a012.00'],
+    ['-120.00', 'PLN\u00a0120.00'],
+    ['2552.03', 'PLN\u00a02,552.03'],
+    ['1000000.5', 'PLN\u00a01,000,000.50'],
+    ['7', 'PLN\u00a07.00'],
+  ])('formats %s as %s in English', (amount, expected) => {
     expect(formatPln(amount)).toBe(expected)
+  })
+
+  it.each([
+    ['12.00', '12,00\u00a0zł'],
+    ['-120.00', '120,00\u00a0zł'],
+    ['2552.03', '2552,03\u00a0zł'],
+    ['123456.78', '123\u00a0456,78\u00a0zł'],
+    ['99999999.99', '99\u00a0999\u00a0999,99\u00a0zł'],
+  ])('formats %s as %s in Polish', async (amount, expected) => {
+    await activateLocale('pl')
+    expect(formatPln(amount)).toBe(expected)
+  })
+})
+
+describe('formatPlnRange and formatAmountNumber', () => {
+  it('format in the active locale without a sign', async () => {
+    expect(formatPlnRange('12.5', '-1500')).toBe('PLN\u00a012.50–1,500.00')
+    expect(formatAmountNumber('-1234.5')).toBe('1,234.50')
+    await activateLocale('pl')
+    expect(formatPlnRange('12.5', '1500')).toBe('12,50–1500,00\u00a0zł')
+    expect(formatAmountNumber('12345.6')).toBe('12\u00a0345,60')
   })
 })
 
@@ -43,9 +70,11 @@ describe('findPlnAmount', () => {
 })
 
 describe('formatMoney', () => {
-  it('uses zł for PLN and the currency code otherwise', () => {
-    expect(formatMoney('-1234.5', 'PLN')).toBe('1\u00a0234.50\u00a0zł')
-    expect(formatMoney('50', 'EUR')).toBe('50.00\u00a0EUR')
+  it('uses the locale’s currency format', async () => {
+    expect(formatMoney('-1234.5', 'PLN')).toBe('PLN\u00a01,234.50')
+    expect(formatMoney('50', 'EUR')).toBe('€50.00')
+    await activateLocale('pl')
+    expect(formatMoney('50', 'EUR')).toBe('50,00\u00a0€')
   })
 })
 

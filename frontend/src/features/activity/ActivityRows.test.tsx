@@ -18,11 +18,11 @@ describe('ExpenseRow', () => {
     const row = screen.getByRole('link')
     expect(row).toHaveAttribute('href', '/expenses/7')
     expect(row).toHaveTextContent('Zakupy Biedronka')
-    expect(row).toHaveTextContent('You paid 184.30 zł')
+    expect(row).toHaveTextContent('You paid PLN 184.30')
     const label = screen.getByText('you lent')
     expect(label).toHaveTextContent('you lent')
     expect(label.parentElement).toHaveClass('text-positive')
-    expect(label.parentElement).toHaveTextContent('1 234.50 zł')
+    expect(label.parentElement).toHaveTextContent('PLN 1,234.50')
   })
 
   it('shows what the viewer borrowed, unsigned, with the payer named', () => {
@@ -33,10 +33,10 @@ describe('ExpenseRow', () => {
       />,
     )
 
-    expect(screen.getByRole('link')).toHaveTextContent('Anna Kowalska paid 24.00 zł')
+    expect(screen.getByRole('link')).toHaveTextContent('Anna Kowalska paid PLN 24.00')
     const label = screen.getByText('you borrowed')
     expect(label.parentElement).toHaveClass('text-negative')
-    expect(label.parentElement).toHaveTextContent(/^you borrowed 12\.00 zł$/)
+    expect(label.parentElement).toHaveTextContent(/^you borrowed PLN 12\.00$/)
   })
 
   it('keeps the currency code for non-PLN expenses', () => {
@@ -47,7 +47,7 @@ describe('ExpenseRow', () => {
       />,
     )
 
-    expect(screen.getByRole('link')).toHaveTextContent('You paid 50.00 EUR you lent 25.00 EUR')
+    expect(screen.getByRole('link')).toHaveTextContent('You paid €50.00 you lent €25.00')
   })
 
   it('labels an expense that left balances unchanged', () => {
@@ -72,7 +72,7 @@ describe('ExpenseRow', () => {
 
     expect(screen.getAllByRole('img', { name: /./ })).toHaveLength(1)
     expect(screen.getByRole('img', { name: 'Transport' })).toBeInTheDocument()
-    expect(screen.getAllByRole('link')[1]).toHaveTextContent('20 Oct · You paid 184.30 zł')
+    expect(screen.getAllByRole('link')[1]).toHaveTextContent('20 Oct · You paid PLN 184.30')
   })
 })
 
@@ -82,7 +82,7 @@ describe('SettlementRow', () => {
 
     const row = screen.getByRole('link')
     expect(row).toHaveAttribute('href', '/transfers/4')
-    expect(row).toHaveTextContent(/^Anna Kowalska paid you 150\.00 zł$/)
+    expect(row).toHaveTextContent(/^Anna Kowalska paid you PLN 150\.00$/)
   })
 
   it('names the viewer as the payer and can show the date', () => {
@@ -95,6 +95,6 @@ describe('SettlementRow', () => {
       />,
     )
 
-    expect(screen.getByRole('link')).toHaveTextContent('You paid Anna Kowalska 80.00 zł22 Oct')
+    expect(screen.getByRole('link')).toHaveTextContent('You paid Anna Kowalska PLN 80.0022 Oct')
   })
 })

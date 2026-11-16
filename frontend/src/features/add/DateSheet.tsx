@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
-import { addDays, formatLongDate, fromIsoDate, todayIso, toIsoDate } from '@/lib/dates'
+import {
+  addDays,
+  calendarWeekdays,
+  formatLongDate,
+  formatMonthYear,
+  fromIsoDate,
+  todayIso,
+  toIsoDate,
+} from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-
-const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 type DateSheetProps = {
   open: boolean
@@ -44,7 +50,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
   const days = Array.from({ length: daysInMonth }, (_, index) =>
     toIsoDate(new Date(first.getFullYear(), first.getMonth(), index + 1)),
   )
-  const monthLabel = first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const monthLabel = formatMonthYear(first)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -98,13 +104,13 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
             aria-labelledby="date-sheet-month"
             className="grid grid-cols-7 justify-items-center gap-0.5"
           >
-            {weekdays.map((weekday) => (
+            {calendarWeekdays().map((weekday) => (
               <abbr
-                key={weekday}
-                title={weekday}
+                key={weekday.long}
+                title={weekday.long}
                 className="h-6 text-xs font-medium text-muted-foreground no-underline"
               >
-                {weekday[0]}
+                {weekday.narrow}
               </abbr>
             ))}
             {Array.from({ length: leadingBlanks }, (_, index) => (

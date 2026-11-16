@@ -1,0 +1,21 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-11-16 12:45+0100\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: pl\n"
+
+#. placeholder {0}: 'x'
+#: src/i18n/spike.ts
+#~ msgid "Hello {0} spike"
+#~ msgstr ""
+
+#: src/lib/dates.ts
+msgid "Today"
+msgstr ""
+
+#: src/lib/dates.ts
+msgid "Yesterday"
+msgstr ""

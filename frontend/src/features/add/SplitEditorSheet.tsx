@@ -8,7 +8,8 @@ import { trimDecimal } from '@/lib/decimal'
 import {
   formatGrosze,
   formatPln,
-  formatPlnNumber,
+  formatAmountNumber,
+  formatPlnRange,
   fromGrosze,
   parseAmountInput,
   sanitizeAmountInput,
@@ -495,7 +496,7 @@ function describeStatus(
     const min = shares.reduce((a, b) => (b < a ? b : a))
     const max = shares.reduce((a, b) => (b > a ? b : a))
     const each =
-      min === max ? formatGrosze(min) : `${formatPlnNumber(fromGrosze(min))}–${formatGrosze(max)}`
+      min === max ? formatGrosze(min) : formatPlnRange(fromGrosze(min), fromGrosze(max))
     return { tone: 'ok', main: `${each} each`, sub: people }
   }
 
@@ -558,7 +559,7 @@ function describeStatus(
   const difference = totalGrosze - assigned
   return {
     tone: 'warn',
-    main: `${formatPlnNumber(fromGrosze(assigned))} of ${formatGrosze(totalGrosze)}`,
+    main: `${formatAmountNumber(fromGrosze(assigned))} of ${formatGrosze(totalGrosze)}`,
     sub:
       difference > 0n
         ? `${formatGrosze(difference)} left to assign`
