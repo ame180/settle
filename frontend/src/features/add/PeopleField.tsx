@@ -10,12 +10,8 @@ import { PersonAvatar } from '@/components/PersonAvatar'
 import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { ContactOption } from './ContactOption'
-import {
-  addContactErrorMessage,
-  looksLikeEmail,
-  recentContacts,
-  searchContacts,
-} from './contactOptions'
+import { looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
+import { addContactErrorMessage } from '@/lib/contact'
 import { FieldError } from '@/components/FieldError'
 
 const RECENT_LIMIT = 6

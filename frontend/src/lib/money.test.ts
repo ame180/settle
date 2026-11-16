@@ -6,6 +6,7 @@ import {
   formatGrosze,
   formatMoney,
   formatAmountNumber,
+  formatDecimal,
   formatPln,
   formatPlnRange,
   isNegativeAmount,
@@ -134,5 +135,15 @@ describe('localizeAmountInput', () => {
     await activateLocale('pl')
     expect(localizeAmountInput('12.50')).toBe('12,50')
     expect(localizeAmountInput('12')).toBe('12')
+  })
+})
+
+describe('formatDecimal', () => {
+  it('drops trailing zeros and uses the locale’s separator, ungrouped', async () => {
+    expect(formatDecimal('33.33')).toBe('33.33')
+    expect(formatDecimal('12.50')).toBe('12.5')
+    expect(formatDecimal('1500.00')).toBe('1500')
+    await activateLocale('pl')
+    expect(formatDecimal('33.33')).toBe('33,33')
   })
 })

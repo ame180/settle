@@ -427,7 +427,7 @@ msgstr "Couldn't add contact. Try again."
 msgid "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
 msgstr "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
 
-#: src/features/add/contactOptions.ts
+#: src/lib/contact.ts
 msgid "Couldn’t add this contact. Try again."
 msgstr "Couldn’t add this contact. Try again."
 
@@ -1383,8 +1383,7 @@ msgstr "you borrowed"
 msgid "You borrowed <0>{positionAmount}</0>"
 msgstr "You borrowed <0>{positionAmount}</0>"
 
-#: src/features/add/contactOptions.ts
-#: src/features/contacts/AddContactPage.tsx
+#: src/lib/contact.ts
 msgid "You can’t add yourself as a contact."
 msgstr "You can’t add yourself as a contact."
 

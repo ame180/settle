@@ -427,7 +427,7 @@ msgstr "Nie udało się dodać kontaktu. Spróbuj ponownie."
 msgid "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
 msgstr "Nie udało się dodać wydatku. Niczego nie zapisano, a wpisane dane są nadal tutaj. Spróbuj ponownie."
 
-#: src/features/add/contactOptions.ts
+#: src/lib/contact.ts
 msgid "Couldn’t add this contact. Try again."
 msgstr "Nie udało się dodać tego kontaktu. Spróbuj ponownie."
 
@@ -1383,8 +1383,7 @@ msgstr "masz do oddania"
 msgid "You borrowed <0>{positionAmount}</0>"
 msgstr "Masz do oddania <0>{positionAmount}</0>"
 
-#: src/features/add/contactOptions.ts
-#: src/features/contacts/AddContactPage.tsx
+#: src/lib/contact.ts
 msgid "You can’t add yourself as a contact."
 msgstr "Nie możesz dodać siebie jako kontaktu."
 

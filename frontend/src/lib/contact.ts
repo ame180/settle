@@ -1,3 +1,5 @@
+import { ApiError } from '@/api/client'
+import { t } from '@lingui/core/macro'
 import type { ContactListItem } from '@/api/types'
 import { isNegativeAmount } from './money'
 
@@ -30,4 +32,20 @@ export function settleUpPath(contactId: number, balance: string): string {
 
 export function addExpenseWithPath(contactId: number): string {
   return `/add?contact=${contactId}`
+}
+
+/** The API rejects your own email with a bare 400, without violations. */
+export function isOwnEmailRejection(error: Error): error is ApiError {
+  return error instanceof ApiError && error.status === 400 && error.violations.length === 0
+}
+
+/** Why adding a contact by email failed, for the toast or inline error. */
+export function addContactErrorMessage(error: Error): string {
+  if (isOwnEmailRejection(error)) {
+    return t`You can’t add yourself as a contact.`
+  }
+  if (error instanceof ApiError && error.violations[0]) {
+    return error.violations[0].title
+  }
+  return t`Couldn’t add this contact. Try again.`
 }

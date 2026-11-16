@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
+import { addContactErrorMessage, isOwnEmailRejection } from '@/lib/contact'
 
 const addContactSchema = z.object({
   email: z
@@ -56,16 +57,15 @@ export function AddContactPage() {
           goBack()
         },
         onError: (error) => {
+          if (isOwnEmailRejection(error)) {
+            form.setError('email', { message: addContactErrorMessage(error) })
+            return
+          }
           if (!(error instanceof ApiError) || error.status !== 400) {
             form.setError('root', { message: t`Couldn't add contact. Try again.` })
             return
           }
 
-          // A 400 without violations is the API refusing your own email.
-          if (error.violations.length === 0) {
-            form.setError('email', { message: t`You can’t add yourself as a contact.` })
-            return
-          }
           const fieldViolations = error.violations.filter((violation) =>
             isFormField(violation.propertyPath),
           )

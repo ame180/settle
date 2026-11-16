@@ -89,7 +89,7 @@ export function formatDecimal(value: string): string {
   const locale = formattingLocale()
   let format = decimalFormats.get(locale)
   if (!format) {
-    format = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 })
+    format = new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false })
     decimalFormats.set(locale, format)
   }
   return format.format(value as Intl.StringNumericLiteral)
