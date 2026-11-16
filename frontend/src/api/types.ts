@@ -77,6 +77,17 @@ export type ExpenseResponse = {
   debts: ExpenseDebtResponse[]
 }
 
+export type CommentRequest = {
+  body: string
+}
+
+export type CommentResponse = {
+  id: number
+  author: PersonRef
+  body: string
+  createdAt: string
+}
+
 export type TransferRequest = {
   payerId: number
   payeeId: number

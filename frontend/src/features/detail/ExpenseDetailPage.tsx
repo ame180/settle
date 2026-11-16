@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import { useParams } from 'react-router'
 import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
+import { useComments } from '@/api/comments'
 import { useDeleteExpense, useExpense } from '@/api/expenses'
 import type { ExpenseResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
@@ -11,6 +13,7 @@ import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { ItemError, ItemLoading, ItemNotFound } from '@/components/ItemStates'
 import { DetailActions, DetailScreen, NoteBlock } from './DetailParts'
+import { CommentComposer, CommentList } from './ExpenseComments'
 import {
   deleteWarning,
   expensePosition,
@@ -36,6 +39,8 @@ function ExpenseDetailScreen({ id }: { id: number }) {
   const expenseQuery = useExpense(id)
   const { data: me } = useMe()
   const expense = expenseQuery.data
+  const commentsQuery = useComments(id)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
   const deletion = useDeleteAndGoBack({
     mutation: useDeleteExpense(id),
     successMessage: 'Expense deleted',
@@ -58,9 +63,25 @@ function ExpenseDetailScreen({ id }: { id: number }) {
           />
         )
       }
+      footer={
+        expense &&
+        me && (
+          <CommentComposer
+            expenseId={id}
+            onSent={() =>
+              requestAnimationFrame(() =>
+                commentsEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }),
+              )
+            }
+          />
+        )
+      }
     >
       {expense && me ? (
-        <ExpenseDetail expense={expense} viewerId={me.id} />
+        <>
+          <ExpenseDetail expense={expense} viewerId={me.id} />
+          <CommentList commentsQuery={commentsQuery} viewerId={me.id} endRef={commentsEndRef} />
+        </>
       ) : expenseQuery.isError ? (
         <ItemError
           error={expenseQuery.error}
