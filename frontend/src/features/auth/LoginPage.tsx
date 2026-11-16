@@ -1,6 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useLogin, useMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
@@ -11,8 +13,11 @@ import { Label } from '@/components/ui/label'
 import { AuthLayout, authLinkClassName } from './AuthLayout'
 
 const loginSchema = z.object({
-  email: z.string().trim().pipe(z.email('Enter a valid email address')),
-  password: z.string().min(1, 'Password is required'),
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email({ error: () => t`Enter a valid email address` })),
+  password: z.string().min(1, { error: () => t`Password is required` }),
 })
 
 type LoginValues = z.infer<typeof loginSchema>
@@ -20,6 +25,7 @@ type LoginValues = z.infer<typeof loginSchema>
 export type LoginLocationState = { from?: string; email?: string } | null
 
 export function LoginPage() {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const loginMutation = useLogin()
   const navigate = useNavigate()
@@ -47,20 +53,22 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Sign in"
-      description="Use the email and password of your account."
+      title={t`Sign in`}
+      description={t`Use the email and password of your account.`}
       footer={
-        <>
+        <Trans>
           New to Settle?{' '}
           <Link to="/signup" className={authLinkClassName}>
             Create an account
           </Link>
-        </>
+        </Trans>
       }
     >
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signin-email">Email</Label>
+          <Label htmlFor="signin-email">
+            <Trans>Email</Trans>
+          </Label>
           <Input
             id="signin-email"
             type="email"
@@ -73,7 +81,9 @@ export function LoginPage() {
           {errors.email && <FieldError id="signin-email-error" message={errors.email.message} />}
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signin-password">Password</Label>
+          <Label htmlFor="signin-password">
+            <Trans>Password</Trans>
+          </Label>
           <Input
             id="signin-password"
             type="password"
@@ -90,10 +100,10 @@ export function LoginPage() {
         <PrimaryButton
           type="submit"
           pending={loginMutation.isPending}
-          pendingLabel="Signing in…"
+          pendingLabel={t`Signing in…`}
           className="mt-2"
         >
-          Sign in
+          <Trans>Sign in</Trans>
         </PrimaryButton>
       </form>
     </AuthLayout>
@@ -105,10 +115,10 @@ function getLoginErrorMessage(error: Error | null): string | null {
     return null
   }
   if (error instanceof ApiError && error.status === 401) {
-    return 'Invalid email or password.'
+    return t`Invalid email or password.`
   }
   if (error instanceof ApiError && error.status === 429) {
-    return 'Too many sign-in attempts. Wait a few minutes and try again.'
+    return t`Too many sign-in attempts. Wait a few minutes and try again.`
   }
-  return 'Something went wrong. Please try again.'
+  return t`Something went wrong. Please try again.`
 }

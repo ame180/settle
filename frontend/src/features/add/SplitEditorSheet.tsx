@@ -495,8 +495,7 @@ function describeStatus(
     const shares = [...check.shares.values()]
     const min = shares.reduce((a, b) => (b < a ? b : a))
     const max = shares.reduce((a, b) => (b > a ? b : a))
-    const each =
-      min === max ? formatGrosze(min) : formatPlnRange(fromGrosze(min), fromGrosze(max))
+    const each = min === max ? formatGrosze(min) : formatPlnRange(fromGrosze(min), fromGrosze(max))
     return { tone: 'ok', main: `${each} each`, sub: people }
   }
 

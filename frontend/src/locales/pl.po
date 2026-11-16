@@ -7,13 +7,52 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: pl\n"
 
-#. placeholder {0}: 'x'
-#: src/i18n/spike.ts
-#~ msgid "Hello {0} spike"
-#~ msgstr ""
+#: src/features/auth/LoginPage.tsx
+msgid "Email"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Enter a valid email address"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Invalid email or password."
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "New to Settle? <0>Create an account</0>"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Password"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Password is required"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Sign in"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Signing in…"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Something went wrong. Please try again."
+msgstr ""
 
 #: src/lib/dates.ts
 msgid "Today"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Too many sign-in attempts. Wait a few minutes and try again."
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Use the email and password of your account."
 msgstr ""
 
 #: src/lib/dates.ts

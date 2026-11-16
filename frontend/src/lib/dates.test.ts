@@ -59,6 +59,10 @@ describe('in Polish', () => {
     expect(formatDayLabel('2026-10-22T00:00:00+00:00', now)).toBe('czw., 22 paź')
     expect(formatShortDate('2025-09-28T00:00:00+00:00', now)).toBe('28 wrz 2025')
     expect(formatLongDate('2026-11-07')).toBe('7 listopada')
-    expect(calendarWeekdays().map((weekday) => weekday.narrow).join('')).toBe('PWŚCPSN')
+    expect(
+      calendarWeekdays()
+        .map((weekday) => weekday.narrow)
+        .join(''),
+    ).toBe('PWŚCPSN')
   })
 })
