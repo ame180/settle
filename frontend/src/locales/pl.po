@@ -1381,6 +1381,10 @@ msgstr ""
 msgid "You borrowed <0>{positionAmount}</0>"
 msgstr ""
 
+#: src/features/contacts/AddContactPage.tsx
+msgid "You can’t add yourself as a contact."
+msgstr ""
+
 #: src/components/ItemStates.tsx
 msgid "You can’t see this expense"
 msgstr ""

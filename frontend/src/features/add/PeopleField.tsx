@@ -154,8 +154,7 @@ export function PeopleField({
         },
         onError: (mutationError) => {
           const message =
-            (mutationError instanceof ApiError &&
-              (mutationError.violations[0]?.title ?? mutationError.detail)) ||
+            (mutationError instanceof ApiError && mutationError.violations[0]?.title) ||
             t`Couldn’t add this contact. Try again.`
           // The list it was added from is gone, so say it where the user can still see it.
           if (visitRef.current !== visit) {

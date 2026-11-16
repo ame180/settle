@@ -64,8 +64,9 @@ export function AddContactPage() {
           const fieldViolations = error.violations.filter((violation) =>
             isFormField(violation.propertyPath),
           )
+          // A 400 without violations is the API refusing your own email.
           if (fieldViolations.length === 0) {
-            form.setError('email', { message: error.message })
+            form.setError('email', { message: t`You can’t add yourself as a contact.` })
             return
           }
           for (const violation of fieldViolations) {
