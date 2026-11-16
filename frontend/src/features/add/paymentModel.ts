@@ -15,7 +15,7 @@ export type PaymentOutcome = {
   detail: string
 }
 
-/** "Anna owes you 192.92 zł now." – where the two stand before the payment. */
+/** "Anna owes you PLN 192.92 now." – where the two stand before the payment. */
 export function describeBalance(balance: bigint, name: string): string {
   return owesSentence(balance, name, 'now')
 }

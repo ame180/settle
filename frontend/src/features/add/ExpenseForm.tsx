@@ -38,7 +38,7 @@ import {
   checkSplit,
   classifyOutcome,
   describeCustomSplit,
-  describeOutcome,
+  lentEachDetail,
   describeSplit,
   mirrorSplit,
   prunePeople,
@@ -441,26 +441,43 @@ function OutcomeLine({
     )
   }
 
-  const outcome = describeOutcome(check.shares, draft.split.payerId, people, meId)
+  const outcome = classifyOutcome(check.shares, draft.split.payerId, people, meId)
+  if (outcome.kind === 'nobody-owes') {
+    return (
+      <p className="text-[15px] text-foreground/80">
+        <Trans>Nobody owes you for this</Trans>
+      </p>
+    )
+  }
+
+  const amount = formatGrosze(outcome.grosze)
+  const amountClassName = cn(
+    'font-semibold',
+    outcome.kind === 'owe-payer' ? 'text-negative' : 'text-positive',
+  )
+  const payerName = outcome.kind === 'owe-payer' ? outcome.payerName : null
+  const debtorName = outcome.kind === 'owed-by-one' ? outcome.debtorName : null
+  const detail = outcome.kind === 'lent' ? lentEachDetail(outcome) : null
   return (
     <div className="flex flex-col items-center gap-0.5">
       <p className="text-[15px] text-foreground/80">
-        {outcome.lead}
-        {outcome.tone !== 'neutral' && (
-          <>
-            {' '}
-            <span
-              className={cn(
-                'font-semibold',
-                outcome.tone === 'positive' ? 'text-positive' : 'text-negative',
-              )}
-            >
-              {formatGrosze(outcome.grosze)}
-            </span>
-          </>
+        {payerName !== null && (
+          <Trans>
+            You owe {payerName} <span className={amountClassName}>{amount}</span>
+          </Trans>
+        )}
+        {debtorName !== null && (
+          <Trans>
+            {debtorName} owes you <span className={amountClassName}>{amount}</span>
+          </Trans>
+        )}
+        {outcome.kind === 'lent' && (
+          <Trans>
+            You lent <span className={amountClassName}>{amount}</span>
+          </Trans>
         )}
       </p>
-      {outcome.detail && <p className="text-[13px] text-muted-foreground">{outcome.detail}</p>}
+      {detail && <p className="text-[13px] text-muted-foreground">{detail}</p>}
     </div>
   )
 }

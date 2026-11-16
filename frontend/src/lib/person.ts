@@ -39,11 +39,17 @@ export function ownDisplayName(me: MeResponse): string {
   return me.name ?? me.email
 }
 
+const listFormats = new Map<string, Intl.ListFormat>()
+
 /** "Anna", "Anna and Ewa", "Anna, Ewa and Tomasz". */
 export function joinNames(names: string[]): string {
-  return new Intl.ListFormat(formattingLocale(), { style: 'long', type: 'conjunction' }).format(
-    names,
-  )
+  const locale = formattingLocale()
+  let format = listFormats.get(locale)
+  if (!format) {
+    format = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' })
+    listFormats.set(locale, format)
+  }
+  return format.format(names)
 }
 
 /** Everyone but the viewer, once each, in first-seen order. */

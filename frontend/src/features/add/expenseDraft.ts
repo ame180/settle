@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { t } from '@lingui/core/macro'
 import type { ExpenseCategory, ExpenseRequest, ExpenseResponse, PersonRef } from '@/api/types'
 import {
+  formatDecimal,
   formatGrosze,
   fromGrosze,
   MAX_AMOUNT_INTEGER_DIGITS,
@@ -155,7 +156,7 @@ export function splitError(draft: ExpenseDraft, meId: number): string | null {
       return t`Adds up to ${assigned} of ${total}. Tap to fix.`
     }
     case 'percent': {
-      const assigned = trimDecimal(fromGrosze(problem.assigned))
+      const assigned = formatDecimal(fromGrosze(problem.assigned))
       return t`Adds up to ${assigned}%, not 100%. Tap to fix.`
     }
     case 'no-amount':

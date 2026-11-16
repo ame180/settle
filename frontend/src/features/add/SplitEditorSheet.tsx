@@ -6,8 +6,8 @@ import type { MeResponse, PersonRef, SplitType } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { ownDisplayName } from '@/lib/person'
-import { trimDecimal } from '@/lib/decimal'
 import {
+  formatDecimal,
   formatGrosze,
   formatPln,
   formatAmountNumber,
@@ -368,7 +368,7 @@ function RowControl({
               other: `${personName}: # shares`,
             })}
           </span>
-          <span aria-hidden="true">{trimDecimal(parsed)}</span>
+          <span aria-hidden="true">{formatDecimal(parsed)}</span>
         </span>
         <button
           type="button"
@@ -554,8 +554,10 @@ function describeStatus(
     if (!check.ok && check.problem.kind === 'percent') {
       const assigned = check.problem.assigned
       const difference = 10000n - assigned
-      const assignedPercent = trimDecimal(fromGrosze(assigned))
-      const differencePercent = trimDecimal(fromGrosze(difference > 0n ? difference : -difference))
+      const assignedPercent = formatDecimal(fromGrosze(assigned))
+      const differencePercent = formatDecimal(
+        fromGrosze(difference > 0n ? difference : -difference),
+      )
       return {
         tone: 'warn',
         main: t`${assignedPercent}% of 100%`,

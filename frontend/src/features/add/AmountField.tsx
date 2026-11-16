@@ -13,7 +13,7 @@ type AmountFieldProps = {
   inputRef: RefObject<HTMLInputElement | null>
 }
 
-/** Large centred amount with a fixed "zł" suffix; decimal comma accepted, tidied on blur. */
+/** Large centred amount with a fixed "zł" suffix; decimal comma or point accepted, shown with the locale's separator. */
 export function AmountField({ value, onChange, error, outcome, inputRef }: AmountFieldProps) {
   const id = useId()
   const blockRef = useRef<HTMLDivElement>(null)

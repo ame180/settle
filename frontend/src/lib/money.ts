@@ -82,6 +82,19 @@ export function findPlnAmount(amounts: CurrencyAmount[]): string | null {
   return amounts.find((currencyAmount) => currencyAmount.currency === 'PLN')?.amount ?? null
 }
 
+const decimalFormats = new Map<string, Intl.NumberFormat>()
+
+/** A percentage or share count for display: "33.33" / "12.5" / "2", "33,33" in Polish. */
+export function formatDecimal(value: string): string {
+  const locale = formattingLocale()
+  let format = decimalFormats.get(locale)
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 })
+    decimalFormats.set(locale, format)
+  }
+  return format.format(value as Intl.StringNumericLiteral)
+}
+
 /** Shows an amount field's text with the active locale's decimal separator: "12,50" in Polish. */
 export function localizeAmountInput(value: string): string {
   const separator =

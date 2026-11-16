@@ -88,9 +88,10 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
   }
   const hasPlnBalances = visible.some((contact) => findPlnAmount(contact.balances) !== null)
 
+  const settledCount = settled.length
   const showSettledLabel = (
     <Plural
-      value={settled.length}
+      value={settledCount}
       one="Show # settled-up contact"
       other="Show # settled-up contacts"
     />

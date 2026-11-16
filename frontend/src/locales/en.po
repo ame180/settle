@@ -7,11 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#. placeholder {0}: settled.length
-#: src/features/contacts/ContactsPage.tsx
-msgid "{0, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
-msgstr "{0, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
-
 #: src/features/add/PaymentForm.tsx
 msgid "{amount} payment recorded."
 msgstr "{amount} payment recorded."
@@ -28,17 +23,13 @@ msgstr "{assignedNumber} of {totalAmount}"
 msgid "{assignedPercent}% of 100%"
 msgstr "{assignedPercent}% of 100%"
 
-#: src/features/detail/expenseSummary.ts
-msgid "{count, plural, one {Split equally between #} other {Split equally between #}}"
-msgstr "{count, plural, one {Split equally between #} other {Split equally between #}}"
-
 #: src/features/activity/ActivityRows.tsx
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
 
-#: src/features/add/splitModel.ts
-msgid "{debtorName} owes you"
-msgstr "{debtorName} owes you"
+#: src/features/add/ExpenseForm.tsx
+msgid "{debtorName} owes you <0>{amount}</0>"
+msgstr "{debtorName} owes you <0>{amount}</0>"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differenceAmount} left to assign"
@@ -121,6 +112,7 @@ msgid "{peopleCount, plural, other {Split equally between {sharingCount} of #}}"
 msgstr "{peopleCount, plural, other {Split equally between {sharingCount} of #}}"
 
 #: src/features/add/splitModel.ts
+#: src/features/detail/expenseSummary.ts
 msgid "{peopleCount, plural, other {Split equally between #}}"
 msgstr "{peopleCount, plural, other {Split equally between #}}"
 
@@ -147,6 +139,10 @@ msgstr "{personName}, percent"
 #: src/features/add/ExpenseForm.tsx
 msgid "{recipients} will see your changes."
 msgstr "{recipients} will see your changes."
+
+#: src/features/contacts/ContactsPage.tsx
+msgid "{settledCount, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
+msgstr "{settledCount, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{shareCount, plural, one {{personName}: # share} other {{personName}: # shares}}"
@@ -431,7 +427,7 @@ msgstr "Couldn't add contact. Try again."
 msgid "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
 msgstr "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
 
-#: src/features/add/PeopleField.tsx
+#: src/features/add/contactOptions.ts
 msgid "Couldn’t add this contact. Try again."
 msgstr "Couldn’t add this contact. Try again."
 
@@ -737,6 +733,16 @@ msgstr "Invalid email or password."
 msgid "It disappears for {names} too, and balances change. This can’t be undone."
 msgstr "It disappears for {names} too, and balances change. This can’t be undone."
 
+#: src/components/ItemStates.tsx
+msgctxt "expense"
+msgid "It may have been deleted."
+msgstr "It may have been deleted."
+
+#: src/components/ItemStates.tsx
+msgctxt "payment"
+msgid "It may have been deleted."
+msgstr "It may have been deleted."
+
 #: src/features/add/DiscardSheet.tsx
 msgid "Keep editing"
 msgstr "Keep editing"
@@ -900,7 +906,7 @@ msgstr "Nobody is sharing"
 msgid "Nobody owes you and you owe nobody."
 msgstr "Nobody owes you and you owe nobody."
 
-#: src/features/add/splitModel.ts
+#: src/features/add/ExpenseForm.tsx
 msgid "Nobody owes you for this"
 msgstr "Nobody owes you for this"
 
@@ -1236,16 +1242,8 @@ msgid "This expense doesn’t exist"
 msgstr "This expense doesn’t exist"
 
 #: src/components/ItemStates.tsx
-msgid "This expense may have been deleted."
-msgstr "This expense may have been deleted."
-
-#: src/components/ItemStates.tsx
 msgid "This payment doesn’t exist"
 msgstr "This payment doesn’t exist"
-
-#: src/components/ItemStates.tsx
-msgid "This payment may have been deleted."
-msgstr "This payment may have been deleted."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick at least one person"
@@ -1385,6 +1383,7 @@ msgstr "you borrowed"
 msgid "You borrowed <0>{positionAmount}</0>"
 msgstr "You borrowed <0>{positionAmount}</0>"
 
+#: src/features/add/contactOptions.ts
 #: src/features/contacts/AddContactPage.tsx
 msgid "You can’t add yourself as a contact."
 msgstr "You can’t add yourself as a contact."
@@ -1401,9 +1400,9 @@ msgstr "You can’t see this payment"
 msgid "you lent"
 msgstr "you lent"
 
-#: src/features/add/splitModel.ts
-msgid "You lent"
-msgstr "You lent"
+#: src/features/add/ExpenseForm.tsx
+msgid "You lent <0>{amount}</0>"
+msgstr "You lent <0>{amount}</0>"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "You lent <0>{positionAmount}</0>"
@@ -1433,9 +1432,9 @@ msgstr "You owe {name}"
 msgid "You owe {name} {amount} now."
 msgstr "You owe {name} {amount} now."
 
-#: src/features/add/splitModel.ts
-msgid "You owe {payerName}"
-msgstr "You owe {payerName}"
+#: src/features/add/ExpenseForm.tsx
+msgid "You owe {payerName} <0>{amount}</0>"
+msgstr "You owe {payerName} <0>{amount}</0>"
 
 #: src/features/add/splitModel.ts
 msgid "You owe it all"

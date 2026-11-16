@@ -1,7 +1,6 @@
 import { plural, t } from '@lingui/core/macro'
 import type { ExpenseResponse, PersonRef, SplitType } from '@/api/types'
-import { isZeroAmount, sumAmounts, type BalanceDirection } from '@/lib/money'
-import { trimDecimal } from '@/lib/decimal'
+import { formatDecimal, isZeroAmount, sumAmounts, type BalanceDirection } from '@/lib/money'
 import { joinNames, nameForViewer, peopleOtherThan } from '@/lib/person'
 
 export type ExpensePosition = {
@@ -29,11 +28,8 @@ export function expensePosition(expense: ExpenseResponse, viewerId: number): Exp
 export function splitHeading(expense: ExpenseResponse): string {
   switch (expense.splitType) {
     case 'equal': {
-      const count = expense.debts.length
-      return plural(count, {
-        one: 'Split equally between #',
-        other: 'Split equally between #',
-      })
+      const peopleCount = expense.debts.length
+      return plural(peopleCount, { other: 'Split equally between #' })
     }
     case 'exact':
       return t`Split by amounts`
@@ -80,12 +76,11 @@ function splitValueLabel(splitType: SplitType, splitValue: string | null): strin
   if (splitValue === null) {
     return null
   }
-  const value = trimDecimal(splitValue)
   if (splitType === 'percentage') {
-    return `${value}%`
+    return `${formatDecimal(splitValue)}%`
   }
   if (splitType === 'shares') {
-    const shareCount = Number(value)
+    const shareCount = Number(splitValue)
     return plural(shareCount, { one: '# share', other: '# shares' })
   }
   return null

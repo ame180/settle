@@ -12,7 +12,8 @@ import './index.css'
 
 const queryClient = createQueryClient()
 
-await activateLocale(resolveLocale())
+// English is bundled, so a Polish catalog that fails to load still leaves a working app.
+await activateLocale(resolveLocale()).catch(() => activateLocale('en'))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

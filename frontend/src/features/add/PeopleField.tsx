@@ -3,7 +3,6 @@ import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { UserPlus, X } from 'lucide-react'
-import { ApiError } from '@/api/client'
 import { useAddContact } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
 import { useCloseOnBack } from '@/lib/backLayers'
@@ -11,7 +10,12 @@ import { PersonAvatar } from '@/components/PersonAvatar'
 import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { ContactOption } from './ContactOption'
-import { looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
+import {
+  addContactErrorMessage,
+  looksLikeEmail,
+  recentContacts,
+  searchContacts,
+} from './contactOptions'
 import { FieldError } from '@/components/FieldError'
 
 const RECENT_LIMIT = 6
@@ -153,9 +157,7 @@ export function PeopleField({
           }
         },
         onError: (mutationError) => {
-          const message =
-            (mutationError instanceof ApiError && mutationError.violations[0]?.title) ||
-            t`Couldn’t add this contact. Try again.`
+          const message = addContactErrorMessage(mutationError)
           // The list it was added from is gone, so say it where the user can still see it.
           if (visitRef.current !== visit) {
             toast.error(message)

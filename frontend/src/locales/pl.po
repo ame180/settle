@@ -7,11 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: pl\n"
 
-#. placeholder {0}: settled.length
-#: src/features/contacts/ContactsPage.tsx
-msgid "{0, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
-msgstr "{0, plural, one {Pokaż # rozliczony kontakt} few {Pokaż # rozliczone kontakty} many {Pokaż # rozliczonych kontaktów} other {Pokaż # rozliczonego kontaktu}}"
-
 #: src/features/add/PaymentForm.tsx
 msgid "{amount} payment recorded."
 msgstr "Zapisano płatność {amount}."
@@ -28,17 +23,13 @@ msgstr "{assignedNumber} z {totalAmount}"
 msgid "{assignedPercent}% of 100%"
 msgstr "{assignedPercent}% ze 100%"
 
-#: src/features/detail/expenseSummary.ts
-msgid "{count, plural, one {Split equally between #} other {Split equally between #}}"
-msgstr "{count, plural, one {Po równo na # osobę} few {Po równo na # osoby} many {Po równo na # osób} other {Po równo na # osoby}}"
-
 #: src/features/activity/ActivityRows.tsx
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
 
-#: src/features/add/splitModel.ts
-msgid "{debtorName} owes you"
-msgstr "{debtorName} ma ci do oddania"
+#: src/features/add/ExpenseForm.tsx
+msgid "{debtorName} owes you <0>{amount}</0>"
+msgstr "{debtorName} ma ci do oddania <0>{amount}</0>"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differenceAmount} left to assign"
@@ -121,6 +112,7 @@ msgid "{peopleCount, plural, other {Split equally between {sharingCount} of #}}"
 msgstr "{peopleCount, plural, one {Po równo na {sharingCount} z # osoby} few {Po równo na {sharingCount} z # osób} many {Po równo na {sharingCount} z # osób} other {Po równo na {sharingCount} z # osoby}}"
 
 #: src/features/add/splitModel.ts
+#: src/features/detail/expenseSummary.ts
 msgid "{peopleCount, plural, other {Split equally between #}}"
 msgstr "{peopleCount, plural, one {Po równo na # osobę} few {Po równo na # osoby} many {Po równo na # osób} other {Po równo na # osoby}}"
 
@@ -147,6 +139,10 @@ msgstr "{personName}, procent"
 #: src/features/add/ExpenseForm.tsx
 msgid "{recipients} will see your changes."
 msgstr "Zmiany będą widoczne dla: {recipients}."
+
+#: src/features/contacts/ContactsPage.tsx
+msgid "{settledCount, plural, one {Show # settled-up contact} other {Show # settled-up contacts}}"
+msgstr "{settledCount, plural, one {Pokaż # rozliczony kontakt} few {Pokaż # rozliczone kontakty} many {Pokaż # rozliczonych kontaktów} other {Pokaż # rozliczonego kontaktu}}"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{shareCount, plural, one {{personName}: # share} other {{personName}: # shares}}"
@@ -431,7 +427,7 @@ msgstr "Nie udało się dodać kontaktu. Spróbuj ponownie."
 msgid "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
 msgstr "Nie udało się dodać wydatku. Niczego nie zapisano, a wpisane dane są nadal tutaj. Spróbuj ponownie."
 
-#: src/features/add/PeopleField.tsx
+#: src/features/add/contactOptions.ts
 msgid "Couldn’t add this contact. Try again."
 msgstr "Nie udało się dodać tego kontaktu. Spróbuj ponownie."
 
@@ -737,6 +733,16 @@ msgstr "Nieprawidłowy e-mail lub hasło."
 msgid "It disappears for {names} too, and balances change. This can’t be undone."
 msgstr "Zniknie też dla: {names}, a salda się zmienią. Tego nie można cofnąć."
 
+#: src/components/ItemStates.tsx
+msgctxt "expense"
+msgid "It may have been deleted."
+msgstr "Ten wydatek mógł zostać usunięty."
+
+#: src/components/ItemStates.tsx
+msgctxt "payment"
+msgid "It may have been deleted."
+msgstr "Ta płatność mogła zostać usunięta."
+
 #: src/features/add/DiscardSheet.tsx
 msgid "Keep editing"
 msgstr "Edytuj dalej"
@@ -900,7 +906,7 @@ msgstr "Nikt nie ma udziału"
 msgid "Nobody owes you and you owe nobody."
 msgstr "Nikt nie ma ci nic do oddania, a ty nikomu."
 
-#: src/features/add/splitModel.ts
+#: src/features/add/ExpenseForm.tsx
 msgid "Nobody owes you for this"
 msgstr "Nikt nie ma ci nic do oddania za ten wydatek"
 
@@ -1236,16 +1242,8 @@ msgid "This expense doesn’t exist"
 msgstr "Ten wydatek nie istnieje"
 
 #: src/components/ItemStates.tsx
-msgid "This expense may have been deleted."
-msgstr "Ten wydatek mógł zostać usunięty."
-
-#: src/components/ItemStates.tsx
 msgid "This payment doesn’t exist"
 msgstr "Ta płatność nie istnieje"
-
-#: src/components/ItemStates.tsx
-msgid "This payment may have been deleted."
-msgstr "Ta płatność mogła zostać usunięta."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick at least one person"
@@ -1385,6 +1383,7 @@ msgstr "masz do oddania"
 msgid "You borrowed <0>{positionAmount}</0>"
 msgstr "Masz do oddania <0>{positionAmount}</0>"
 
+#: src/features/add/contactOptions.ts
 #: src/features/contacts/AddContactPage.tsx
 msgid "You can’t add yourself as a contact."
 msgstr "Nie możesz dodać siebie jako kontaktu."
@@ -1401,9 +1400,9 @@ msgstr "Nie masz dostępu do tej płatności"
 msgid "you lent"
 msgstr "należy ci się"
 
-#: src/features/add/splitModel.ts
-msgid "You lent"
-msgstr "Należy ci się"
+#: src/features/add/ExpenseForm.tsx
+msgid "You lent <0>{amount}</0>"
+msgstr "Należy ci się <0>{amount}</0>"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "You lent <0>{positionAmount}</0>"
@@ -1433,9 +1432,9 @@ msgstr "{name} ma od ciebie dostać"
 msgid "You owe {name} {amount} now."
 msgstr "Teraz {name} ma od ciebie dostać {amount}."
 
-#: src/features/add/splitModel.ts
-msgid "You owe {payerName}"
-msgstr "{payerName} ma od ciebie dostać"
+#: src/features/add/ExpenseForm.tsx
+msgid "You owe {payerName} <0>{amount}</0>"
+msgstr "{payerName} ma od ciebie dostać <0>{amount}</0>"
 
 #: src/features/add/splitModel.ts
 msgid "You owe it all"

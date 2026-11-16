@@ -66,7 +66,7 @@ export function ExpenseRow({
   )
 }
 
-/** A transfer as a slim one-line note: "Anna paid you 150.00 zł". No tile, no amount column. */
+/** A transfer as a slim one-line note: "Anna paid you PLN 150.00". No tile, no amount column. */
 export function SettlementRow({ item, viewerId, showDate = false, now }: RowProps) {
   const payer = item.payer ?? item.payee
   const side = transferSide(payer, item.payee, viewerId)

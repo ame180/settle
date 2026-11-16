@@ -14,44 +14,43 @@ import { msg } from '@lingui/core/macro'
 import type { ExpenseCategory } from '@/api/types'
 
 export type CategoryInfo = {
-  /** Translatable name; translate it with `i18n._(message)`, or use `label` / `categoryLabel`. */
+  /** Translate with `categoryLabel`. */
   message: MessageDescriptor
-  /** The name in the active locale, translated each time it is read. */
-  readonly label: string
   icon: LucideIcon
   /** Solid tile fill; a full class name so Tailwind picks it up. */
   tileClassName: string
 }
 
-function category(
-  message: MessageDescriptor,
-  icon: LucideIcon,
-  tileClassName: string,
-): CategoryInfo {
-  return {
-    message,
-    get label() {
-      return i18n._(message)
-    },
-    icon,
-    tileClassName,
-  }
-}
-
 export const categoryInfo: Record<ExpenseCategory, CategoryInfo> = {
-  groceries: category(msg`Groceries`, ShoppingCart, 'bg-category-groceries'),
-  food_and_drink: category(msg`Food & drink`, Utensils, 'bg-category-food-and-drink'),
-  transport: category(msg`Transport`, Car, 'bg-category-transport'),
-  home_and_bills: category(msg`Home & bills`, House, 'bg-category-home-and-bills'),
-  entertainment: category(msg`Entertainment`, Ticket, 'bg-category-entertainment'),
-  gifts: category(msg`Gifts`, Gift, 'bg-category-gifts'),
-  health: category(msg`Health`, Pill, 'bg-category-health'),
-  general: category(msg`General`, Receipt, 'bg-category-general'),
+  groceries: {
+    message: msg`Groceries`,
+    icon: ShoppingCart,
+    tileClassName: 'bg-category-groceries',
+  },
+  food_and_drink: {
+    message: msg`Food & drink`,
+    icon: Utensils,
+    tileClassName: 'bg-category-food-and-drink',
+  },
+  transport: { message: msg`Transport`, icon: Car, tileClassName: 'bg-category-transport' },
+  home_and_bills: {
+    message: msg`Home & bills`,
+    icon: House,
+    tileClassName: 'bg-category-home-and-bills',
+  },
+  entertainment: {
+    message: msg`Entertainment`,
+    icon: Ticket,
+    tileClassName: 'bg-category-entertainment',
+  },
+  gifts: { message: msg`Gifts`, icon: Gift, tileClassName: 'bg-category-gifts' },
+  health: { message: msg`Health`, icon: Pill, tileClassName: 'bg-category-health' },
+  general: { message: msg`General`, icon: Receipt, tileClassName: 'bg-category-general' },
 }
 
 /** The category's name in the active locale. */
 export function categoryLabel(expenseCategory: ExpenseCategory): string {
-  return categoryInfo[expenseCategory].label
+  return i18n._(categoryInfo[expenseCategory].message)
 }
 
 /** Picker order, as on the approved category palette. */

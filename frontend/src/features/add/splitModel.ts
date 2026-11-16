@@ -1,6 +1,6 @@
 import { plural, t } from '@lingui/core/macro'
 import type { ExpenseDebtRequest, PersonRef, SplitType } from '@/api/types'
-import { formatGrosze, fromGrosze, parseAmountInput, toGrosze } from '@/lib/money'
+import { formatDecimal, formatGrosze, fromGrosze, parseAmountInput, toGrosze } from '@/lib/money'
 import { trimDecimal } from '@/lib/decimal'
 import { getShortName, joinNames } from '@/lib/person'
 import { calculateSplit, type SplitDebtInput } from '@/lib/split'
@@ -387,7 +387,7 @@ export function describeCustomSplit(
         ? raw
         : split.type === 'exact'
           ? formatGrosze(toGrosze(parsed))
-          : `${trimDecimal(parsed)}${split.type === 'percentage' ? '%' : ''}`
+          : `${formatDecimal(parsed)}${split.type === 'percentage' ? '%' : ''}`
     return `${nameOf(people, person.id, meId)} ${value}`
   })
 
@@ -399,15 +399,6 @@ export function describeCustomSplit(
     return t`By % · ${values}`
   }
   return t`By shares · ${values}`
-}
-
-export type Outcome = {
-  /** "Anna owes you", "You owe Anna", "You lent". */
-  lead: string
-  grosze: bigint
-  tone: 'positive' | 'negative' | 'neutral'
-  /** "Anna, Ewa and Tomasz owe you 60.00 zł each". */
-  detail: string | null
 }
 
 /** What an expense means for the user, before it's put into words. */
@@ -454,44 +445,12 @@ export function classifyOutcome(
   }
 }
 
-/** The live line under the amount: what this expense means for the user. */
-export function describeOutcome(
-  shares: Map<number, bigint>,
-  payerId: number,
-  people: NamedPerson[],
-  meId: number,
-): Outcome {
-  const outcome = classifyOutcome(shares, payerId, people, meId)
-  switch (outcome.kind) {
-    case 'owe-payer': {
-      const { payerName } = outcome
-      return {
-        lead: t`You owe ${payerName}`,
-        grosze: outcome.grosze,
-        tone: 'negative',
-        detail: null,
-      }
-    }
-    case 'owed-by-one': {
-      const { debtorName } = outcome
-      return {
-        lead: t`${debtorName} owes you`,
-        grosze: outcome.grosze,
-        tone: 'positive',
-        detail: null,
-      }
-    }
-    case 'lent': {
-      const names = joinNames(outcome.debtorNames)
-      const each = outcome.eachGrosze === null ? null : formatGrosze(outcome.eachGrosze)
-      return {
-        lead: t`You lent`,
-        grosze: outcome.grosze,
-        tone: 'positive',
-        detail: each === null ? null : t`${names} owe you ${each} each`,
-      }
-    }
-    case 'nobody-owes':
-      return { lead: t`Nobody owes you for this`, grosze: 0n, tone: 'neutral', detail: null }
+/** "Anna, Ewa and Tomasz owe you PLN 60.00 each", when everyone a user lent to owes the same. */
+export function lentEachDetail(outcome: Extract<OutcomeCase, { kind: 'lent' }>): string | null {
+  if (outcome.eachGrosze === null) {
+    return null
   }
+  const names = joinNames(outcome.debtorNames)
+  const each = formatGrosze(outcome.eachGrosze)
+  return t`${names} owe you ${each} each`
 }

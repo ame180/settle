@@ -1,3 +1,4 @@
+import { ApiError } from '@/api/client'
 import { t } from '@lingui/core/macro'
 import type { ContactListItem } from '@/api/types'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
@@ -36,7 +37,7 @@ export function looksLikeEmail(text: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())
 }
 
-/** "Owes you 192.92 zł", "You owe 120.00 zł", "Settled up". */
+/** "Owes you PLN 192.92", "You owe PLN 120.00", "Settled up". */
 export function balanceLine(contact: ContactListItem): string {
   const balance = findPlnAmount(contact.balances)
   if (balance === null) {
@@ -45,4 +46,19 @@ export function balanceLine(contact: ContactListItem): string {
 
   const amount = formatPln(balance)
   return isNegativeAmount(balance) ? t`You owe ${amount}` : t`Owes you ${amount}`
+}
+
+/** Why adding a contact by email failed, for the toast or inline error. */
+export function addContactErrorMessage(error: Error): string {
+  if (error instanceof ApiError) {
+    const violation = error.violations[0]
+    if (violation) {
+      return violation.title
+    }
+    // A 400 without violations is the API refusing your own email.
+    if (error.status === 400) {
+      return t`You can’t add yourself as a contact.`
+    }
+  }
+  return t`Couldn’t add this contact. Try again.`
 }

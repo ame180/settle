@@ -14,7 +14,11 @@ function isSupportedLocale(language: string): language is Locale {
 }
 
 /** The first browser language we have a catalog for, matched on its base tag ("pl-PL" → "pl"). */
-export function resolveLocale(languages: readonly string[] = navigator.languages): Locale {
+export function resolveLocale(
+  languages: readonly string[] = navigator.languages.length > 0
+    ? navigator.languages
+    : [navigator.language],
+): Locale {
   for (const language of languages) {
     const baseLanguage = language.toLowerCase().split('-')[0]
     if (isSupportedLocale(baseLanguage)) {

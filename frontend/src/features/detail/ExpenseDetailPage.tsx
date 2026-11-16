@@ -6,7 +6,7 @@ import { useDeleteExpense, useExpense } from '@/api/expenses'
 import type { ExpenseResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
-import { categoryInfo } from '@/lib/categories'
+import { categoryLabel } from '@/lib/categories'
 import { formatShortDate } from '@/lib/dates'
 import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
@@ -111,7 +111,7 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
           {position.direction === 'none' && <Trans>No balance</Trans>}
         </p>
         <p className="text-[13px] text-muted-foreground">
-          {formatShortDate(expense.occurredOn)} · {categoryInfo[expense.category].label}
+          {formatShortDate(expense.occurredOn)} · {categoryLabel(expense.category)}
         </p>
       </section>
 
