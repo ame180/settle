@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { LoaderCircle } from 'lucide-react'
+import { useLingui } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -36,10 +37,11 @@ export function ConfirmSheet({
   description,
   confirmLabel,
   onConfirm,
-  cancelLabel = 'Cancel',
+  cancelLabel,
   pending = false,
   pendingLabel,
 }: ConfirmSheetProps) {
+  const { t } = useLingui()
   return (
     <Sheet open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
@@ -64,7 +66,7 @@ export function ConfirmSheet({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            {cancelLabel}
+            {cancelLabel ?? t`Cancel`}
           </Button>
         </SheetFooter>
       </SheetContent>

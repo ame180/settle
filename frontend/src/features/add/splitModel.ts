@@ -1,3 +1,4 @@
+import { plural, t } from '@lingui/core/macro'
 import type { ExpenseDebtRequest, PersonRef, SplitType } from '@/api/types'
 import { formatGrosze, fromGrosze, parseAmountInput, toGrosze } from '@/lib/money'
 import { trimDecimal } from '@/lib/decimal'
@@ -333,7 +334,7 @@ type NamedPerson = Pick<PersonRef, 'id' | 'displayName'>
 
 function nameOf(people: NamedPerson[], id: number, meId: number): string {
   if (id === meId) {
-    return 'You'
+    return t`You`
   }
 
   return getShortName(people.find((person) => person.id === id)?.displayName ?? '')
@@ -342,25 +343,30 @@ function nameOf(people: NamedPerson[], id: number, meId: number): string {
 /** What the split card says: "Split equally", "Anna owes it all", "Split by amounts"… */
 export function describeSplit(split: SplitDraft, people: NamedPerson[], meId: number): string {
   if (split.type === 'exact') {
-    return 'Split by amounts'
+    return t`Split by amounts`
   }
   if (split.type === 'percentage') {
-    return 'Split by percentages'
+    return t`Split by percentages`
   }
   if (split.type === 'shares') {
-    return 'Split by shares'
+    return t`Split by shares`
   }
 
   const sharing = people.filter((person) => !split.excluded.includes(person.id))
-  if (sharing.length === people.length) {
-    return people.length === 2 ? 'Split equally' : `Split equally between ${people.length}`
+  const peopleCount = people.length
+  if (sharing.length === peopleCount) {
+    return peopleCount === 2
+      ? t`Split equally`
+      : plural(peopleCount, { other: 'Split equally between #' })
   }
   if (sharing.length === 1) {
     const only = sharing[0].id
-    return only === meId ? 'You owe it all' : `${nameOf(people, only, meId)} owes it all`
+    const name = nameOf(people, only, meId)
+    return only === meId ? t`You owe it all` : t`${name} owes it all`
   }
 
-  return `Split equally between ${sharing.length} of ${people.length}`
+  const sharingCount = sharing.length
+  return plural(peopleCount, { other: `Split equally between ${sharingCount} of #` })
 }
 
 /** The 1:1 card's caption for a custom split: "By shares · You 2, Anna 1". */
@@ -373,7 +379,6 @@ export function describeCustomSplit(
     return describeSplit(split, people, meId)
   }
 
-  const label = { exact: 'By amounts', percentage: 'By %', shares: 'By shares' }[split.type]
   const parts = people.map((person) => {
     const raw = split.values[person.id]?.trim() || '0'
     const parsed = parseAmountInput(raw)
@@ -386,7 +391,14 @@ export function describeCustomSplit(
     return `${nameOf(people, person.id, meId)} ${value}`
   })
 
-  return `${label} · ${parts.join(', ')}`
+  const values = parts.join(', ')
+  if (split.type === 'exact') {
+    return t`By amounts · ${values}`
+  }
+  if (split.type === 'percentage') {
+    return t`By % · ${values}`
+  }
+  return t`By shares · ${values}`
 }
 
 export type Outcome = {
@@ -398,20 +410,24 @@ export type Outcome = {
   detail: string | null
 }
 
-/** The live line under the amount: what this expense means for the user. */
-export function describeOutcome(
+/** What an expense means for the user, before it's put into words. */
+export type OutcomeCase =
+  | { kind: 'owe-payer'; payerName: string; grosze: bigint }
+  | { kind: 'owed-by-one'; debtorName: string; grosze: bigint }
+  | { kind: 'lent'; grosze: bigint; debtorNames: string[]; eachGrosze: bigint | null }
+  | { kind: 'nobody-owes' }
+
+export function classifyOutcome(
   shares: Map<number, bigint>,
   payerId: number,
   people: NamedPerson[],
   meId: number,
-): Outcome {
+): OutcomeCase {
   if (payerId !== meId) {
-    const myShare = shares.get(meId) ?? 0n
     return {
-      lead: `You owe ${nameOf(people, payerId, meId)}`,
-      grosze: myShare,
-      tone: 'negative',
-      detail: null,
+      kind: 'owe-payer',
+      payerName: nameOf(people, payerId, meId),
+      grosze: shares.get(meId) ?? 0n,
     }
   }
 
@@ -419,26 +435,63 @@ export function describeOutcome(
     (person) => person.id !== meId && (shares.get(person.id) ?? 0n) > 0n,
   )
   if (debtors.length === 0) {
-    return { lead: 'Nobody owes you for this', grosze: 0n, tone: 'neutral', detail: null }
+    return { kind: 'nobody-owes' }
   }
   if (debtors.length === 1) {
     return {
-      lead: `${nameOf(people, debtors[0].id, meId)} owes you`,
+      kind: 'owed-by-one',
+      debtorName: nameOf(people, debtors[0].id, meId),
       grosze: shares.get(debtors[0].id) ?? 0n,
-      tone: 'positive',
-      detail: null,
     }
   }
 
   const amounts = debtors.map((person) => shares.get(person.id) ?? 0n)
-  const lent = amounts.reduce((sum, amount) => sum + amount, 0n)
-  const names = joinNames(debtors.map((person) => nameOf(people, person.id, meId)))
-  const allSame = amounts.every((amount) => amount === amounts[0])
-
   return {
-    lead: 'You lent',
-    grosze: lent,
-    tone: 'positive',
-    detail: allSame ? `${names} owe you ${formatGrosze(amounts[0])} each` : null,
+    kind: 'lent',
+    grosze: amounts.reduce((sum, amount) => sum + amount, 0n),
+    debtorNames: debtors.map((person) => nameOf(people, person.id, meId)),
+    eachGrosze: amounts.every((amount) => amount === amounts[0]) ? amounts[0] : null,
+  }
+}
+
+/** The live line under the amount: what this expense means for the user. */
+export function describeOutcome(
+  shares: Map<number, bigint>,
+  payerId: number,
+  people: NamedPerson[],
+  meId: number,
+): Outcome {
+  const outcome = classifyOutcome(shares, payerId, people, meId)
+  switch (outcome.kind) {
+    case 'owe-payer': {
+      const { payerName } = outcome
+      return {
+        lead: t`You owe ${payerName}`,
+        grosze: outcome.grosze,
+        tone: 'negative',
+        detail: null,
+      }
+    }
+    case 'owed-by-one': {
+      const { debtorName } = outcome
+      return {
+        lead: t`${debtorName} owes you`,
+        grosze: outcome.grosze,
+        tone: 'positive',
+        detail: null,
+      }
+    }
+    case 'lent': {
+      const names = joinNames(outcome.debtorNames)
+      const each = outcome.eachGrosze === null ? null : formatGrosze(outcome.eachGrosze)
+      return {
+        lead: t`You lent`,
+        grosze: outcome.grosze,
+        tone: 'positive',
+        detail: each === null ? null : t`${names} owe you ${each} each`,
+      }
+    }
+    case 'nobody-owes':
+      return { lead: t`Nobody owes you for this`, grosze: 0n, tone: 'neutral', detail: null }
   }
 }

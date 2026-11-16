@@ -1,4 +1,5 @@
 import { useId, useRef, type ReactNode, type RefObject } from 'react'
+import { Trans } from '@lingui/react/macro'
 import { parseAmountInput, sanitizeAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { FieldError } from '@/components/FieldError'
@@ -21,7 +22,7 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
   return (
     <div ref={blockRef} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
       <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
-        Amount
+        <Trans>Amount</Trans>
       </label>
       <div
         className={cn(

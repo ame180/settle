@@ -1,23 +1,27 @@
 import { useEffect, useRef } from 'react'
 import { RefreshCw } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import type { useActivity } from '@/api/activity'
 import { Spinner } from '@/components/Spinner'
 import { Button } from '@/components/ui/button'
 
 /** The end of an infinite activity list: spinner, retry after a failed page, or the scroll sentinel. */
 export function ActivityListFooter({ query }: { query: ReturnType<typeof useActivity> }) {
+  const { t } = useLingui()
   const fetchNextPage = () => query.fetchNextPage({ cancelRefetch: false })
 
   if (query.isFetchingNextPage) {
-    return <Spinner label="Loading more activity" className="py-5" />
+    return <Spinner label={t`Loading more activity`} className="py-5" />
   }
   if (query.isFetchNextPageError) {
     return (
       <div role="alert" className="flex flex-col items-center gap-3 px-4 pt-6">
-        <p className="text-sm text-muted-foreground">Couldn't load more activity.</p>
+        <p className="text-sm text-muted-foreground">
+          <Trans>Couldn't load more activity.</Trans>
+        </p>
         <Button variant="outline" size="pill" onClick={fetchNextPage}>
           <RefreshCw aria-hidden="true" />
-          Try again
+          <Trans>Try again</Trans>
         </Button>
       </div>
     )

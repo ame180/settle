@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useMe } from '@/api/auth'
 
@@ -7,7 +8,9 @@ export function RequireAuth() {
 
   if (isPending) {
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground">Loading…</div>
+      <div className="flex h-full items-center justify-center text-muted-foreground">
+        <Trans>Loading…</Trans>
+      </div>
     )
   }
 

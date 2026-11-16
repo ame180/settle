@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { TestI18nProvider } from '@/test/i18n'
 import { SplitEditorSheet } from './SplitEditorSheet'
 import { defaultSplit } from './splitModel'
 
@@ -12,16 +13,18 @@ const others = [
 
 function renderEditor(onDone = vi.fn()) {
   render(
-    <SplitEditorSheet
-      open
-      onOpenChange={() => {}}
-      me={me}
-      others={others}
-      total="240.00"
-      split={defaultSplit(me.id)}
-      payerListOpen={false}
-      onDone={onDone}
-    />,
+    <TestI18nProvider>
+      <SplitEditorSheet
+        open
+        onOpenChange={() => {}}
+        me={me}
+        others={others}
+        total="240.00"
+        split={defaultSplit(me.id)}
+        payerListOpen={false}
+        onDone={onDone}
+      />
+    </TestI18nProvider>,
   )
   return onDone
 }

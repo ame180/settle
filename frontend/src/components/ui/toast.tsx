@@ -1,5 +1,6 @@
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import { Toaster as Sonner } from 'sonner'
+import { useLingui } from '@lingui/react/macro'
 
 // Mounted once in main.tsx; show toasts with `toast()` / `toast.success()` from 'sonner'.
 // Sits above the bottom nav and the Add expense button, as on the approved toast boards.
@@ -8,8 +9,11 @@ const bottomOffset = 'calc(9.25rem + env(safe-area-inset-bottom))'
 const columnInset = 'calc(var(--app-inset-x) + 1rem)'
 
 function Toaster() {
+  const { t } = useLingui()
+
   return (
     <Sonner
+      containerAriaLabel={t`Notifications`}
       position="bottom-center"
       offset={{ bottom: bottomOffset }}
       mobileOffset={{ bottom: bottomOffset, left: columnInset, right: columnInset }}

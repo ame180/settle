@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Banknote } from 'lucide-react'
 import type { ActivityItem } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
@@ -8,11 +9,12 @@ import { SignedAmount } from '@/components/SignedAmount'
 import { balanceDirection, formatMoney } from '@/lib/money'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { nameForViewer } from '@/lib/person'
-import { activityItemPath, balanceDirectionLabel, describeTransfer } from './activityItems'
+import { activityItemPath, balanceDirectionLabel, transferSide } from './activityItems'
 
 const rowLinkClassName =
   'flex w-full items-center px-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset active:bg-muted'
+
+const amountClassName = 'font-semibold whitespace-nowrap tabular-nums'
 
 type RowProps = {
   item: ActivityItem
@@ -34,9 +36,12 @@ export function ExpenseRow({
   showDate = false,
   now,
 }: ExpenseRowProps) {
+  const { t } = useLingui()
   const { payee } = item
-  const payerLabel = nameForViewer(payee, viewerId)
-  const subline = `${payerLabel} paid ${formatMoney(item.amount, item.currency)}`
+  const amount = formatMoney(item.amount, item.currency)
+  const payerName = payee.displayName
+  const subline = payee.id === viewerId ? t`You paid ${amount}` : t`${payerName} paid ${amount}`
+  const date = formatShortDate(item.occurredOn, now)
 
   return (
     <Link to={activityItemPath(item)} className={cn(rowLinkClassName, 'min-h-17 gap-3.5 py-2.5')}>
@@ -48,12 +53,12 @@ export function ExpenseRow({
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate">{item.title}</span>{' '}
         <span className="truncate text-[13px] text-muted-foreground">
-          {showDate ? `${formatShortDate(item.occurredOn, now)} · ${subline}` : subline}
+          {showDate ? t`${date} · ${subline}` : subline}
         </span>
       </span>{' '}
       <SignedAmount
         direction={balanceDirection(item.value)}
-        label={balanceDirectionLabel[balanceDirection(item.value)]}
+        label={balanceDirectionLabel(balanceDirection(item.value))}
       >
         {formatMoney(item.value, item.currency)}
       </SignedAmount>
@@ -63,7 +68,11 @@ export function ExpenseRow({
 
 /** A transfer as a slim one-line note: "Anna paid you 150.00 zł". No tile, no amount column. */
 export function SettlementRow({ item, viewerId, showDate = false, now }: RowProps) {
-  const { actor, verb } = describeTransfer(item, viewerId)
+  const payer = item.payer ?? item.payee
+  const side = transferSide(payer, item.payee, viewerId)
+  const payerName = payer.displayName
+  const payeeName = item.payee.displayName
+  const amount = formatMoney(item.amount, item.currency)
 
   return (
     <Link
@@ -80,10 +89,24 @@ export function SettlementRow({ item, viewerId, showDate = false, now }: RowProp
         </span>
       </span>
       <span className="min-w-0 flex-1 truncate">
-        <span className="font-semibold">{actor}</span> {verb}{' '}
-        <span className="font-semibold whitespace-nowrap tabular-nums">
-          {formatMoney(item.amount, item.currency)}
-        </span>
+        {side === 'viewer-paid' && (
+          <Trans>
+            <span className="font-semibold">You</span> paid {payeeName}{' '}
+            <span className={amountClassName}>{amount}</span>
+          </Trans>
+        )}
+        {side === 'viewer-received' && (
+          <Trans>
+            <span className="font-semibold">{payerName}</span> paid you{' '}
+            <span className={amountClassName}>{amount}</span>
+          </Trans>
+        )}
+        {side === 'others' && (
+          <Trans>
+            <span className="font-semibold">{payerName}</span> paid {payeeName}{' '}
+            <span className={amountClassName}>{amount}</span>
+          </Trans>
+        )}
       </span>
       {showDate && (
         <span className="shrink-0 text-xs text-muted-foreground">

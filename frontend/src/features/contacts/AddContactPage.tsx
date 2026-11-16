@@ -2,6 +2,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useAddContact } from '@/api/contacts'
 import { ApiError } from '@/api/client'
 import { BackLink } from '@/components/BackLink'
@@ -14,8 +16,14 @@ import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
 
 const addContactSchema = z.object({
-  email: z.string().trim().pipe(z.email('Enter a valid email address.')),
-  nickname: z.string().trim().max(64, 'Nickname can be at most 64 characters.'),
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email({ error: () => t`Enter a valid email address.` })),
+  nickname: z
+    .string()
+    .trim()
+    .max(64, { error: () => t`Nickname can be at most 64 characters.` }),
 })
 
 type AddContactValues = z.infer<typeof addContactSchema>
@@ -27,6 +35,7 @@ function isFormField(propertyPath: string): propertyPath is (typeof formFields)[
 }
 
 export function AddContactPage() {
+  const { t } = useLingui()
   const addContactMutation = useAddContact()
   const { goBack } = useGoBack('/')
 
@@ -42,12 +51,13 @@ export function AddContactPage() {
       { email: values.email, nickname: values.nickname === '' ? null : values.nickname },
       {
         onSuccess: (contact) => {
-          toast.success(`${contact.person.displayName} added to your contacts`)
+          const displayName = contact.person.displayName
+          toast.success(t`${displayName} added to your contacts`)
           goBack()
         },
         onError: (error) => {
           if (!(error instanceof ApiError) || error.status !== 400) {
-            form.setError('root', { message: "Couldn't add contact. Try again." })
+            form.setError('root', { message: t`Couldn't add contact. Try again.` })
             return
           }
 
@@ -72,16 +82,23 @@ export function AddContactPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title="Add contact" leading={<BackLink to="/" label="Back to contacts" />} />
+      <PageHeader
+        title={t`Add contact`}
+        leading={<BackLink to="/" label={t`Back to contacts`} />}
+      />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <p className="text-[15px] text-muted-foreground">
-          Not on Settle yet? They can claim their account later by signing up with this email.
+          <Trans>
+            Not on Settle yet? They can claim their account later by signing up with this email.
+          </Trans>
         </p>
 
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="contact-email">Email</Label>
+            <Label htmlFor="contact-email">
+              <Trans>Email</Trans>
+            </Label>
             <Input
               id="contact-email"
               type="email"
@@ -98,11 +115,13 @@ export function AddContactPage() {
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="contact-nickname">
-              Nickname <span className="font-normal text-muted-foreground">(optional)</span>
+              <Trans>
+                Nickname <span className="font-normal text-muted-foreground">(optional)</span>
+              </Trans>
             </Label>
             <Input
               id="contact-nickname"
-              placeholder="e.g. Jan"
+              placeholder={t`e.g. Jan`}
               readOnly={isPending}
               className={inputClassName}
               aria-invalid={!!errors.nickname}
@@ -115,15 +134,20 @@ export function AddContactPage() {
               <FieldError id="contact-nickname-error" message={errors.nickname.message} />
             ) : (
               <p id="contact-nickname-hint" className="text-[13px] text-muted-foreground">
-                Only you see this name.
+                <Trans>Only you see this name.</Trans>
               </p>
             )}
           </div>
 
           {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-          <PrimaryButton type="submit" pending={isPending} pendingLabel="Adding…" className="mt-2">
-            Add contact
+          <PrimaryButton
+            type="submit"
+            pending={isPending}
+            pendingLabel={t`Adding…`}
+            className="mt-2"
+          >
+            <Trans>Add contact</Trans>
           </PrimaryButton>
         </form>
       </div>

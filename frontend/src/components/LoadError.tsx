@@ -1,4 +1,5 @@
 import { CircleAlert, RefreshCw } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 
@@ -12,6 +13,7 @@ type LoadErrorProps = {
 
 /** A query that failed to load, with a Try again button. */
 export function LoadError({ title, onRetry, isRetrying, compact }: LoadErrorProps) {
+  const { t } = useLingui()
   return (
     <StateMessage
       compact={compact}
@@ -19,11 +21,11 @@ export function LoadError({ title, onRetry, isRetrying, compact }: LoadErrorProp
       icon={<CircleAlert className="size-7.5" aria-hidden="true" />}
       iconClassName="bg-destructive/10 text-destructive"
       title={title}
-      description="Check your connection and try again."
+      description={t`Check your connection and try again.`}
     >
       <Button variant="outline" size="pill" onClick={onRetry} disabled={isRetrying}>
         <RefreshCw aria-hidden="true" />
-        Try again
+        <Trans>Try again</Trans>
       </Button>
     </StateMessage>
   )

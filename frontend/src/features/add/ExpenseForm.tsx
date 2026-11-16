@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { TriangleAlert } from 'lucide-react'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useContacts } from '@/api/contacts'
 import { useCreateExpense, useUpdateExpense } from '@/api/expenses'
 import type { ExpenseRequest, MeResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
-import { categoryInfo } from '@/lib/categories'
+import { categoryLabel } from '@/lib/categories'
 import { formatGrosze, formatPln } from '@/lib/money'
 import { getShortName, joinNames, ownDisplayName } from '@/lib/person'
 import { Input } from '@/components/ui/input'
@@ -34,6 +36,7 @@ import { SplitEditorSheet } from './SplitEditorSheet'
 import {
   applyQuickChoice,
   checkSplit,
+  classifyOutcome,
   describeCustomSplit,
   describeOutcome,
   describeSplit,
@@ -67,6 +70,7 @@ export function ExpenseForm({
   top,
   onSaved,
 }: ExpenseFormProps) {
+  const { t } = useLingui()
   const { data: contacts } = useContacts()
   const createExpense = useCreateExpense()
   const updateExpense = useUpdateExpense(mode.kind === 'edit' ? mode.expenseId : 0)
@@ -97,7 +101,7 @@ export function ExpenseForm({
   const ids = peopleIds(draft, me.id)
   const total = draftTotal(draft)
   const check = checkSplit(draft.split, ids, total, me.id)
-  const people = [{ id: me.id, displayName: 'You' }, ...draft.others]
+  const people = [{ id: me.id, displayName: t`You` }, ...draft.others]
   const isOneToOne = draft.others.length === 1
   const pending = mutation.isPending
 
@@ -175,12 +179,15 @@ export function ExpenseForm({
   const payerIsMe = draft.split.payerId === me.id
   const payer = people.find((person) => person.id === draft.split.payerId) ?? people[0]
   const cardWarning = errors.split ?? splitError(draft, me.id) ?? undefined
+  const currentCategory = categoryLabel(draft.category)
+  const totalLabel = total ? formatPln(total) : null
   const submitLabel =
     mode.kind === 'edit'
-      ? 'Save changes'
-      : total
-        ? `Add ${formatPln(total)} expense`
-        : 'Add expense'
+      ? t`Save changes`
+      : totalLabel
+        ? t`Add ${totalLabel} expense`
+        : t`Add expense`
+  const recipients = joinNames(draft.others.map((person) => getShortName(person.displayName)))
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
@@ -215,12 +222,12 @@ export function ExpenseForm({
             <>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="expense-title" className="text-sm font-medium">
-                  What was it for?
+                  <Trans>What was it for?</Trans>
                 </label>
                 <div className="flex items-center gap-2.5">
                   <button
                     type="button"
-                    aria-label={`Category: ${categoryInfo[draft.category].label}. Change category`}
+                    aria-label={t`Category: ${currentCategory}. Change category`}
                     onClick={() => setOpenSheet('category')}
                     className="shrink-0 rounded-tile focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
@@ -233,7 +240,7 @@ export function ExpenseForm({
                     autoComplete="off"
                     enterKeyHint="next"
                     maxLength={255}
-                    placeholder="e.g. Pizza, Uber, Groceries"
+                    placeholder={t`e.g. Pizza, Uber, Groceries`}
                     value={draft.title}
                     aria-invalid={!!errors.title}
                     aria-describedby={errors.title ? 'expense-title-error' : undefined}
@@ -281,7 +288,7 @@ export function ExpenseForm({
                     id: payer.id,
                     name: payerIsMe ? ownDisplayName(me) : payer.displayName,
                   }}
-                  payerName={payerIsMe ? 'You' : getShortName(payer.displayName)}
+                  payerName={payerIsMe ? t`You` : getShortName(payer.displayName)}
                   payerAction={
                     isOneToOne
                       ? {
@@ -345,14 +352,13 @@ export function ExpenseForm({
         <FormFooter serverError={serverError}>
           {mode.kind === 'edit' && draft.others.length > 0 && (
             <p className="text-center text-[13px] text-muted-foreground">
-              {joinNames(draft.others.map((person) => getShortName(person.displayName)))} will see
-              your changes.
+              <Trans>{recipients} will see your changes.</Trans>
             </p>
           )}
           <PrimaryButton
             type="submit"
             pending={pending}
-            pendingLabel={mode.kind === 'edit' ? 'Saving…' : 'Adding…'}
+            pendingLabel={mode.kind === 'edit' ? t`Saving…` : t`Adding…`}
           >
             {submitLabel}
           </PrimaryButton>
@@ -396,23 +402,36 @@ function OutcomeLine({
   people: { id: number; displayName: string }[]
   meId: number
 }) {
+  const { t } = useLingui()
   if (draftTotal(draft) === null) {
-    return <Hint>Enter an amount to see who owes what</Hint>
+    return (
+      <Hint>
+        <Trans>Enter an amount to see who owes what</Trans>
+      </Hint>
+    )
   }
   if (draft.others.length === 0) {
-    return <Hint>Add who you split this with to see who owes what</Hint>
+    return (
+      <Hint>
+        <Trans>Add who you split this with to see who owes what</Trans>
+      </Hint>
+    )
   }
   if (!check.ok) {
     const warning = {
-      'not-involved': 'You’re not in this expense',
-      nobody: 'Nobody shares this yet',
-      'invalid-value': 'Check the split',
-      amounts: 'Split doesn’t add up yet',
-      percent: 'Split doesn’t add up yet',
+      'not-involved': t`You’re not in this expense`,
+      nobody: t`Nobody shares this yet`,
+      'invalid-value': t`Check the split`,
+      amounts: t`Split doesn’t add up yet`,
+      percent: t`Split doesn’t add up yet`,
       'no-amount': null,
     }[check.problem.kind]
     if (warning === null) {
-      return <Hint>Enter an amount to see who owes what</Hint>
+      return (
+        <Hint>
+          <Trans>Enter an amount to see who owes what</Trans>
+        </Hint>
+      )
     }
     return (
       <p className="flex items-center justify-center gap-1.5 text-[15px] font-medium text-negative">
@@ -452,8 +471,8 @@ function Hint({ children }: { children: ReactNode }) {
 
 function genericError(mode: 'create' | 'edit'): string {
   return mode === 'edit'
-    ? 'Couldn’t save your changes. Nothing was changed and your entries are still here. Try again.'
-    : 'Couldn’t add the expense. Nothing was saved and your entries are still here. Try again.'
+    ? t`Couldn’t save your changes. Nothing was changed and your entries are still here. Try again.`
+    : t`Couldn’t add the expense. Nothing was saved and your entries are still here. Try again.`
 }
 
 function savedMessage(
@@ -464,16 +483,30 @@ function savedMessage(
   mode: 'create' | 'edit',
 ): string {
   if (mode === 'edit') {
-    return 'Changes saved.'
+    return t`Changes saved.`
   }
+  const title = request.title
   if (!check.ok) {
-    return `${request.title} added.`
+    return t`${title} added.`
   }
-  const people = [{ id: meId, displayName: 'You' }, ...draft.others]
-  const outcome = describeOutcome(check.shares, request.payeeId, people, meId)
-  if (outcome.tone === 'neutral') {
-    return `${request.title} added.`
+  const people = [{ id: meId, displayName: t`You` }, ...draft.others]
+  const outcome = classifyOutcome(check.shares, request.payeeId, people, meId)
+  switch (outcome.kind) {
+    case 'owe-payer': {
+      const { payerName } = outcome
+      const amount = formatGrosze(outcome.grosze)
+      return t`${title} added. You owe ${payerName} ${amount}.`
+    }
+    case 'owed-by-one': {
+      const { debtorName } = outcome
+      const amount = formatGrosze(outcome.grosze)
+      return t`${title} added. ${debtorName} owes you ${amount}.`
+    }
+    case 'lent': {
+      const amount = formatGrosze(outcome.grosze)
+      return t`${title} added. You lent ${amount}.`
+    }
+    case 'nobody-owes':
+      return t`${title} added.`
   }
-
-  return `${request.title} added. ${outcome.lead} ${formatGrosze(outcome.grosze)}.`
 }

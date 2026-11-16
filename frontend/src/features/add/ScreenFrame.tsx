@@ -1,7 +1,8 @@
 import { X } from 'lucide-react'
+import { useLingui } from '@lingui/react/macro'
 import type { ReactNode } from 'react'
 import { PageHeader } from '@/components/PageHeader'
-import { ItemNotFound } from '@/components/ItemStates'
+import { ItemNotFound, type ItemKind } from '@/components/ItemStates'
 import { useGoBack } from '@/lib/useGoBack'
 import { Button } from '@/components/ui/button'
 import { useIsSaving } from './navigation'
@@ -11,12 +12,19 @@ import { useIsSaving } from './navigation'
  * so a save can't land after the user was told their input was discarded.
  */
 export function Header({ title, onClose }: { title: string; onClose: () => void }) {
+  const { t } = useLingui()
   const saving = useIsSaving()
   return (
     <PageHeader
       title={title}
       leading={
-        <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose} disabled={saving}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t`Close`}
+          onClick={onClose}
+          disabled={saving}
+        >
           <X aria-hidden="true" />
         </Button>
       }
@@ -42,7 +50,7 @@ export function Frame({
 }
 
 /** An edit screen whose URL has no usable id. */
-export function NotFoundFrame({ title, noun }: { title: string; noun: string }) {
+export function NotFoundFrame({ title, kind }: { title: string; kind: ItemKind }) {
   const { goBack } = useGoBack('/activity')
-  return <Frame title={title} onClose={goBack} body={<ItemNotFound noun={noun} />} />
+  return <Frame title={title} onClose={goBack} body={<ItemNotFound kind={kind} />} />
 }

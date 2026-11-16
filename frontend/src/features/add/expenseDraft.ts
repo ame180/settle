@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { t } from '@lingui/core/macro'
 import type { ExpenseCategory, ExpenseRequest, ExpenseResponse, PersonRef } from '@/api/types'
 import {
   formatGrosze,
@@ -84,19 +85,24 @@ export function draftFromExpense(expense: ExpenseResponse, meId: number): Expens
 
 const decimal = z
   .string()
-  .regex(/^-?\d+(?:\.\d{1,2})?$/, 'Use at most 2 decimal places')
-  .regex(new RegExp(`^-?\\d{1,${MAX_AMOUNT_INTEGER_DIGITS}}(?:\\.|$)`), 'That amount is too large')
-  .refine((value) => toGrosze(value) > 0n, 'Enter an amount above 0')
+  .regex(/^-?\d+(?:\.\d{1,2})?$/, { error: () => t`Use at most 2 decimal places` })
+  .regex(new RegExp(`^-?\\d{1,${MAX_AMOUNT_INTEGER_DIGITS}}(?:\\.|$)`), {
+    error: () => t`That amount is too large`,
+  })
+  .refine((value) => toGrosze(value) > 0n, { error: () => t`Enter an amount above 0` })
 
 /** Mirrors ExpenseRequest / ExpenseDebtRequest validation in src/Dto. */
 export const expenseRequestSchema = z.object({
-  title: z.string().min(1, 'Add what it was for').max(255, 'Keep the title under 255 characters'),
+  title: z
+    .string()
+    .min(1, { error: () => t`Add what it was for` })
+    .max(255, { error: () => t`Keep the title under 255 characters` }),
   amount: decimal,
   payeeId: z.number().int().positive(),
   debts: z
     .array(z.object({ payerId: z.number().int().positive(), value: decimal.nullish() }))
     .min(1),
-  occurredOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a date'),
+  occurredOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: () => t`Pick a date` }),
   splitType: z.enum(['exact', 'percentage', 'shares', 'equal']),
   category: z.enum(expenseCategories),
   description: z.string().nullish(),
@@ -138,15 +144,20 @@ export function splitError(draft: ExpenseDraft, meId: number): string | null {
   const { problem } = check
   switch (problem.kind) {
     case 'not-involved':
-      return 'You need to pay or share in this expense.'
+      return t`You need to pay or share in this expense.`
     case 'nobody':
-      return 'Pick who shares the cost.'
+      return t`Pick who shares the cost.`
     case 'invalid-value':
-      return 'Check the numbers in the split.'
-    case 'amounts':
-      return `Adds up to ${formatGrosze(problem.assigned)} of ${formatGrosze(problem.total)}. Tap to fix.`
-    case 'percent':
-      return `Adds up to ${trimDecimal(fromGrosze(problem.assigned))}%, not 100%. Tap to fix.`
+      return t`Check the numbers in the split.`
+    case 'amounts': {
+      const assigned = formatGrosze(problem.assigned)
+      const total = formatGrosze(problem.total)
+      return t`Adds up to ${assigned} of ${total}. Tap to fix.`
+    }
+    case 'percent': {
+      const assigned = trimDecimal(fromGrosze(problem.assigned))
+      return t`Adds up to ${assigned}%, not 100%. Tap to fix.`
+    }
     case 'no-amount':
       return null
   }
@@ -155,11 +166,13 @@ export function splitError(draft: ExpenseDraft, meId: number): string | null {
 /** What's wrong with a typed amount, by the API's rules, or null when it's fine. */
 export function amountError(amount: string): string | null {
   if (amount.trim() === '') {
-    return 'Enter an amount above 0'
+    return t`Enter an amount above 0`
   }
   const parsed = parseAmountInput(amount)
   if (parsed === null) {
-    return /[.,]\d{3,}/.test(amount) ? 'Use at most 2 decimal places' : 'Enter an amount like 12.50'
+    return /[.,]\d{3,}/.test(amount)
+      ? t`Use at most 2 decimal places`
+      : t`Enter an amount like 12.50`
   }
   const result = decimal.safeParse(parsed)
 
@@ -172,11 +185,11 @@ export type BuildResult = { ok: true; request: ExpenseRequest } | { ok: false; e
 export function buildExpenseRequest(draft: ExpenseDraft, meId: number): BuildResult {
   const errors: FieldErrors = {}
   if (draft.others.length === 0) {
-    errors.people = 'Add who you split this with'
+    errors.people = t`Add who you split this with`
   }
   const title = draft.title.trim()
   if (title === '') {
-    errors.title = 'Add what it was for'
+    errors.title = t`Add what it was for`
   }
   const amount = amountError(draft.amount)
   if (amount) {

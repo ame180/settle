@@ -3,6 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useParams } from 'react-router'
 import { toast } from 'sonner'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { ApiError } from '@/api/client'
 import { useContact, useUpdateContact } from '@/api/contacts'
 import type { ContactListItem } from '@/api/types'
@@ -22,7 +24,10 @@ import { ContactNotFound } from './ContactNotFound'
 import { parseIdParam } from '@/lib/parseIdParam'
 
 const editContactSchema = z.object({
-  nickname: z.string().trim().max(64, 'Nickname can be at most 64 characters.'),
+  nickname: z
+    .string()
+    .trim()
+    .max(64, { error: () => t`Nickname can be at most 64 characters.` }),
 })
 
 type EditContactValues = z.infer<typeof editContactSchema>
@@ -34,6 +39,7 @@ export function EditContactPage() {
 }
 
 function EditContact({ userId }: { userId: number }) {
+  const { t } = useLingui()
   const contactQuery = useContact(userId)
   const contact = contactQuery.data
 
@@ -41,22 +47,23 @@ function EditContact({ userId }: { userId: number }) {
     return <ContactNotFound />
   }
 
-  const backLabel = contact ? `Back to ${getShortName(contact.person.displayName)}` : 'Back'
+  const shortName = contact ? getShortName(contact.person.displayName) : ''
+  const backLabel = contact ? t`Back to ${shortName}` : t`Back`
 
   return (
     <div className="flex h-full flex-col">
       <PageHeader
-        title="Edit contact"
+        title={t`Edit contact`}
         leading={<BackLink to={`/contacts/${userId}`} label={backLabel} />}
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-6">
         {contactQuery.isPending ? (
-          <Spinner label="Loading contact" className="py-10" />
+          <Spinner label={t`Loading contact`} className="py-10" />
         ) : contact === undefined ? (
           <LoadError
             compact
-            title="Couldn't load contact"
+            title={t`Couldn't load contact`}
             onRetry={() => contactQuery.refetch()}
             isRetrying={contactQuery.isFetching}
           />
@@ -69,6 +76,7 @@ function EditContact({ userId }: { userId: number }) {
 }
 
 function EditContactForm({ contact }: { contact: ContactListItem }) {
+  const { t } = useLingui()
   const { person } = contact
   const updateContactMutation = useUpdateContact(person.id)
   const { goBack } = useGoBack(`/contacts/${person.id}`)
@@ -85,7 +93,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
       { nickname: values.nickname === '' ? null : values.nickname },
       {
         onSuccess: () => {
-          toast.success('Contact saved')
+          toast.success(t`Contact saved`)
           goBack()
         },
         onError: (error) => {
@@ -97,7 +105,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
             form.setError('nickname', { message: nicknameViolation.title })
             return
           }
-          form.setError('root', { message: "Couldn't save. Try again." })
+          form.setError('root', { message: t`Couldn't save. Try again.` })
         },
       },
     )
@@ -112,7 +120,7 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate font-semibold">{ownName}</span>
           <span className="truncate text-[13px] text-muted-foreground">
-            {contact.name === null ? 'No name on Settle yet' : 'Their name on Settle'}
+            {contact.name === null ? t`No name on Settle yet` : t`Their name on Settle`}
           </span>
         </div>
       </div>
@@ -120,7 +128,9 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="contact-nickname">
-            Nickname <span className="font-normal text-muted-foreground">(optional)</span>
+            <Trans>
+              Nickname <span className="font-normal text-muted-foreground">(optional)</span>
+            </Trans>
           </Label>
           <Input
             id="contact-nickname"
@@ -135,13 +145,15 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
             <FieldError id="contact-nickname-error" message={errors.nickname.message} />
           ) : (
             <p id="contact-nickname-hint" className="text-[13px] text-muted-foreground">
-              Only you see this. Leave empty to use their name.
+              <Trans>Only you see this. Leave empty to use their name.</Trans>
             </p>
           )}
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contact-email">Email</Label>
+          <Label htmlFor="contact-email">
+            <Trans>Email</Trans>
+          </Label>
           <Input
             id="contact-email"
             type="email"
@@ -153,8 +165,8 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
 
         {errors.root?.message && <AlertLine message={errors.root.message} />}
 
-        <PrimaryButton type="submit" pending={isPending} pendingLabel="Saving…" className="mt-2">
-          Save
+        <PrimaryButton type="submit" pending={isPending} pendingLabel={t`Saving…`} className="mt-2">
+          <Trans>Save</Trans>
         </PrimaryButton>
       </form>
     </div>

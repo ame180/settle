@@ -1,4 +1,5 @@
 import { useParams } from 'react-router'
+import { useLingui } from '@lingui/react/macro'
 import { parseIdParam } from '@/lib/parseIdParam'
 import { ArrowRight } from 'lucide-react'
 import { useMe } from '@/api/auth'
@@ -11,14 +12,16 @@ import { ItemError, ItemLoading, ItemNotFound } from '@/components/ItemStates'
 import { DetailActions, DetailScreen, NoteBlock } from './DetailParts'
 import { deleteWarning } from './expenseSummary'
 import { useDeleteAndGoBack } from './useDeleteAndGoBack'
+import { transferSide } from '@/features/activity/activityItems'
 import { nameForViewer, peopleOtherThan } from '@/lib/person'
 
 export function TransferDetailPage() {
+  const { t } = useLingui()
   const id = parseIdParam(useParams().id)
 
   return id === null ? (
-    <DetailScreen title="Payment">
-      <ItemNotFound noun="payment" />
+    <DetailScreen title={t`Payment`}>
+      <ItemNotFound kind="payment" />
     </DetailScreen>
   ) : (
     <TransferDetailScreen id={id} />
@@ -26,26 +29,27 @@ export function TransferDetailPage() {
 }
 
 function TransferDetailScreen({ id }: { id: number }) {
+  const { t } = useLingui()
   const transferQuery = useTransfer(id)
   const { data: me } = useMe()
   const transfer = transferQuery.data
   const deletion = useDeleteAndGoBack({
     mutation: useDeleteTransfer(id),
-    successMessage: 'Payment deleted',
-    errorMessage: 'Couldn’t delete the payment. Try again.',
+    successMessage: t`Payment deleted`,
+    errorMessage: t`Couldn’t delete the payment. Try again.`,
   })
 
   return (
     <DetailScreen
-      title="Payment"
+      title={t`Payment`}
       trailing={
         transfer &&
         me && (
           <DetailActions
             editTo={`/transfers/${id}/edit`}
-            editLabel="Edit payment"
-            deleteLabel="Delete payment"
-            confirmTitle="Delete this payment?"
+            editLabel={t`Edit payment`}
+            deleteLabel={t`Delete payment`}
+            confirmTitle={t`Delete this payment?`}
             confirmDescription={deleteWarning(
               peopleOtherThan(me.id, [transfer.payer, transfer.payee]).map(
                 (person) => person.displayName,
@@ -61,20 +65,29 @@ function TransferDetailScreen({ id }: { id: number }) {
       ) : transferQuery.isError ? (
         <ItemError
           error={transferQuery.error}
-          noun="payment"
+          kind="payment"
           onRetry={() => transferQuery.refetch()}
           isRetrying={transferQuery.isFetching}
         />
       ) : (
-        <ItemLoading label="Loading payment" />
+        <ItemLoading label={t`Loading payment`} />
       )}
     </DetailScreen>
   )
 }
 
 function TransferDetail({ transfer, viewerId }: { transfer: TransferResponse; viewerId: number }) {
+  const { t } = useLingui()
   const { payer, payee } = transfer
-  const sentence = `${nameForViewer(payer, viewerId)} paid ${payee.id === viewerId ? 'you' : payee.displayName}`
+  const payerName = payer.displayName
+  const payeeName = payee.displayName
+  const side = transferSide(payer, payee, viewerId)
+  const sentence =
+    side === 'viewer-paid'
+      ? t`You paid ${payeeName}`
+      : side === 'viewer-received'
+        ? t`${payerName} paid you`
+        : t`${payerName} paid ${payeeName}`
 
   return (
     <>

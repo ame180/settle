@@ -1,6 +1,7 @@
 import { useState, type RefObject } from 'react'
 import { Textarea } from '@/components/ui/input'
 import { flushSync } from 'react-dom'
+import { Trans } from '@lingui/react/macro'
 import { Calendar, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDateLabel } from '@/lib/dates'
@@ -53,7 +54,7 @@ export function DateNoteFields({
             }}
           >
             <FileText aria-hidden="true" />
-            Add note
+            <Trans>Add note</Trans>
           </Button>
         )}
       </div>
@@ -62,7 +63,9 @@ export function DateNoteFields({
       {noteOpen && (
         <div className="flex flex-col gap-1.5">
           <label htmlFor={noteId} className="text-sm font-medium">
-            Note <span className="font-normal text-muted-foreground">(optional)</span>
+            <Trans>
+              Note <span className="font-normal text-muted-foreground">(optional)</span>
+            </Trans>
           </label>
           <Textarea
             ref={noteRef}

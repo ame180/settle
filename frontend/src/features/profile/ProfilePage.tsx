@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import { ChevronRight, LogOut } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useLogout, useMe } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
@@ -11,6 +12,7 @@ const rowClassName =
   'flex min-h-15 items-center gap-3 border-b border-border/60 px-4 py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset'
 
 export function ProfilePage() {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const logoutMutation = useLogout()
   const navigate = useNavigate()
@@ -21,11 +23,11 @@ export function ProfilePage() {
 
   return (
     <>
-      <PageHeader title="Profile" />
+      <PageHeader title={t`Profile`} />
       {me && (
         <>
           <section
-            aria-label="You"
+            aria-label={t`You`}
             className="flex flex-col items-center gap-3 px-4 pt-7 pb-6 text-center"
           >
             <PersonAvatar id={me.id} name={ownDisplayName(me)} className="size-18 text-2xl" />
@@ -38,13 +40,15 @@ export function ProfilePage() {
           <div className="border-t border-border/60">
             <Link to="/profile/name" className={cn(rowClassName, 'hover:bg-secondary')}>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-sm text-muted-foreground">Name</span>
+                <span className="text-sm text-muted-foreground">
+                  <Trans>Name</Trans>
+                </span>
                 <span className={cn('truncate', !me.name && 'font-semibold text-primary')}>
-                  {me.name ?? 'Add your name'}
+                  {me.name ?? t`Add your name`}
                 </span>
                 {!me.name && (
                   <span className="text-[13px] leading-[1.4] text-muted-foreground">
-                    Contacts see your email until you add one.
+                    <Trans>Contacts see your email until you add one.</Trans>
                   </span>
                 )}
               </span>
@@ -52,7 +56,9 @@ export function ProfilePage() {
             </Link>
             <div className={rowClassName}>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-sm text-muted-foreground">Email</span>
+                <span className="text-sm text-muted-foreground">
+                  <Trans>Email</Trans>
+                </span>
                 <span className="truncate text-foreground/80">{me.email}</span>
               </span>
             </div>
@@ -67,7 +73,7 @@ export function ProfilePage() {
           disabled={logoutMutation.isPending}
         >
           <LogOut aria-hidden="true" />
-          Log out
+          <Trans>Log out</Trans>
         </Button>
       </div>
     </>

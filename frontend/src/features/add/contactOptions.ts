@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import type { ContactListItem } from '@/api/types'
 import { findPlnAmount, formatPln, isNegativeAmount } from '@/lib/money'
 
@@ -39,10 +40,9 @@ export function looksLikeEmail(text: string): boolean {
 export function balanceLine(contact: ContactListItem): string {
   const balance = findPlnAmount(contact.balances)
   if (balance === null) {
-    return contact.isRegistered ? 'Settled up' : 'Not on Settle yet'
+    return contact.isRegistered ? t`Settled up` : t`Not on Settle yet`
   }
 
-  return isNegativeAmount(balance)
-    ? `You owe ${formatPln(balance)}`
-    : `Owes you ${formatPln(balance)}`
+  const amount = formatPln(balance)
+  return isNegativeAmount(balance) ? t`You owe ${amount}` : t`Owes you ${amount}`
 }

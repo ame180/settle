@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { anna, expenseItem, transferItem, viewer } from '@/test/activity'
-import { describeTransfer, flattenActivityPages, groupActivityByDay } from './activityItems'
+import { ewa } from '@/test/detail'
+import { flattenActivityPages, groupActivityByDay, transferSide } from './activityItems'
 
 describe('groupActivityByDay', () => {
   it('groups consecutive items by calendar day, keeping their order', () => {
@@ -40,15 +41,10 @@ describe('flattenActivityPages', () => {
   })
 })
 
-describe('describeTransfer', () => {
-  it('puts the viewer first as "You" and as the target "you"', () => {
-    expect(describeTransfer(transferItem({ payer: anna, payee: viewer }), viewer.id)).toEqual({
-      actor: 'Anna Kowalska',
-      verb: 'paid you',
-    })
-    expect(describeTransfer(transferItem({ payer: viewer, payee: anna }), viewer.id)).toEqual({
-      actor: 'You',
-      verb: 'paid Anna Kowalska',
-    })
+describe('transferSide', () => {
+  it('tells whether the viewer paid, received, or neither', () => {
+    expect(transferSide(viewer, anna, viewer.id)).toBe('viewer-paid')
+    expect(transferSide(anna, viewer, viewer.id)).toBe('viewer-received')
+    expect(transferSide(anna, ewa, viewer.id)).toBe('others')
   })
 })

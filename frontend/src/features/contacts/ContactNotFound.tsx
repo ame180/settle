@@ -1,28 +1,31 @@
 import { Link } from 'react-router'
 import { UserX } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
 import { buttonClassName } from '@/components/ui/button-variants'
 
 export function ContactNotFound() {
+  const { t } = useLingui()
   return (
     <>
-      <PageHeader leading={<BackLink to="/" label="Back to contacts" />} />
+      <PageHeader leading={<BackLink to="/" label={t`Back to contacts`} />} />
       <ContactNotFoundMessage />
     </>
   )
 }
 
 export function ContactNotFoundMessage() {
+  const { t } = useLingui()
   return (
     <StateMessage
       icon={<UserX className="size-7.5" aria-hidden="true" />}
-      title="Contact not found"
-      description="They may not be one of your contacts."
+      title={t`Contact not found`}
+      description={t`They may not be one of your contacts.`}
     >
       <Link to="/" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
-        Go to contacts
+        <Trans>Go to contacts</Trans>
       </Link>
     </StateMessage>
   )

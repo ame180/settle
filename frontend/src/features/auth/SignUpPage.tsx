@@ -1,6 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useMe, useRegister } from '@/api/auth'
 import { ApiError } from '@/api/client'
@@ -14,27 +16,32 @@ import type { LoginLocationState } from './LoginPage'
 import { PasswordInput } from './PasswordInput'
 
 const fieldMessages = {
-  name: 'Use at most 64 characters.',
-  email: 'Enter a valid email address.',
-  password: 'Use 8 to 64 characters.',
-} as const
+  name: () => t`Use at most 64 characters.`,
+  email: () => t`Enter a valid email address.`,
+  password: () => t`Use 8 to 64 characters.`,
+}
 
 const signUpSchema = z.object({
-  name: z.string().trim().max(64, fieldMessages.name),
-  email: z.string().trim().pipe(z.email(fieldMessages.email)),
-  password: z.string().min(8, 'Use at least 8 characters.').max(64, 'Use at most 64 characters.'),
+  name: z.string().trim().max(64, { error: fieldMessages.name }),
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email({ error: fieldMessages.email })),
+  password: z
+    .string()
+    .min(8, { error: () => t`Use at least 8 characters.` })
+    .max(64, { error: () => t`Use at most 64 characters.` }),
 })
 
 type SignUpValues = z.infer<typeof signUpSchema>
 type SignUpField = keyof typeof fieldMessages
-
-const emailTakenMessage = 'An account with this email already exists.'
 
 function isSignUpField(propertyPath: string): propertyPath is SignUpField {
   return propertyPath in fieldMessages
 }
 
 export function SignUpPage() {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const registerMutation = useRegister()
   const navigate = useNavigate()
@@ -58,20 +65,20 @@ export function SignUpPage() {
         onSuccess: () => navigate('/', { replace: true }),
         onError: (error) => {
           if (!(error instanceof ApiError)) {
-            form.setError('root', { message: "Couldn't create your account. Try again." })
+            form.setError('root', { message: t`Couldn't create your account. Try again.` })
             return
           }
           if (error.status === 409) {
             form.setError(
               'email',
-              { type: 'taken', message: emailTakenMessage },
+              { type: 'taken', message: t`An account with this email already exists.` },
               { shouldFocus: true },
             )
             return
           }
           if (error.status === 429) {
             form.setError('root', {
-              message: 'Too many sign-up attempts from this network. Try again later.',
+              message: t`Too many sign-up attempts from this network. Try again later.`,
             })
             return
           }
@@ -80,11 +87,11 @@ export function SignUpPage() {
             .map((violation) => violation.propertyPath)
             .filter(isSignUpField)
           if ((error.status !== 400 && error.status !== 422) || fields.length === 0) {
-            form.setError('root', { message: "Couldn't create your account. Try again." })
+            form.setError('root', { message: t`Couldn't create your account. Try again.` })
             return
           }
           for (const [index, field] of fields.entries()) {
-            form.setError(field, { message: fieldMessages[field] }, { shouldFocus: index === 0 })
+            form.setError(field, { message: fieldMessages[field]() }, { shouldFocus: index === 0 })
           }
         },
       },
@@ -96,26 +103,28 @@ export function SignUpPage() {
 
   return (
     <AuthLayout
-      title="Create an account"
-      description="Someone already added you? Sign up with that same email and your shared expenses will be waiting."
+      title={t`Create an account`}
+      description={t`Someone already added you? Sign up with that same email and your shared expenses will be waiting.`}
       footer={
-        <>
+        <Trans>
           Already have an account?{' '}
           <Link to="/login" className={authLinkClassName}>
             Sign in
           </Link>
-        </>
+        </Trans>
       }
     >
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-name">
-            Name <span className="font-normal text-muted-foreground">(optional)</span>
+            <Trans>
+              Name <span className="font-normal text-muted-foreground">(optional)</span>
+            </Trans>
           </Label>
           <Input
             id="signup-name"
             autoComplete="name"
-            placeholder="e.g. Ame"
+            placeholder={t`e.g. Ame`}
             readOnly={isPending}
             className={inputClassName}
             aria-invalid={!!errors.name}
@@ -126,13 +135,15 @@ export function SignUpPage() {
             <FieldError id="signup-name-error" message={errors.name.message} />
           ) : (
             <p id="signup-name-hint" className="text-[13px] text-muted-foreground">
-              Shown to your contacts instead of your email.
+              <Trans>Shown to your contacts instead of your email.</Trans>
             </p>
           )}
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signup-email">Email</Label>
+          <Label htmlFor="signup-email">
+            <Trans>Email</Trans>
+          </Label>
           <Input
             id="signup-email"
             type="email"
@@ -151,13 +162,15 @@ export function SignUpPage() {
               state={loginState}
               className={cn(authLinkClassName, 'self-start text-[13px]')}
             >
-              Sign in instead
+              <Trans>Sign in instead</Trans>
             </Link>
           )}
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signup-password">Password</Label>
+          <Label htmlFor="signup-password">
+            <Trans>Password</Trans>
+          </Label>
           <PasswordInput
             id="signup-password"
             autoComplete="new-password"
@@ -171,7 +184,7 @@ export function SignUpPage() {
             <FieldError id="signup-password-error" message={errors.password.message} />
           ) : (
             <p id="signup-password-hint" className="text-[13px] text-muted-foreground">
-              8 to 64 characters.
+              <Trans>8 to 64 characters.</Trans>
             </p>
           )}
         </div>
@@ -181,10 +194,10 @@ export function SignUpPage() {
         <PrimaryButton
           type="submit"
           pending={isPending}
-          pendingLabel="Creating account…"
+          pendingLabel={t`Creating account…`}
           className="mt-2"
         >
-          Create account
+          <Trans>Create account</Trans>
         </PrimaryButton>
       </form>
     </AuthLayout>

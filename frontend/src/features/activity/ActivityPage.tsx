@@ -1,4 +1,5 @@
 import { Activity } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useActivity } from '@/api/activity'
 import { useMe } from '@/api/auth'
 import { AddExpenseButton } from '@/components/AddExpenseButton'
@@ -12,19 +13,20 @@ import { ActivityRow, ActivityRowSkeleton, DayHeader } from './ActivityRows'
 import { activityItemKey, flattenActivityPages, groupActivityByDay } from './activityItems'
 
 export function ActivityPage() {
+  const { t } = useLingui()
   const activityQuery = useActivity()
   const { data: me } = useMe()
 
   return (
     <>
-      <PageHeader title="Activity" />
+      <PageHeader title={t`Activity`} />
 
       <div className="pb-32">
         {activityQuery.isPending ? (
           <ActivitySkeleton />
         ) : activityQuery.data === undefined ? (
           <LoadError
-            title="Couldn't load activity"
+            title={t`Couldn't load activity`}
             onRetry={() => activityQuery.refetch()}
             isRetrying={activityQuery.isFetching}
           />
@@ -52,12 +54,14 @@ type ActivityFeedProps = {
 }
 
 function ActivityFeed({ items, viewerId, now, query }: ActivityFeedProps) {
+  const { t } = useLingui()
+
   if (items.length === 0) {
     return (
       <StateMessage
         icon={<Activity className="size-7.5" aria-hidden="true" />}
-        title="No activity yet"
-        description="Expenses and payments you take part in show up here, newest first."
+        title={t`No activity yet`}
+        description={t`Expenses and payments you take part in show up here, newest first.`}
       />
     )
   }
@@ -95,7 +99,9 @@ const skeletonRows = [
 function ActivitySkeleton() {
   return (
     <div role="status">
-      <span className="sr-only">Loading activity</span>
+      <span className="sr-only">
+        <Trans>Loading activity</Trans>
+      </span>
       {skeletonRows.map(([titleWidth, sublineWidth], index) => (
         <div key={titleWidth}>
           {index % 3 === 0 && (
