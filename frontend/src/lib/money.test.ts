@@ -9,6 +9,7 @@ import {
   formatPln,
   formatPlnRange,
   isNegativeAmount,
+  localizeAmountInput,
   parseAmountInput,
   sumAmounts,
 } from './money'
@@ -124,5 +125,14 @@ describe('balanceDirection', () => {
     ['0', 'none'],
   ])('reads %s as %s', (value, expected) => {
     expect(balanceDirection(value)).toBe(expected)
+  })
+})
+
+describe('localizeAmountInput', () => {
+  it('shows the locale’s decimal separator', async () => {
+    expect(localizeAmountInput('12,5')).toBe('12.5')
+    await activateLocale('pl')
+    expect(localizeAmountInput('12.50')).toBe('12,50')
+    expect(localizeAmountInput('12')).toBe('12')
   })
 })

@@ -82,6 +82,15 @@ export function findPlnAmount(amounts: CurrencyAmount[]): string | null {
   return amounts.find((currencyAmount) => currencyAmount.currency === 'PLN')?.amount ?? null
 }
 
+/** Shows an amount field's text with the active locale's decimal separator: "12,50" in Polish. */
+export function localizeAmountInput(value: string): string {
+  const separator =
+    amountFormat()
+      .formatToParts(1.5)
+      .find((part) => part.type === 'decimal')?.value ?? '.'
+  return value.replace(/[.,]/, separator)
+}
+
 /** Integer digits the API's Decimal(precision: 10, scale: 2) allows before the point. */
 export const MAX_AMOUNT_INTEGER_DIGITS = 8
 

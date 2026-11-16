@@ -13,6 +13,7 @@ import {
   formatAmountNumber,
   formatPlnRange,
   fromGrosze,
+  localizeAmountInput,
   parseAmountInput,
   sanitizeAmountInput,
   toGrosze,
@@ -389,9 +390,9 @@ function RowControl({
         type="text"
         inputMode="decimal"
         autoComplete="off"
-        placeholder={isPercent ? '0' : '0.00'}
+        placeholder={isPercent ? '0' : localizeAmountInput('0.00')}
         aria-label={isPercent ? t`${personName}, percent` : t`${personName}, amount in zł`}
-        value={value}
+        value={localizeAmountInput(value)}
         onFocus={onFocus}
         onChange={(event) => onValue(sanitizeAmountInput(event.target.value, value))}
         className={cn('text-right tabular-nums', isPercent ? 'w-18' : 'w-24')}

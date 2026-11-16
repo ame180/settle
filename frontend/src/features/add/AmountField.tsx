@@ -1,6 +1,6 @@
 import { useId, useRef, type ReactNode, type RefObject } from 'react'
 import { Trans } from '@lingui/react/macro'
-import { parseAmountInput, sanitizeAmountInput } from '@/lib/money'
+import { localizeAmountInput, parseAmountInput, sanitizeAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { FieldError } from '@/components/FieldError'
 
@@ -36,8 +36,8 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
           type="text"
           inputMode="decimal"
           autoComplete="off"
-          placeholder="0.00"
-          value={value}
+          placeholder={localizeAmountInput('0.00')}
+          value={localizeAmountInput(value)}
           aria-invalid={!!error}
           aria-describedby={`${id}-outcome`}
           onChange={(event) => onChange(sanitizeAmountInput(event.target.value, value))}
