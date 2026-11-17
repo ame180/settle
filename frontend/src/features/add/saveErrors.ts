@@ -37,5 +37,6 @@ export function describeSaveError<Field extends string>(
   if (Object.keys(errors).length > 0) {
     return { errors, banner: unplaced[0] ?? null }
   }
-  return { errors, banner: unplaced[0] ?? error.detail ?? generic }
+  // Production problem details carry only the HTTP status text as `detail`, so it isn't shown.
+  return { errors, banner: unplaced[0] ?? generic }
 }

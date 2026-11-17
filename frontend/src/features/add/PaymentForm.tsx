@@ -1,4 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { ArrowLeftRight, ChevronDown, CircleCheck, Info, TriangleAlert } from 'lucide-react'
 import { useContacts } from '@/api/contacts'
 import { useCreateTransfer, useUpdateTransfer } from '@/api/transfers'
@@ -48,6 +50,7 @@ type PaymentFormProps = {
 }
 
 export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: PaymentFormProps) {
+  const { t } = useLingui()
   const { data: contacts } = useContacts()
   const createTransfer = useCreateTransfer()
   const updateTransfer = useUpdateTransfer(mode.kind === 'edit' ? mode.transferId : 0)
@@ -64,6 +67,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
   const total = amountTotal(draft.amount)
   const person = draft.person
   const name = person ? getShortName(person.displayName) : ''
+  const personDisplayName = person ? person.displayName : ''
 
   // The balance before this payment: in edit mode the saved payment is already in it.
   const contact = contacts?.items.find((item) => item.person.id === person?.id)
@@ -86,6 +90,8 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
         ? -balance
         : balance
       : null
+  const fullBalanceAmount = fullBalance === null ? '' : formatGrosze(fullBalance)
+  const payAmount = total ? formatPln(total) : null
   const offerFullBalance =
     fullBalance !== null && (total === null || toGrosze(total) !== fullBalance)
 
@@ -122,7 +128,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
     setServerError(null)
     const fieldErrors: Partial<Record<PaymentField, string>> = {}
     if (!person) {
-      fieldErrors.person = draft.payer === 'me' ? 'Choose who you paid' : 'Choose who paid you'
+      fieldErrors.person = draft.payer === 'me' ? t`Choose who you paid` : t`Choose who paid you`
     }
     const amountProblem = amountError(draft.amount)
     if (amountProblem) {
@@ -137,11 +143,12 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
     const handlers = {
       onSuccess: () => {
         if (editing) {
-          onSaved('Changes saved.')
+          onSaved(t`Changes saved.`)
         } else if (after === 0n) {
-          onSaved(`Payment recorded. You and ${name} are settled up.`)
+          onSaved(t`Payment recorded. You and ${name} are settled up.`)
         } else {
-          onSaved(`${formatPln(total)} payment recorded.`)
+          const amount = formatPln(total)
+          onSaved(t`${amount} payment recorded.`)
         }
       },
       onError: (error: Error) => {
@@ -176,7 +183,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
   const youSide = (
     <span className="flex h-11 min-w-0 items-center gap-2 rounded-[10px] border border-border bg-subtle px-2.5">
       <PersonAvatar id={me.id} name={ownDisplayName(me)} size="sm" />
-      You
+      <Trans>You</Trans>
     </span>
   )
   const personSide = editing ? (
@@ -190,7 +197,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
       type="button"
       onClick={() => setPickerOpen(true)}
       aria-invalid={!!errors.person}
-      aria-label={person ? `${person.displayName}. Change person` : 'Choose a person'}
+      aria-label={person ? t`${personDisplayName}. Change person` : t`Choose a person`}
       className={cn(
         'flex h-11 min-w-0 items-center gap-2 rounded-[10px] border border-border-strong bg-background px-2.5 text-left focus-visible:border-foreground focus-visible:ring-[3px] focus-visible:ring-foreground/10 focus-visible:outline-none',
         errors.person && 'border-destructive ring-[3px] ring-destructive/15',
@@ -202,7 +209,9 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
           <span className="flex-1 truncate">{name}</span>
         </>
       ) : (
-        <span className="flex-1 truncate text-muted-foreground">Choose</span>
+        <span className="flex-1 truncate text-muted-foreground">
+          <Trans>Choose</Trans>
+        </span>
       )}
       <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </button>
@@ -217,12 +226,14 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
           <div className="flex flex-col gap-1.5">
             <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
               <div className="flex min-w-0 flex-col gap-1.5">
-                <span className="text-sm font-medium">Paid by</span>
+                <span className="text-sm font-medium">
+                  <Trans>Paid by</Trans>
+                </span>
                 {draft.payer === 'me' ? youSide : personSide}
               </div>
               <button
                 type="button"
-                aria-label="Swap who paid"
+                aria-label={t`Swap who paid`}
                 // Fixed in edit mode (the API can't change it); kept in place for the layout.
                 disabled={editing}
                 aria-hidden={editing || undefined}
@@ -240,14 +251,16 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
                 <ArrowLeftRight className="size-4.5" aria-hidden="true" />
               </button>
               <div className="flex min-w-0 flex-col gap-1.5">
-                <span className="text-sm font-medium">Paid to</span>
+                <span className="text-sm font-medium">
+                  <Trans>Paid to</Trans>
+                </span>
                 {draft.payer === 'me' ? personSide : youSide}
               </div>
             </div>
             {errors.person && <FieldError message={errors.person} />}
             {person && (
               <p className="text-[13px] text-muted-foreground">
-                {draft.payer === 'me' ? `You paid ${name}` : `${name} paid you`}
+                {draft.payer === 'me' ? t`You paid ${name}` : t`${name} paid you`}
               </p>
             )}
           </div>
@@ -270,7 +283,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
                     }
                     className="h-11 px-3 text-[13px] font-semibold underline underline-offset-2"
                   >
-                    Use full balance ({formatGrosze(fullBalance)})
+                    <Trans>Use full balance ({fullBalanceAmount})</Trans>
                   </button>
                 )}
                 {person && balance !== null && (
@@ -293,7 +306,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
             onNoteChange={(note) => update('note', (current) => ({ ...current, note }))}
             noteError={errors.note}
             noteRef={noteRef}
-            notePlaceholder="e.g. BLIK"
+            notePlaceholder={t`e.g. BLIK`}
           />
         </fieldset>
       </div>
@@ -302,13 +315,13 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
         <PrimaryButton
           type="submit"
           pending={pending}
-          pendingLabel={editing ? 'Saving…' : 'Recording…'}
+          pendingLabel={editing ? t`Saving…` : t`Recording…`}
         >
           {editing
-            ? 'Save changes'
-            : total
-              ? `Record ${formatPln(total)} payment`
-              : 'Record payment'}
+            ? t`Save changes`
+            : payAmount
+              ? t`Record ${payAmount} payment`
+              : t`Record payment`}
         </PrimaryButton>
       </FormFooter>
 
@@ -316,7 +329,7 @@ export function PaymentForm({ me, draft, onDraftChange, mode, top, onSaved }: Pa
         <ContactPickerSheet
           open={pickerOpen}
           onOpenChange={setPickerOpen}
-          title={draft.payer === 'me' ? 'Who did you pay?' : 'Who paid you?'}
+          title={draft.payer === 'me' ? t`Who did you pay?` : t`Who paid you?`}
           contacts={contacts?.items.filter((item) => item.person.id !== me.id)}
           selectedId={person?.id ?? null}
           onPick={(picked) => {
@@ -389,6 +402,6 @@ function paymentFieldForPath(propertyPath: string): PaymentField | null {
 
 function genericError(editing: boolean): string {
   return editing
-    ? 'Couldn’t save your changes. Nothing was changed and your entries are still here. Try again.'
-    : 'Couldn’t record the payment. Nothing was saved and your entries are still here. Try again.'
+    ? t`Couldn’t save your changes. Nothing was changed and your entries are still here. Try again.`
+    : t`Couldn’t record the payment. Nothing was saved and your entries are still here. Try again.`
 }

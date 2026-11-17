@@ -1,4 +1,6 @@
+import { t } from '@lingui/core/macro'
 import type { MeResponse, PersonRef } from '@/api/types'
+import { formattingLocale } from '@/i18n/i18n'
 
 const LETTER = /\p{L}/u
 
@@ -29,7 +31,7 @@ export function getShortName(displayName: string): string {
 
 /** "You" for the viewer, otherwise the person's display name. */
 export function nameForViewer(person: Pick<PersonRef, 'id' | 'displayName'>, viewerId: number) {
-  return person.id === viewerId ? 'You' : person.displayName
+  return person.id === viewerId ? t`You` : person.displayName
 }
 
 /** What others see for the signed-in user: their name, or their email until they add one. */
@@ -37,13 +39,17 @@ export function ownDisplayName(me: MeResponse): string {
   return me.name ?? me.email
 }
 
+const listFormats = new Map<string, Intl.ListFormat>()
+
 /** "Anna", "Anna and Ewa", "Anna, Ewa and Tomasz". */
 export function joinNames(names: string[]): string {
-  if (names.length <= 1) {
-    return names.join('')
+  const locale = formattingLocale()
+  let format = listFormats.get(locale)
+  if (!format) {
+    format = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' })
+    listFormats.set(locale, format)
   }
-
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+  return format.format(names)
 }
 
 /** Everyone but the viewer, once each, in first-seen order. */

@@ -1,5 +1,6 @@
 import { useId, useRef, type ReactNode, type RefObject } from 'react'
-import { parseAmountInput, sanitizeAmountInput } from '@/lib/money'
+import { Trans } from '@lingui/react/macro'
+import { localizeAmountInput, parseAmountInput, sanitizeAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { FieldError } from '@/components/FieldError'
 
@@ -12,7 +13,7 @@ type AmountFieldProps = {
   inputRef: RefObject<HTMLInputElement | null>
 }
 
-/** Large centred amount with a fixed "zł" suffix; decimal comma accepted, tidied on blur. */
+/** Large centred amount with a fixed "zł" suffix; decimal comma or point accepted, shown with the locale's separator. */
 export function AmountField({ value, onChange, error, outcome, inputRef }: AmountFieldProps) {
   const id = useId()
   const blockRef = useRef<HTMLDivElement>(null)
@@ -21,7 +22,7 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
   return (
     <div ref={blockRef} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
       <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
-        Amount
+        <Trans>Amount</Trans>
       </label>
       <div
         className={cn(
@@ -35,8 +36,8 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
           type="text"
           inputMode="decimal"
           autoComplete="off"
-          placeholder="0.00"
-          value={value}
+          placeholder={localizeAmountInput('0.00')}
+          value={localizeAmountInput(value)}
           aria-invalid={!!error}
           aria-describedby={`${id}-outcome`}
           onChange={(event) => onChange(sanitizeAmountInput(event.target.value, value))}

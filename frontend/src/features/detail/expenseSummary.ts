@@ -1,11 +1,10 @@
+import { plural, t } from '@lingui/core/macro'
 import type { ExpenseResponse, PersonRef, SplitType } from '@/api/types'
-import { isZeroAmount, sumAmounts, type BalanceDirection } from '@/lib/money'
-import { trimDecimal } from '@/lib/decimal'
+import { formatDecimal, isZeroAmount, sumAmounts, type BalanceDirection } from '@/lib/money'
 import { joinNames, nameForViewer, peopleOtherThan } from '@/lib/person'
 
 export type ExpensePosition = {
   direction: BalanceDirection
-  label: string
   amount: string
 }
 
@@ -16,27 +15,29 @@ export function expensePosition(expense: ExpenseResponse, viewerId: number): Exp
       expense.debts.filter((debt) => debt.payer.id !== viewerId).map((debt) => debt.amount),
     )
     return isZeroAmount(othersOwe)
-      ? { direction: 'none', label: 'No balance', amount: othersOwe }
-      : { direction: 'owed', label: 'You lent', amount: othersOwe }
+      ? { direction: 'none', amount: othersOwe }
+      : { direction: 'owed', amount: othersOwe }
   }
 
   const ownShare = expense.debts.find((debt) => debt.payer.id === viewerId)?.amount ?? '0.00'
   return isZeroAmount(ownShare)
-    ? { direction: 'none', label: 'No balance', amount: ownShare }
-    : { direction: 'owe', label: 'You borrowed', amount: ownShare }
-}
-
-const splitHeadings: Record<Exclude<SplitType, 'equal'>, string> = {
-  exact: 'Split by amounts',
-  percentage: 'Split by percentages',
-  shares: 'Split by shares',
+    ? { direction: 'none', amount: ownShare }
+    : { direction: 'owe', amount: ownShare }
 }
 
 export function splitHeading(expense: ExpenseResponse): string {
-  if (expense.splitType === 'equal') {
-    return `Split equally between ${expense.debts.length}`
+  switch (expense.splitType) {
+    case 'equal': {
+      const peopleCount = expense.debts.length
+      return plural(peopleCount, { other: 'Split equally between #' })
+    }
+    case 'exact':
+      return t`Split by amounts`
+    case 'percentage':
+      return t`Split by percentages`
+    case 'shares':
+      return t`Split by shares`
   }
-  return splitHeadings[expense.splitType]
 }
 
 export type SplitPerson = {
@@ -75,12 +76,12 @@ function splitValueLabel(splitType: SplitType, splitValue: string | null): strin
   if (splitValue === null) {
     return null
   }
-  const value = trimDecimal(splitValue)
   if (splitType === 'percentage') {
-    return `${value}%`
+    return `${formatDecimal(splitValue)}%`
   }
   if (splitType === 'shares') {
-    return value === '1' ? '1 share' : `${value} shares`
+    const shareCount = Number(splitValue)
+    return plural(shareCount, { one: '# share', other: '# shares' })
   }
   return null
 }
@@ -94,7 +95,8 @@ export function otherParticipantNames(expense: ExpenseResponse, viewerId: number
 
 export function deleteWarning(otherNames: string[]): string {
   if (otherNames.length === 0) {
-    return 'This can’t be undone.'
+    return t`This can’t be undone.`
   }
-  return `It disappears for ${joinNames(otherNames)} too, and balances change. This can’t be undone.`
+  const names = joinNames(otherNames)
+  return t`It disappears for ${names} too, and balances change. This can’t be undone.`
 }

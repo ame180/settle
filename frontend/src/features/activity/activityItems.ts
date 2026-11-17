@@ -1,7 +1,7 @@
-import type { ActivityItem } from '@/api/types'
+import { t } from '@lingui/core/macro'
+import type { ActivityItem, PersonRef } from '@/api/types'
 import { calendarDayKey } from '@/lib/dates'
 import type { BalanceDirection } from '@/lib/money'
-import { nameForViewer } from '@/lib/person'
 
 export type ActivityDay = {
   /** `YYYY-MM-DD` */
@@ -50,19 +50,27 @@ export function activityItemPath(item: ActivityItem): string {
   return item.type === 'expense' ? `/expenses/${item.id}` : `/transfers/${item.id}`
 }
 
-export const balanceDirectionLabel: Record<BalanceDirection, string> = {
-  owed: 'you lent',
-  owe: 'you borrowed',
-  none: 'no balance',
+export function balanceDirectionLabel(direction: BalanceDirection): string {
+  switch (direction) {
+    case 'owed':
+      return t`you lent`
+    case 'owe':
+      return t`you borrowed`
+    case 'none':
+      return t`no balance`
+  }
 }
 
-/** Who did what in a transfer, from the viewer's side: "You" + "paid Anna", "Anna" + "paid you". */
-export function describeTransfer(
-  item: ActivityItem,
+/** Which side of a transfer the viewer is on, so each reading gets its own translated sentence. */
+export type TransferSide = 'viewer-paid' | 'viewer-received' | 'others'
+
+export function transferSide(
+  payer: Pick<PersonRef, 'id'>,
+  payee: Pick<PersonRef, 'id'>,
   viewerId: number,
-): { actor: string; verb: string } {
-  const payer = item.payer ?? item.payee
-  const actor = nameForViewer(payer, viewerId)
-  const target = item.payee.id === viewerId ? 'you' : item.payee.displayName
-  return { actor, verb: `paid ${target}` }
+): TransferSide {
+  if (payer.id === viewerId) {
+    return 'viewer-paid'
+  }
+  return payee.id === viewerId ? 'viewer-received' : 'others'
 }

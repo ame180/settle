@@ -64,7 +64,7 @@ describe('ContactPage', () => {
     expect(await screen.findByRole('heading', { name: 'Anna Kowalska' })).toBeInTheDocument()
     expect(screen.getByText('anna@example.com')).toBeInTheDocument()
     expect(screen.getByText('Anna owes you')).toBeInTheDocument()
-    expect(screen.getByText('192.92 zł')).toHaveClass('text-positive')
+    expect(screen.getByText('PLN 192.92')).toHaveClass('text-positive')
     expect(screen.getByRole('link', { name: 'Settle up' })).toHaveAttribute(
       'href',
       '/add?tab=payment&contact=2&amount=192.92&payer=them',
@@ -91,7 +91,7 @@ describe('ContactPage', () => {
     renderContact(7)
 
     expect(await screen.findByText('You owe Aleksandra')).toBeInTheDocument()
-    expect(screen.getByText('1 535.64 zł')).toHaveClass('text-negative')
+    expect(screen.getByText('PLN 1,535.64')).toHaveClass('text-negative')
     expect(screen.getByRole('link', { name: 'Settle up' })).toHaveAttribute(
       'href',
       '/add?tab=payment&contact=7&amount=1535.64&payer=me',
@@ -139,9 +139,9 @@ describe('ContactPage', () => {
     const list = await screen.findByRole('list')
     const rows = within(list).getAllByRole('link')
     expect(rows).toHaveLength(3)
-    expect(rows[0]).toHaveTextContent('Anna Kowalska paid you 150.00 zł22 Oct')
+    expect(rows[0]).toHaveTextContent('Anna Kowalska paid you PLN 150.0022 Oct')
     expect(rows[0]).toHaveAttribute('href', '/transfers/5')
-    expect(rows[1]).toHaveTextContent('20 Oct · You paid 184.30 zł')
+    expect(rows[1]).toHaveTextContent('20 Oct · You paid PLN 184.30')
     expect(rows[2]).toHaveTextContent('31 Dec 2025 ·')
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
   })

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Trash2 } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { BackLink } from '@/components/BackLink'
 import { ConfirmSheet } from '@/components/ConfirmSheet'
 import { PageHeader } from '@/components/PageHeader'
@@ -17,11 +18,12 @@ type DetailScreenProps = {
 }
 
 export function DetailScreen({ title, trailing, children }: DetailScreenProps) {
+  const { t } = useLingui()
   return (
     <div className="flex h-full flex-col">
       <PageHeader
         title={title}
-        leading={<BackLink to={detailBackFallback} label="Back" />}
+        leading={<BackLink to={detailBackFallback} label={t`Back`} />}
         trailing={trailing}
       />
       <main className="flex flex-1 flex-col overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
@@ -37,7 +39,9 @@ export function NoteBlock({ note }: { note: string | null }) {
   }
   return (
     <div className="mx-4 mt-3 flex flex-col gap-1">
-      <span className="text-sm font-medium text-muted-foreground">Note</span>
+      <span className="text-sm font-medium text-muted-foreground">
+        <Trans>Note</Trans>
+      </span>
       <p className="text-[15px] leading-[1.45] break-words whitespace-pre-line">{note}</p>
     </div>
   )
@@ -63,6 +67,7 @@ export function DetailActions({
   confirmDescription,
   deletion,
 }: DetailActionsProps) {
+  const { t } = useLingui()
   const { isConfirmOpen, setConfirmOpen, confirm, isPending } = deletion
   return (
     <>
@@ -79,14 +84,14 @@ export function DetailActions({
         confirmLabel={deleteLabel}
         onConfirm={confirm}
         pending={isPending}
-        pendingLabel="Deleting…"
+        pendingLabel={t`Deleting…`}
       />
       <Link
         to={editTo}
         aria-label={editLabel}
         className="flex h-11 items-center rounded-full px-3 text-base font-semibold hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        Edit
+        <Trans>Edit</Trans>
       </Link>
     </>
   )

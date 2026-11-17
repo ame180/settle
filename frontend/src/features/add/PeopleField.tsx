@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState, type RefObject } from 'react'
 import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { UserPlus, X } from 'lucide-react'
-import { ApiError } from '@/api/client'
 import { useAddContact } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
 import { useCloseOnBack } from '@/lib/backLayers'
@@ -11,6 +11,7 @@ import { getShortName, ownDisplayName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 import { ContactOption } from './ContactOption'
 import { looksLikeEmail, recentContacts, searchContacts } from './contactOptions'
+import { addContactErrorMessage } from '@/lib/contact'
 import { FieldError } from '@/components/FieldError'
 
 const RECENT_LIMIT = 6
@@ -58,6 +59,7 @@ export function PeopleField({
   error,
   inputRef,
 }: PeopleFieldProps) {
+  const { t } = useLingui()
   const [query, setQuery] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -151,10 +153,7 @@ export function PeopleField({
           }
         },
         onError: (mutationError) => {
-          const message =
-            (mutationError instanceof ApiError &&
-              (mutationError.violations[0]?.title ?? mutationError.detail)) ||
-            'Couldn’t add this contact. Try again.'
+          const message = addContactErrorMessage(mutationError)
           // The list it was added from is gone, so say it where the user can still see it.
           if (visitRef.current !== visit) {
             toast.error(message)
@@ -177,7 +176,7 @@ export function PeopleField({
       }}
     >
       <label id={`${listId}-label`} htmlFor={`${listId}-input`} className="text-sm font-medium">
-        With
+        <Trans>With</Trans>
       </label>
       <div
         ref={fieldRef}
@@ -193,28 +192,31 @@ export function PeopleField({
       >
         <span className="flex h-8 items-center gap-1.5 rounded-full bg-secondary pr-3 pl-1 text-[15px]">
           <PersonAvatar id={me.id} name={ownDisplayName(me)} size="sm" />
-          You
+          <Trans>You</Trans>
         </span>
-        {others.map((person) => (
-          <span
-            key={person.id}
-            className="flex h-8 max-w-full items-center gap-1.5 rounded-full bg-secondary pl-1 text-[15px]"
-          >
-            <PersonAvatar id={person.id} name={person.displayName} size="sm" />
-            <span className="truncate">{getShortName(person.displayName)}</span>
-            <button
-              type="button"
-              aria-label={`Remove ${person.displayName}`}
-              onClick={(event) => {
-                event.stopPropagation()
-                onChange(others.filter((other) => other.id !== person.id))
-              }}
-              className="-my-1.5 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        {others.map((person) => {
+          const displayName = person.displayName
+          return (
+            <span
+              key={person.id}
+              className="flex h-8 max-w-full items-center gap-1.5 rounded-full bg-secondary pl-1 text-[15px]"
             >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </span>
-        ))}
+              <PersonAvatar id={person.id} name={person.displayName} size="sm" />
+              <span className="truncate">{getShortName(person.displayName)}</span>
+              <button
+                type="button"
+                aria-label={t`Remove ${displayName}`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onChange(others.filter((other) => other.id !== person.id))
+                }}
+                className="-my-1.5 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            </span>
+          )
+        })}
         <input
           ref={inputRef}
           id={`${listId}-input`}
@@ -223,7 +225,7 @@ export function PeopleField({
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="Name or email"
+          placeholder={t`Name or email`}
           value={query}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
@@ -256,11 +258,11 @@ export function PeopleField({
       {open && (
         <div className="mt-1 overflow-hidden rounded-xl border bg-background shadow-[0_4px_16px_rgb(0_0_0/0.06)]">
           <p className="flex h-10 items-center px-3 text-[13px] font-medium text-muted-foreground">
-            {trimmedQuery === '' ? 'Recent' : 'Contacts'}
+            {trimmedQuery === '' ? t`Recent` : t`Contacts`}
           </p>
-          <ul id={listId} aria-label="Contacts" className="border-t">
+          <ul id={listId} aria-label={t`Contacts`} className="border-t">
             {contacts === undefined && (
-              <li className="px-3 py-3 text-sm text-muted-foreground">Loading contacts…</li>
+              <li className="px-3 py-3 text-sm text-muted-foreground">{t`Loading contacts…`}</li>
             )}
             {rows.map((contact) => {
               const picked = pickedIds.has(contact.person.id)
@@ -278,12 +280,12 @@ export function PeopleField({
           </ul>
           {contacts !== undefined && trimmedQuery !== '' && rows.length === 0 && (
             <p className="border-t px-3 py-3 text-[15px] text-muted-foreground">
-              {isOwnEmail ? 'That’s your email. You’re always in it.' : 'No contacts match.'}
+              {isOwnEmail ? t`That’s your email. You’re always in it.` : t`No contacts match.`}
             </p>
           )}
           {contacts !== undefined && trimmedQuery === '' && rows.length === 0 && (
             <p className="border-t px-3 py-3 text-[15px] text-muted-foreground">
-              No contacts yet. Type someone’s email to add them.
+              <Trans>No contacts yet. Type someone’s email to add them.</Trans>
             </p>
           )}
           {offerEmail && (
@@ -298,10 +300,10 @@ export function PeopleField({
               </span>
               <span className="flex min-w-0 flex-col">
                 <span className="[overflow-wrap:anywhere]">
-                  {addContact.isPending ? 'Adding…' : `Add ${trimmedQuery} as a new contact`}
+                  {addContact.isPending ? t`Adding…` : t`Add ${trimmedQuery} as a new contact`}
                 </span>
                 <span className="text-[13px] text-muted-foreground">
-                  They can join Settle later. You can rename them.
+                  <Trans>They can join Settle later. You can rename them.</Trans>
                 </span>
               </span>
             </button>
@@ -309,7 +311,7 @@ export function PeopleField({
           {addError && <FieldError message={addError} className="border-t px-3 py-2.5" />}
           {trimmedQuery !== '' && !looksLikeEmail(trimmedQuery) && (
             <p className="border-t px-3 py-2.5 text-[13px] text-muted-foreground">
-              Not in your contacts? Type their email.
+              <Trans>Not in your contacts? Type their email.</Trans>
             </p>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import { formatGrosze } from '@/lib/money'
 
 export type PaymentPayer = 'me' | 'them'
@@ -14,7 +15,7 @@ export type PaymentOutcome = {
   detail: string
 }
 
-/** "Anna owes you 192.92 zł now." – where the two stand before the payment. */
+/** "Anna owes you PLN 192.92 now." – where the two stand before the payment. */
 export function describeBalance(balance: bigint, name: string): string {
   return owesSentence(balance, name, 'now')
 }
@@ -22,14 +23,14 @@ export function describeBalance(balance: bigint, name: string): string {
 function owesSentence(balance: bigint, name: string, tense: 'now' | 'will'): string {
   if (balance === 0n) {
     return tense === 'now'
-      ? `You and ${name} are settled up now.`
-      : `You and ${name} will be settled up`
+      ? t`You and ${name} are settled up now.`
+      : t`You and ${name} will be settled up`
   }
   const amount = formatGrosze(balance)
   if (balance > 0n) {
-    return tense === 'now' ? `${name} owes you ${amount} now.` : `${name} will owe you ${amount}`
+    return tense === 'now' ? t`${name} owes you ${amount} now.` : t`${name} will owe you ${amount}`
   }
-  return tense === 'now' ? `You owe ${name} ${amount} now.` : `You’ll owe ${name} ${amount}`
+  return tense === 'now' ? t`You owe ${name} ${amount} now.` : t`You’ll owe ${name} ${amount}`
 }
 
 /**
@@ -45,10 +46,11 @@ export function describePayment(balance: bigint, after: bigint, name: string): P
   const sameSide = (balance > 0n && after > 0n) || (balance < 0n && after < 0n)
   const magnitude = (value: bigint) => (value < 0n ? -value : value)
   if (sameSide && magnitude(after) < magnitude(balance)) {
+    const remaining = formatGrosze(after)
     const title =
       after > 0n
-        ? `${name} will still owe you ${formatGrosze(after)}`
-        : `You’ll still owe ${name} ${formatGrosze(after)}`
+        ? t`${name} will still owe you ${remaining}`
+        : t`You’ll still owe ${name} ${remaining}`
     return { tone: 'reduces', title, detail: now }
   }
 
@@ -63,8 +65,8 @@ export function describePayment(balance: bigint, after: bigint, name: string): P
       title,
       detail:
         balance > 0n
-          ? `This adds to what ${name} already owes you (${current}).`
-          : `This adds to what you already owe ${name} (${current}).`,
+          ? t`This adds to what ${name} already owes you (${current}).`
+          : t`This adds to what you already owe ${name} (${current}).`,
     }
   }
   return {
@@ -72,8 +74,8 @@ export function describePayment(balance: bigint, after: bigint, name: string): P
     title,
     detail:
       balance > 0n
-        ? `That’s more than ${name} owes you (${current}).`
-        : `That’s more than you owe ${name} (${current}).`,
+        ? t`That’s more than ${name} owes you (${current}).`
+        : t`That’s more than you owe ${name} (${current}).`,
   }
 }
 

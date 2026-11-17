@@ -1,4 +1,6 @@
 import { Link } from 'react-router'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import type { ContactListItem } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { SignedAmount } from '@/components/SignedAmount'
@@ -12,6 +14,7 @@ type ContactRowProps = {
 }
 
 export function ContactRow({ contact, settled = false }: ContactRowProps) {
+  const { t } = useLingui()
   const { person } = contact
   const plnBalance = findPlnAmount(contact.balances)
   const direction = plnBalance === null ? 'none' : balanceDirection(plnBalance)
@@ -28,15 +31,20 @@ export function ContactRow({ contact, settled = false }: ContactRowProps) {
             {person.displayName}
           </span>
           {!contact.isRegistered && (
-            <span className="text-[13px] text-muted-foreground">Not on Settle yet</span>
+            <span className="text-[13px] text-muted-foreground">
+              <Trans>Not on Settle yet</Trans>
+            </span>
           )}
         </div>
         {plnBalance === null ? (
           <span className="shrink-0 text-[13px] text-muted-foreground">
-            {settled ? 'settled up' : noPlnBalanceLabel(contact)}
+            {settled ? t`settled up` : noPlnBalanceLabel(contact)}
           </span>
         ) : (
-          <SignedAmount direction={direction} label={direction === 'owe' ? 'you owe' : 'owes you'}>
+          <SignedAmount
+            direction={direction}
+            label={direction === 'owe' ? t`you owe` : t`owes you`}
+          >
             {formatPln(plnBalance)}
           </SignedAmount>
         )}
@@ -47,5 +55,5 @@ export function ContactRow({ contact, settled = false }: ContactRowProps) {
 
 // The list only shows PLN for now, so a balance in another currency must not read as "none".
 function noPlnBalanceLabel(contact: ContactListItem): string {
-  return contact.balances.length === 0 ? 'no balance' : 'no PLN balance'
+  return contact.balances.length === 0 ? t`no balance` : t`no PLN balance`
 }

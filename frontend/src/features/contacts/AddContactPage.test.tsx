@@ -34,14 +34,14 @@ describe('AddContactPage', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('shows a problem detail without violations under the email field', async () => {
+  it('reads a 400 without violations as adding yourself, under the email field', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
         jsonResponse(400, {
           status: 400,
-          title: 'Bad Request',
-          detail: 'You cannot add yourself as a contact.',
+          title: 'An error occurred',
+          detail: 'Bad Request',
         }),
       ),
     )
@@ -50,7 +50,7 @@ describe('AddContactPage', () => {
     await userEvent.type(screen.getByLabelText('Email'), 'me@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Add contact' }))
 
-    expect(await screen.findByText('You cannot add yourself as a contact.')).toBeInTheDocument()
+    expect(await screen.findByText('You can’t add yourself as a contact.')).toBeInTheDocument()
     expect(screen.getByLabelText('Email')).toHaveAttribute('aria-invalid', 'true')
   })
 

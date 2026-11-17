@@ -1,11 +1,18 @@
 import { useState } from 'react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
-import { addDays, formatLongDate, fromIsoDate, todayIso, toIsoDate } from '@/lib/dates'
+import {
+  addDays,
+  calendarWeekdays,
+  formatLongDate,
+  formatMonthYear,
+  fromIsoDate,
+  todayIso,
+  toIsoDate,
+} from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-
-const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 type DateSheetProps = {
   open: boolean
@@ -19,6 +26,7 @@ type DateSheetProps = {
  * the sheet open to say it counts towards balances straight away.
  */
 export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProps) {
+  const { t } = useLingui()
   const today = todayIso()
   const [month, setMonth] = useState(() => startOfMonth(value))
   // Each time it opens, show the month of the picked date.
@@ -30,6 +38,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
     }
   }
   const isFuture = value > today
+  const futureDate = formatLongDate(value)
 
   function pick(isoDate: string) {
     onChange(isoDate)
@@ -44,14 +53,18 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
   const days = Array.from({ length: daysInMonth }, (_, index) =>
     toIsoDate(new Date(first.getFullYear(), first.getMonth(), index + 1)),
   )
-  const monthLabel = first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const monthLabel = formatMonthYear(first)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <div className="flex flex-col gap-3 overflow-y-auto px-4 pt-2 pb-5">
-          <SheetTitle>Date</SheetTitle>
-          <SheetDescription className="sr-only">Pick a date.</SheetDescription>
+          <SheetTitle>
+            <Trans>Date</Trans>
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            <Trans>Pick a date.</Trans>
+          </SheetDescription>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -59,7 +72,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
               aria-pressed={value === today}
               onClick={() => pick(today)}
             >
-              Today
+              <Trans>Today</Trans>
             </Button>
             <Button
               variant="outline"
@@ -67,7 +80,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
               aria-pressed={value === addDays(today, -1)}
               onClick={() => pick(addDays(today, -1))}
             >
-              Yesterday
+              <Trans>Yesterday</Trans>
             </Button>
           </div>
           <div className="flex items-center gap-1">
@@ -78,7 +91,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
               variant="ghost"
               size="icon"
               className="[&_svg]:size-5"
-              aria-label="Previous month"
+              aria-label={t`Previous month`}
               onClick={() => setMonth(shiftMonth(month, -1))}
             >
               <ChevronLeft aria-hidden="true" />
@@ -87,7 +100,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
               variant="ghost"
               size="icon"
               className="[&_svg]:size-5"
-              aria-label="Next month"
+              aria-label={t`Next month`}
               onClick={() => setMonth(shiftMonth(month, 1))}
             >
               <ChevronRight aria-hidden="true" />
@@ -98,13 +111,13 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
             aria-labelledby="date-sheet-month"
             className="grid grid-cols-7 justify-items-center gap-0.5"
           >
-            {weekdays.map((weekday) => (
+            {calendarWeekdays().map((weekday) => (
               <abbr
-                key={weekday}
-                title={weekday}
+                key={weekday.long}
+                title={weekday.long}
                 className="h-6 text-xs font-medium text-muted-foreground no-underline"
               >
-                {weekday[0]}
+                {weekday.narrow}
               </abbr>
             ))}
             {Array.from({ length: leadingBlanks }, (_, index) => (
@@ -113,13 +126,14 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
             {days.map((isoDate) => {
               const selected = isoDate === value
               const isToday = isoDate === today
+              const longDate = formatLongDate(isoDate)
               return (
                 <button
                   key={isoDate}
                   type="button"
                   aria-pressed={selected}
                   aria-current={isToday ? 'date' : undefined}
-                  aria-label={`${formatLongDate(isoDate)}${isToday ? ', today' : ''}`}
+                  aria-label={isToday ? t`${longDate}, today` : longDate}
                   onClick={() => pick(isoDate)}
                   className={cn(
                     'flex size-11 items-center justify-center rounded-full text-[15px] tabular-nums focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
@@ -137,8 +151,10 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
               <p role="status" className="flex items-start gap-2 text-[13px] text-foreground/80">
                 <Info className="mt-px size-4 shrink-0" aria-hidden="true" />
                 <span>
-                  {formatLongDate(value)} is in the future. It still counts towards your balances
-                  straight away.
+                  <Trans>
+                    {futureDate} is in the future. It still counts towards your balances straight
+                    away.
+                  </Trans>
                 </span>
               </p>
               <button
@@ -146,7 +162,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
                 onClick={() => onOpenChange(false)}
                 className="h-12 rounded-full bg-primary text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               >
-                Done
+                <Trans>Done</Trans>
               </button>
             </>
           )}

@@ -1,15 +1,19 @@
 import { useState } from 'react'
+import { plural, t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Check, ChevronDown, CircleCheck, Minus, Plus, TriangleAlert, X } from 'lucide-react'
 import type { MeResponse, PersonRef, SplitType } from '@/api/types'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { ownDisplayName } from '@/lib/person'
-import { trimDecimal } from '@/lib/decimal'
 import {
+  formatDecimal,
   formatGrosze,
   formatPln,
-  formatPlnNumber,
+  formatAmountNumber,
+  formatPlnRange,
   fromGrosze,
+  localizeAmountInput,
   parseAmountInput,
   sanitizeAmountInput,
   toGrosze,
@@ -28,12 +32,14 @@ import {
   type SplitDraft,
 } from './splitModel'
 
-const tabs: { type: SplitType; label: string; hint: string }[] = [
-  { type: 'equal', label: 'Equal', hint: 'Tick everyone who shares the cost.' },
-  { type: 'exact', label: 'Amounts', hint: 'Enter how much each person’s share is.' },
-  { type: 'percentage', label: '%', hint: 'Percentages have to add up to 100.' },
-  { type: 'shares', label: 'Shares', hint: 'Whole numbers. 2 nights = 2 shares.' },
-]
+function getTabs(): { type: SplitType; label: string; hint: string }[] {
+  return [
+    { type: 'equal', label: t`Equal`, hint: t`Tick everyone who shares the cost.` },
+    { type: 'exact', label: t`Amounts`, hint: t`Enter how much each person’s share is.` },
+    { type: 'percentage', label: t`%`, hint: t`Percentages have to add up to 100.` },
+    { type: 'shares', label: t`Shares`, hint: t`Whole numbers. 2 nights = 2 shares.` },
+  ]
+}
 
 type Person = { id: number; name: string; avatarName: string }
 
@@ -110,12 +116,13 @@ function SplitEditor({
   onCancel: () => void
   onDone: (split: SplitDraft) => void
 }) {
+  const { t } = useLingui()
   const [split, setSplit] = useState(initialSplit)
   const [payerListOpen, setPayerListOpen] = useState(initialPayerListOpen)
   const [focusedId, setFocusedId] = useState<number | null>(null)
 
   const people: Person[] = [
-    { id: me.id, name: 'You', avatarName: ownDisplayName(me) },
+    { id: me.id, name: t`You`, avatarName: ownDisplayName(me) },
     ...others.map((person) => ({
       id: person.id,
       name: person.displayName,
@@ -126,7 +133,10 @@ function SplitEditor({
   const check = checkSplit(split, ids, total, me.id)
   const canFinish = check.ok || check.problem.kind === 'no-amount'
   const payer = people.find((person) => person.id === split.payerId) ?? people[0]
+  const tabs = getTabs()
   const tab = tabs.find((candidate) => candidate.type === split.type) ?? tabs[0]
+
+  const totalLabel = total ? formatPln(total) : null
 
   function setValue(personId: number, value: string) {
     setSplit((current) => editSplit(current, { values: { ...current.values, [personId]: value } }))
@@ -135,13 +145,13 @@ function SplitEditor({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center gap-1 px-2 pt-1">
-        <Button variant="ghost" size="icon" aria-label="Close" onClick={onCancel}>
+        <Button variant="ghost" size="icon" aria-label={t`Close`} onClick={onCancel}>
           <X aria-hidden="true" />
         </Button>
-        <SheetTitle>{total ? `Split ${formatPln(total)}` : 'Split'}</SheetTitle>
+        <SheetTitle>{totalLabel ? t`Split ${totalLabel}` : t`Split`}</SheetTitle>
       </div>
       <SheetDescription className="sr-only">
-        Choose who paid and how the cost is shared.
+        <Trans>Choose who paid and how the cost is shared.</Trans>
       </SheetDescription>
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-3 pb-4">
@@ -152,7 +162,9 @@ function SplitEditor({
             onClick={() => setPayerListOpen((value) => !value)}
             className="flex h-14 w-full items-center gap-2.5 rounded-xl px-3.5 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <span className="text-sm text-muted-foreground">Paid by</span>
+            <span className="text-sm text-muted-foreground">
+              <Trans>Paid by</Trans>
+            </span>
             <PersonAvatar id={payer.id} name={payer.avatarName} size="sm" />
             <span className="flex-1 truncate font-semibold">{payer.name}</span>
             <ChevronDown
@@ -161,7 +173,7 @@ function SplitEditor({
             />
           </button>
           {payerListOpen && (
-            <div role="radiogroup" aria-label="Who paid" className="border-t">
+            <div role="radiogroup" aria-label={t`Who paid`} className="border-t">
               {people.map((person) => (
                 <button
                   key={person.id}
@@ -195,7 +207,7 @@ function SplitEditor({
 
         <div
           role="tablist"
-          aria-label="Split type"
+          aria-label={t`Split type`}
           className="grid grid-cols-4 rounded-full bg-secondary p-1"
         >
           {tabs.map((candidate) => (
@@ -206,7 +218,7 @@ function SplitEditor({
               id={`split-tab-${candidate.type}`}
               aria-controls="split-tab-panel"
               aria-selected={candidate.type === split.type}
-              aria-label={candidate.type === 'percentage' ? 'Percentages' : undefined}
+              aria-label={candidate.type === 'percentage' ? t`Percentages` : undefined}
               onClick={() =>
                 setSplit((current) => switchSplitType(current, candidate.type, ids, total))
               }
@@ -224,7 +236,9 @@ function SplitEditor({
         <p className="-mt-1 text-[13px] text-muted-foreground">{tab.hint}</p>
 
         {!check.ok && check.problem.kind === 'not-involved' && (
-          <AlertLine message="You need to pay or share in this expense. Tick yourself, or make yourself the payer." />
+          <AlertLine
+            message={t`You need to pay or share in this expense. Tick yourself, or make yourself the payer.`}
+          />
         )}
 
         <ul
@@ -278,7 +292,7 @@ function SplitEditor({
           onClick={() => onDone(split)}
           className="h-12 shrink-0 rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:bg-secondary disabled:text-muted-foreground"
         >
-          Done
+          <Trans>Done</Trans>
         </button>
       </div>
     </div>
@@ -298,7 +312,9 @@ function RowControl({
   onValue: (value: string) => void
   onFocus: () => void
 }) {
+  const { t } = useLingui()
   const value = split.values[person.id] ?? ''
+  const personName = person.name
 
   if (split.type === 'equal') {
     const included = !split.excluded.includes(person.id)
@@ -308,7 +324,7 @@ function RowControl({
           type="checkbox"
           checked={included}
           onChange={(event) => onToggle(event.target.checked)}
-          aria-label={`${person.name} shares the cost`}
+          aria-label={t`${personName} shares the cost`}
           className="peer sr-only"
         />
         <span
@@ -329,6 +345,7 @@ function RowControl({
     const parsed = parseAmountInput(value) ?? '0.00'
     const shares = Number.parseInt(parsed, 10)
     const fractional = !parsed.endsWith('.00')
+    const shareCount = Number(parsed)
     const step = (delta: number) => {
       const next = delta > 0 ? shares + 1 : fractional ? shares : shares - 1
       onValue(String(Math.min(MAX_SHARES, Math.max(0, next))))
@@ -337,7 +354,7 @@ function RowControl({
       <span className="flex h-11 shrink-0 items-center rounded-full border border-border-strong">
         <button
           type="button"
-          aria-label={`One share less for ${person.name}`}
+          aria-label={t`One share less for ${personName}`}
           disabled={shares === 0 && !fractional}
           onClick={() => step(-1)}
           className="flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:text-muted-foreground/50"
@@ -345,13 +362,17 @@ function RowControl({
           <Minus className="size-4.5" aria-hidden="true" />
         </button>
         <span aria-live="polite" className="min-w-6 px-0.5 text-center font-semibold tabular-nums">
-          <span className="sr-only">{person.name}: </span>
-          {trimDecimal(parsed)}
-          <span className="sr-only"> shares</span>
+          <span className="sr-only">
+            {plural(shareCount, {
+              one: `${personName}: # share`,
+              other: `${personName}: # shares`,
+            })}
+          </span>
+          <span aria-hidden="true">{formatDecimal(parsed)}</span>
         </span>
         <button
           type="button"
-          aria-label={`One share more for ${person.name}`}
+          aria-label={t`One share more for ${personName}`}
           disabled={shares === MAX_SHARES}
           onClick={() => step(1)}
           className="flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:text-muted-foreground/50"
@@ -369,9 +390,9 @@ function RowControl({
         type="text"
         inputMode="decimal"
         autoComplete="off"
-        placeholder={isPercent ? '0' : '0.00'}
-        aria-label={isPercent ? `${person.name}, percent` : `${person.name}, amount in zł`}
-        value={value}
+        placeholder={isPercent ? '0' : localizeAmountInput('0.00')}
+        aria-label={isPercent ? t`${personName}, percent` : t`${personName}, amount in zł`}
+        value={localizeAmountInput(value)}
         onFocus={onFocus}
         onChange={(event) => onValue(sanitizeAmountInput(event.target.value, value))}
         className={cn('text-right tabular-nums', isPercent ? 'w-18' : 'w-24')}
@@ -405,6 +426,7 @@ function RowNote({
       return null
     }
     const current = toGrosze(parseAmountInput(split.values[personId] ?? '') ?? '0')
+    const remaining = formatGrosze(left)
     return (
       <button
         type="button"
@@ -413,13 +435,17 @@ function RowNote({
         onClick={() => onFill(fromGrosze(current + left))}
         className="self-start text-[13px] font-semibold underline underline-offset-2"
       >
-        Fill the {formatGrosze(left)} left
+        <Trans>Fill the {remaining} left</Trans>
       </button>
     )
   }
 
   if (split.type === 'equal' && split.excluded.includes(personId)) {
-    return <span className="text-[13px] text-muted-foreground">Not sharing</span>
+    return (
+      <span className="text-[13px] text-muted-foreground">
+        <Trans>Not sharing</Trans>
+      </span>
+    )
   }
   if (!check.ok || total === null) {
     return null
@@ -472,10 +498,10 @@ function describeStatus(
   total: string | null,
 ): StatusText {
   if (!check.ok && check.problem.kind === 'invalid-value') {
-    return { tone: 'warn', main: 'Check the numbers', sub: 'Use digits, with up to 2 decimals' }
+    return { tone: 'warn', main: t`Check the numbers`, sub: t`Use digits, with up to 2 decimals` }
   }
   if (!check.ok && check.problem.kind === 'not-involved') {
-    return { tone: 'warn', main: 'You’re not in it', sub: 'Tick yourself or pay' }
+    return { tone: 'warn', main: t`You’re not in it`, sub: t`Tick yourself or pay` }
   }
 
   const debts = splitDebts(split, ids)
@@ -484,38 +510,43 @@ function describeStatus(
 
   if (split.type === 'equal') {
     const sharing = debtList.length
-    const people = `${sharing} of ${ids.length} people sharing`
+    const peopleCount = ids.length
+    const sharingLabel = plural(peopleCount, {
+      one: `${sharing} of # person sharing`,
+      other: `${sharing} of # people sharing`,
+    })
     if (sharing === 0) {
-      return { tone: 'warn', main: 'Nobody is sharing', sub: 'Tick at least one person' }
+      return { tone: 'warn', main: t`Nobody is sharing`, sub: t`Tick at least one person` }
     }
     if (!check.ok) {
-      return { tone: 'plain', main: people, sub: 'Enter the amount to see each share' }
+      return { tone: 'plain', main: sharingLabel, sub: t`Enter the amount to see each share` }
     }
     const shares = [...check.shares.values()]
     const min = shares.reduce((a, b) => (b < a ? b : a))
     const max = shares.reduce((a, b) => (b > a ? b : a))
-    const each =
-      min === max ? formatGrosze(min) : `${formatPlnNumber(fromGrosze(min))}–${formatGrosze(max)}`
-    return { tone: 'ok', main: `${each} each`, sub: people }
+    const each = min === max ? formatGrosze(min) : formatPlnRange(fromGrosze(min), fromGrosze(max))
+    return { tone: 'ok', main: t`${each} each`, sub: sharingLabel }
   }
 
   if (split.type === 'shares') {
     // In hundredths of a share, since loaded expenses may have fractional shares.
     const count = debtList.reduce((sum, debt) => sum + toGrosze(debt.value ?? '0'), 0n)
-    const label = `${trimDecimal(fromGrosze(count))} ${count === 100n ? 'share' : 'shares'}`
+    const shareCount = Number(count) / 100
+    const label = plural(shareCount, { one: '# share', other: '# shares' })
     if (count === 0n) {
-      return { tone: 'warn', main: 'No shares yet', sub: 'Add at least one share' }
+      return { tone: 'warn', main: t`No shares yet`, sub: t`Add at least one share` }
     }
     if (!check.ok || total === null) {
-      return { tone: 'plain', main: label, sub: 'Enter the amount to see each share' }
+      return { tone: 'plain', main: label, sub: t`Enter the amount to see each share` }
     }
     const totalGrosze = toGrosze(total)
     const perShare = (totalGrosze * 100n) / count
     const exact = (totalGrosze * 100n) % count === 0n
+    const perShareLabel = formatGrosze(perShare)
     return {
       tone: 'ok',
       main: label,
-      sub: `${exact ? '' : 'about '}${formatGrosze(perShare)} per share`,
+      sub: exact ? t`${perShareLabel} per share` : t`about ${perShareLabel} per share`,
     }
   }
 
@@ -523,45 +554,51 @@ function describeStatus(
     if (!check.ok && check.problem.kind === 'percent') {
       const assigned = check.problem.assigned
       const difference = 10000n - assigned
+      const assignedPercent = formatDecimal(fromGrosze(assigned))
+      const differencePercent = formatDecimal(
+        fromGrosze(difference > 0n ? difference : -difference),
+      )
       return {
         tone: 'warn',
-        main: `${trimDecimal(fromGrosze(assigned))}% of 100%`,
+        main: t`${assignedPercent}% of 100%`,
         sub:
           difference > 0n
-            ? `${trimDecimal(fromGrosze(difference))}% left to assign`
-            : `${trimDecimal(fromGrosze(-difference))}% too much`,
+            ? t`${differencePercent}% left to assign`
+            : t`${differencePercent}% too much`,
       }
     }
     if (!check.ok && check.problem.kind === 'nobody') {
-      return { tone: 'warn', main: '0% of 100%', sub: 'Give someone a share' }
+      return { tone: 'warn', main: t`0% of 100%`, sub: t`Give someone a share` }
     }
+    const totalLabel = total === null ? null : formatPln(total)
     return {
       tone: 'ok',
       main: '100%',
-      sub: noAmount || total === null ? 'Adds up' : `Adds up to ${formatPln(total)}`,
+      sub: noAmount || totalLabel === null ? t`Adds up` : t`Adds up to ${totalLabel}`,
     }
   }
 
   // Amounts
   const assigned = debtList.reduce((sum, debt) => sum + toGrosze(debt.value ?? '0'), 0n)
   if (total === null) {
+    const assignedLabel = formatGrosze(assigned)
     return {
       tone: 'plain',
-      main: `${formatGrosze(assigned)} assigned`,
-      sub: 'Enter the amount to check it adds up',
+      main: t`${assignedLabel} assigned`,
+      sub: t`Enter the amount to check it adds up`,
     }
   }
   const totalGrosze = toGrosze(total)
   if (check.ok) {
-    return { tone: 'ok', main: `${formatGrosze(totalGrosze)}`, sub: 'All of it assigned' }
+    return { tone: 'ok', main: formatGrosze(totalGrosze), sub: t`All of it assigned` }
   }
   const difference = totalGrosze - assigned
+  const assignedNumber = formatAmountNumber(fromGrosze(assigned))
+  const totalAmount = formatGrosze(totalGrosze)
+  const differenceAmount = formatGrosze(difference > 0n ? difference : -difference)
   return {
     tone: 'warn',
-    main: `${formatPlnNumber(fromGrosze(assigned))} of ${formatGrosze(totalGrosze)}`,
-    sub:
-      difference > 0n
-        ? `${formatGrosze(difference)} left to assign`
-        : `${formatGrosze(-difference)} too much`,
+    main: t`${assignedNumber} of ${totalAmount}`,
+    sub: difference > 0n ? t`${differenceAmount} left to assign` : t`${differenceAmount} too much`,
   }
 }

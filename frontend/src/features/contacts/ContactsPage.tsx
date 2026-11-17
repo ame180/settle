@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { CircleCheck, UserPlus, Users } from 'lucide-react'
+import { Plural, Trans, useLingui } from '@lingui/react/macro'
 import { useContacts } from '@/api/contacts'
 import type { ContactListItem, ContactListResponse } from '@/api/types'
 import { AddExpenseButton } from '@/components/AddExpenseButton'
@@ -16,16 +17,17 @@ import { ContactRow } from './ContactRow'
 import { isHiddenAsSettled } from './contactVisibility'
 
 export function ContactsPage() {
+  const { t } = useLingui()
   const contactsQuery = useContacts()
 
   return (
     <>
       <PageHeader
-        title="Contacts"
+        title={t`Contacts`}
         trailing={
           <Link
             to="/contacts/new"
-            aria-label="Add contact"
+            aria-label={t`Add contact`}
             className={buttonClassName({ variant: 'ghost', size: 'icon' })}
           >
             <UserPlus className="size-6" aria-hidden="true" />
@@ -38,15 +40,15 @@ export function ContactsPage() {
           <ContactsSkeleton />
         ) : contactsQuery.data === undefined ? (
           <LoadError
-            title="Couldn't load contacts"
+            title={t`Couldn't load contacts`}
             onRetry={() => contactsQuery.refetch()}
             isRetrying={contactsQuery.isFetching}
           />
         ) : contactsQuery.data.items.length === 0 ? (
           <StateMessage
             icon={<Users className="size-7.5" aria-hidden="true" />}
-            title="No contacts yet"
-            description="Add an expense with someone, or add a contact by email."
+            title={t`No contacts yet`}
+            description={t`Add an expense with someone, or add a contact by email.`}
           >
             <Link
               to="/contacts/new"
@@ -57,7 +59,7 @@ export function ContactsPage() {
               })}
             >
               <UserPlus aria-hidden="true" />
-              Add contact
+              <Trans>Add contact</Trans>
             </Link>
           </StateMessage>
         ) : (
@@ -71,6 +73,7 @@ export function ContactsPage() {
 }
 
 function ContactList({ contacts }: { contacts: ContactListResponse }) {
+  const { t } = useLingui()
   const [showSettled, setShowSettled] = useState(false)
   const [now] = useState(() => new Date())
 
@@ -85,7 +88,14 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
   }
   const hasPlnBalances = visible.some((contact) => findPlnAmount(contact.balances) !== null)
 
-  const showSettledLabel = `Show ${settled.length} settled-up ${settled.length === 1 ? 'contact' : 'contacts'}`
+  const settledCount = settled.length
+  const showSettledLabel = (
+    <Plural
+      value={settledCount}
+      one="Show # settled-up contact"
+      other="Show # settled-up contacts"
+    />
+  )
 
   if (visible.length === 0 && !showSettled) {
     return (
@@ -95,8 +105,8 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
           compact
           icon={<CircleCheck className="size-8" aria-hidden="true" />}
           iconClassName="text-positive"
-          title="Nothing to settle"
-          description="Nobody owes you and you owe nobody."
+          title={t`Nothing to settle`}
+          description={t`Nobody owes you and you owe nobody.`}
         >
           <Button variant="outline" size="pill" onClick={() => setShowSettled(true)}>
             {showSettledLabel}
@@ -127,7 +137,7 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
               visible.length > 0 && 'mt-3 border-t pt-4',
             )}
           >
-            Settled up
+            <Trans>Settled up</Trans>
           </h2>
           <ul>
             {settled.map((contact) => (
@@ -136,7 +146,7 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
           </ul>
           <div className="flex justify-center px-4 pt-4">
             <Button variant="outline" size="pill" onClick={() => setShowSettled(false)}>
-              Hide settled-up contacts
+              <Trans>Hide settled-up contacts</Trans>
             </Button>
           </div>
         </section>
@@ -144,7 +154,9 @@ function ContactList({ contacts }: { contacts: ContactListResponse }) {
 
       {settled.length > 0 && !showSettled && (
         <div className="flex flex-col items-center gap-3 px-4 pt-6">
-          <p className="text-sm text-muted-foreground">Settled-up contacts are hidden.</p>
+          <p className="text-sm text-muted-foreground">
+            <Trans>Settled-up contacts are hidden.</Trans>
+          </p>
           <Button variant="outline" size="pill" onClick={() => setShowSettled(true)}>
             {showSettledLabel}
           </Button>
@@ -164,20 +176,26 @@ function BalanceSummary({
   if (total === null) {
     return (
       <p className="px-4 pt-5 pb-3 text-lg">
-        {hasBalances ? 'Overall, you are even' : 'You are all settled up'}
+        {hasBalances ? <Trans>Overall, you are even</Trans> : <Trans>You are all settled up</Trans>}
       </p>
     )
   }
 
   const direction = balanceDirection(total)
-  const youOwe = direction === 'owe'
+  const amount = formatPln(total)
+  const amountClassName = cn('font-semibold tabular-nums', balanceTextClassName[direction])
 
   return (
     <p className="px-4 pt-5 pb-3 text-lg">
-      {youOwe ? 'Overall, you owe' : 'Overall, you are owed'}{' '}
-      <span className={cn('font-semibold tabular-nums', balanceTextClassName[direction])}>
-        {formatPln(total)}
-      </span>
+      {direction === 'owe' ? (
+        <Trans>
+          Overall, you owe <span className={amountClassName}>{amount}</span>
+        </Trans>
+      ) : (
+        <Trans>
+          Overall, you are owed <span className={amountClassName}>{amount}</span>
+        </Trans>
+      )}
     </p>
   )
 }
@@ -187,7 +205,9 @@ const skeletonNameWidths = ['62%', '38%', '54%', '70%', '46%', '58%']
 function ContactsSkeleton() {
   return (
     <div role="status">
-      <span className="sr-only">Loading contacts</span>
+      <span className="sr-only">
+        <Trans>Loading contacts</Trans>
+      </span>
       <div className="px-4 pt-6 pb-4">
         <Skeleton className="h-4.5 w-60 rounded-md" />
       </div>

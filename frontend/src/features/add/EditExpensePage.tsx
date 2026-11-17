@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import { useParams } from 'react-router'
 import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
@@ -14,16 +15,18 @@ import { Frame, Header, NotFoundFrame } from './ScreenFrame'
 
 /** /expenses/:id/edit: the Add expense form, loaded with the expense and saved with PUT. */
 export function EditExpensePage() {
+  const { t } = useLingui()
   const expenseId = parseIdParam(useParams().id)
 
   return expenseId === null ? (
-    <NotFoundFrame title="Edit expense" noun="expense" />
+    <NotFoundFrame title={t`Edit expense`} kind="expense" />
   ) : (
     <EditExpenseLoader expenseId={expenseId} />
   )
 }
 
 function EditExpenseLoader({ expenseId }: { expenseId: number }) {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const expense = useExpense(expenseId)
   const fallback = `/expenses/${expenseId}`
@@ -31,18 +34,22 @@ function EditExpenseLoader({ expenseId }: { expenseId: number }) {
 
   if (!me || expense.isPending) {
     return (
-      <Frame title="Edit expense" onClose={goBack} body={<ItemLoading label="Loading expense" />} />
+      <Frame
+        title={t`Edit expense`}
+        onClose={goBack}
+        body={<ItemLoading label={t`Loading expense`} />}
+      />
     )
   }
   if (expense.isError) {
     return (
       <Frame
-        title="Edit expense"
+        title={t`Edit expense`}
         onClose={goBack}
         body={
           <ItemError
             error={expense.error}
-            noun="expense"
+            kind="expense"
             onRetry={() => expense.refetch()}
             isRetrying={expense.isFetching}
           />
@@ -63,13 +70,14 @@ function EditExpenseForm({
   expense: ExpenseResponse
   fallback: string
 }) {
+  const { t } = useLingui()
   const [initialDraft] = useState(() => draftFromExpense(expense, me.id))
   const [draft, setDraft] = useState(initialDraft)
   const guard = useLeaveGuard(draftChanged(draft, initialDraft), fallback)
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Edit expense" onClose={guard.goBack} />
+      <Header title={t`Edit expense`} onClose={guard.goBack} />
       <ExpenseForm
         me={me}
         draft={draft}
@@ -77,7 +85,7 @@ function EditExpenseForm({
         mode={{ kind: 'edit', expenseId: expense.id }}
         onSaved={guard.leaveAfterSave}
       />
-      <DiscardSheet guard={guard} title="Discard your changes?" />
+      <DiscardSheet guard={guard} title={t`Discard your changes?`} />
     </div>
   )
 }

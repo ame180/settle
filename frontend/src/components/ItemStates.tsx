@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { Lock, SearchX } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { ApiError } from '@/api/client'
 import { LoadError } from '@/components/LoadError'
 import { Spinner } from '@/components/Spinner'
@@ -12,27 +13,30 @@ export function ItemLoading({ label }: { label: string }) {
   return <Spinner label={label} className="pt-40" />
 }
 
+export type ItemKind = 'expense' | 'payment'
+
 type ItemErrorProps = {
   error: Error
-  /** "expense" or "payment" */
-  noun: string
+  kind: ItemKind
   onRetry: () => void
   isRetrying: boolean
 }
 
-export function ItemError({ error, noun, onRetry, isRetrying }: ItemErrorProps) {
+export function ItemError({ error, kind, onRetry, isRetrying }: ItemErrorProps) {
+  const { t } = useLingui()
+  const isPayment = kind === 'payment'
   const status = error instanceof ApiError ? error.status : undefined
 
   if (status === 404) {
-    return <ItemNotFound noun={noun} />
+    return <ItemNotFound kind={kind} />
   }
 
   if (status === 403) {
     return (
       <StateMessage
         icon={<Lock className="size-7.5" aria-hidden="true" />}
-        title={`You can’t see this ${noun}`}
-        description="Only the people in it can open it."
+        title={isPayment ? t`You can’t see this payment` : t`You can’t see this expense`}
+        description={t`Only the people in it can open it.`}
       >
         <BackToActivity />
       </StateMessage>
@@ -40,17 +44,28 @@ export function ItemError({ error, noun, onRetry, isRetrying }: ItemErrorProps) 
   }
 
   return (
-    <LoadError title={`Couldn’t load this ${noun}`} onRetry={onRetry} isRetrying={isRetrying} />
+    <LoadError
+      title={isPayment ? t`Couldn’t load this payment` : t`Couldn’t load this expense`}
+      onRetry={onRetry}
+      isRetrying={isRetrying}
+    />
   )
 }
 
 /** Also shown, without asking the API, when the URL's id isn't an id at all. */
-export function ItemNotFound({ noun }: { noun: string }) {
+export function ItemNotFound({ kind }: { kind: ItemKind }) {
+  const { t } = useLingui()
+  const isPayment = kind === 'payment'
+
   return (
     <StateMessage
       icon={<SearchX className="size-7.5" aria-hidden="true" />}
-      title={`This ${noun} doesn’t exist`}
-      description="It may have been deleted."
+      title={isPayment ? t`This payment doesn’t exist` : t`This expense doesn’t exist`}
+      description={
+        isPayment
+          ? t({ message: 'It may have been deleted.', context: 'payment' })
+          : t({ message: 'It may have been deleted.', context: 'expense' })
+      }
     >
       <BackToActivity />
     </StateMessage>
@@ -60,7 +75,7 @@ export function ItemNotFound({ noun }: { noun: string }) {
 function BackToActivity() {
   return (
     <Link to="/activity" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
-      Go to activity
+      <Trans>Go to activity</Trans>
     </Link>
   )
 }

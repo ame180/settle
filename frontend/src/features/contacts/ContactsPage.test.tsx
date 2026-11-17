@@ -54,15 +54,15 @@ describe('ContactsPage', () => {
     renderContacts()
 
     expect(await screen.findByText(/Overall, you are owed/)).toHaveTextContent(
-      'Overall, you are owed 2 072.92 zł',
+      'Overall, you are owed PLN 2,072.92',
     )
     const rows = within(screen.getByRole('list')).getAllByRole('listitem')
     expect(rows).toHaveLength(3)
     expect(rows[0]).toHaveTextContent('Anna Kowalska')
-    expect(rows[0]).toHaveTextContent('owes you 192.92 zł')
+    expect(rows[0]).toHaveTextContent('owes you PLN 192.92')
     expect(within(rows[0]).getByRole('link')).toHaveAttribute('href', '/contacts/1')
     expect(rows[1]).toHaveTextContent('Not on Settle yet')
-    expect(rows[2]).toHaveTextContent('you owe 120.00 zł')
+    expect(rows[2]).toHaveTextContent('you owe PLN 120.00')
     expect(screen.queryByText('Julia Mazur')).not.toBeInTheDocument()
     expect(screen.getByText('Settled-up contacts are hidden.')).toBeInTheDocument()
   })
