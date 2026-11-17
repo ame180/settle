@@ -135,6 +135,27 @@ cd ~/settle-staging && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v0.1.0/' .env && docker
 
 Rolling back code does not roll back the database. Migrations run on every start of `php`, so they must stay backward-compatible: the previous release has to work against the newer schema. A failing migration keeps `php` restarting (and `web` waiting) until it is fixed or rolled back.
 
+## Backups
+
+The app has no backup job of its own. The host dumps production's database nightly and keeps the dumps offsite; that setup lives with the server, not in this repo.
+
+Before releasing a risky migration, take a dump by hand in the environment's directory:
+
+```bash
+docker compose exec -T mariadb sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" --single-transaction --routines --triggers "$MARIADB_DATABASE"' | gzip > "settle-$(date -u +%Y%m%d-%H%M%S).sql.gz"
+```
+
+To restore a dump (from that command or the nightly backups), stop the app so nothing writes, empty the database, load the dump and start again:
+
+```bash
+docker compose stop web php
+docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "DROP DATABASE \`$MARIADB_DATABASE\`; CREATE DATABASE \`$MARIADB_DATABASE\`"'
+gunzip -c <dump>.sql.gz | docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" "$MARIADB_DATABASE"'
+docker compose start php web
+```
+
+On start, `php` applies any migrations newer than the dump, as on a deploy.
+
 ## Operations
 
 All commands run in the environment's directory.
