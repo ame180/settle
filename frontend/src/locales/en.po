@@ -721,6 +721,10 @@ msgstr "Go to activity"
 msgid "Go to contacts"
 msgstr "Go to contacts"
 
+#: src/features/auth/SignUpPage.tsx
+msgid "Go to sign in"
+msgstr "Go to sign in"
+
 #: src/lib/categories.ts
 msgid "Groceries"
 msgstr "Groceries"
@@ -848,6 +852,10 @@ msgstr "Name or email"
 #: src/features/profile/EditNamePage.tsx
 msgid "Name saved"
 msgstr "Name saved"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "New accounts are by invitation only. Ask the person who runs this Settle to create one for you."
+msgstr "New accounts are by invitation only. Ask the person who runs this Settle to create one for you."
 
 #: src/features/auth/LoginPage.tsx
 msgid "New to Settle? <0>Create an account</0>"
@@ -1173,6 +1181,14 @@ msgstr "Sign in"
 #: src/features/auth/SignUpPage.tsx
 msgid "Sign in instead"
 msgstr "Sign in instead"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Sign-up is closed"
+msgstr "Sign-up is closed"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Sign-up is closed."
+msgstr "Sign-up is closed."
 
 #: src/features/auth/LoginPage.tsx
 msgid "Signing in…"

@@ -12,6 +12,23 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthApiControllerTest extends ApiTestCase
 {
+    private ?string $registrationEnabledBefore = null;
+
+    protected function tearDown(): void
+    {
+        if (null !== $this->registrationEnabledBefore) {
+            $_ENV['APP_REGISTRATION_ENABLED'] = $_SERVER['APP_REGISTRATION_ENABLED'] = $this->registrationEnabledBefore;
+        }
+
+        parent::tearDown();
+    }
+
+    private function disableRegistration(): void
+    {
+        $this->registrationEnabledBefore = $_ENV['APP_REGISTRATION_ENABLED'];
+        $_ENV['APP_REGISTRATION_ENABLED'] = $_SERVER['APP_REGISTRATION_ENABLED'] = '0';
+    }
+
     public function testMeNotLoggedInReturnsJson401(): void
     {
         $client = static::createClient();
@@ -240,5 +257,38 @@ class AuthApiControllerTest extends ApiTestCase
         $this->requestJson($client, 'POST', '/api/register', ['email' => 'user11@example.com', 'password' => 'password123']);
 
         $this->assertJsonResponseIsSuccessful(201);
+    }
+
+    public function testRegisterIsForbiddenWhenRegistrationIsDisabled(): void
+    {
+        $this->disableRegistration();
+        $client = static::createClient();
+        $this->requestJson($client, 'POST', '/api/register', ['email' => 'new@example.com', 'password' => 'password123']);
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertSame(403, $this->getJsonResponse()['status']);
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $this->assertNull($entityManager->getRepository(User::class)->findOneBy(['email' => 'new@example.com']));
+    }
+
+    public function testConfigIsPublicAndReportsRegistrationEnabled(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/config');
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['registrationEnabled' => true], $this->getJsonResponse());
+    }
+
+    public function testConfigReportsRegistrationDisabled(): void
+    {
+        $this->disableRegistration();
+        $client = static::createClient();
+        $client->request('GET', '/api/config');
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['registrationEnabled' => false], $this->getJsonResponse());
     }
 }

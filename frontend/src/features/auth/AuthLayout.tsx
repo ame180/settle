@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 type AuthLayoutProps = {
   title: string
   description: string
-  footer: ReactNode
+  footer?: ReactNode
   children: ReactNode
 }
 
@@ -18,7 +18,7 @@ export function AuthLayout({ title, description, footer, children }: AuthLayoutP
         <p className="text-[15px] leading-[1.45] text-muted-foreground">{description}</p>
       </div>
       {children}
-      <p className="text-center text-[15px] text-muted-foreground">{footer}</p>
+      {footer && <p className="text-center text-[15px] text-muted-foreground">{footer}</p>}
     </main>
   )
 }

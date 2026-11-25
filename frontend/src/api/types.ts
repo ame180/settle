@@ -12,6 +12,11 @@ export type MeUpdateRequest = {
   name: string
 }
 
+/** GET /api/config: public, so the sign-in screens can read it signed out. */
+export type AppConfig = {
+  registrationEnabled: boolean
+}
+
 export type RegisterRequest = {
   email: string
   password: string

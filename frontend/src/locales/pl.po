@@ -721,6 +721,10 @@ msgstr "Przejdź do aktywności"
 msgid "Go to contacts"
 msgstr "Przejdź do kontaktów"
 
+#: src/features/auth/SignUpPage.tsx
+msgid "Go to sign in"
+msgstr "Przejdź do logowania"
+
 #: src/lib/categories.ts
 msgid "Groceries"
 msgstr "Zakupy spożywcze"
@@ -848,6 +852,10 @@ msgstr "Imię lub e-mail"
 #: src/features/profile/EditNamePage.tsx
 msgid "Name saved"
 msgstr "Zapisano imię"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "New accounts are by invitation only. Ask the person who runs this Settle to create one for you."
+msgstr "Nowe konta są tylko na zaproszenie. Poproś osobę, która prowadzi to Settle, o założenie konta dla ciebie."
 
 #: src/features/auth/LoginPage.tsx
 msgid "New to Settle? <0>Create an account</0>"
@@ -1173,6 +1181,14 @@ msgstr "Zaloguj się"
 #: src/features/auth/SignUpPage.tsx
 msgid "Sign in instead"
 msgstr "Zaloguj się"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Sign-up is closed"
+msgstr "Zakładanie kont jest wyłączone"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Sign-up is closed."
+msgstr "Zakładanie kont jest wyłączone."
 
 #: src/features/auth/LoginPage.tsx
 msgid "Signing in…"
