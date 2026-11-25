@@ -63,7 +63,11 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
             )
           }}
           style={{ width: `${width + 0.5}ch` }}
-          className="min-w-0 bg-transparent text-right text-4xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/70"
+          className={cn(
+            'min-w-0 bg-transparent text-4xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/70',
+            // The spare width goes on the side away from the symbol.
+            affix.position === 'before' ? 'text-left' : 'text-right',
+          )}
         />
         {affix.position === 'after' && symbol}
       </div>
