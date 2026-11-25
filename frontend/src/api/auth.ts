@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, apiRequest } from './client'
+import { configQueryKey } from './config'
 import type { MeResponse, MeUpdateRequest, PasswordChangeRequest, RegisterRequest } from './types'
 
 export const meQueryKey = ['me'] as const
@@ -7,7 +8,9 @@ export const meQueryKey = ['me'] as const
 /** Signs the SPA out locally: no user, and no cached data of theirs left for the next one. */
 export function clearSession(queryClient: QueryClient) {
   queryClient.setQueryData(meQueryKey, null)
-  queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== meQueryKey[0] })
+  queryClient.removeQueries({
+    predicate: ({ queryKey: [root] }) => root !== meQueryKey[0] && root !== configQueryKey[0],
+  })
 }
 
 export function fetchMe(signal?: AbortSignal): Promise<MeResponse | null> {
