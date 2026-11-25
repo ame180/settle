@@ -307,6 +307,7 @@ msgstr "Kwoty"
 msgid "An account with this email already exists."
 msgstr "Konto z tym adresem e-mail już istnieje."
 
+#: src/app/ErrorPages.tsx
 #: src/features/contacts/EditContactPage.tsx
 #: src/features/detail/DetailParts.tsx
 msgid "Back"
@@ -363,6 +364,10 @@ msgstr "Zmień, kto płaci"
 msgid "Changes saved."
 msgstr "Zapisano zmiany."
 
+#: src/app/ErrorPages.tsx
+msgid "Check the address or go back to your contacts."
+msgstr "Sprawdź adres albo wróć do kontaktów."
+
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Check the numbers"
 msgstr "Sprawdź wartości"
@@ -411,6 +416,11 @@ msgstr "Komentarz"
 #: src/features/detail/ExpenseComments.tsx
 msgid "Comments"
 msgstr "Komentarze"
+
+#: src/features/contacts/ContactNotFound.tsx
+#: src/features/contacts/ContactPage.tsx
+msgid "Contact"
+msgstr "Kontakt"
 
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Contact not found"
@@ -488,6 +498,10 @@ msgstr "Nie udało się wczytać wydatku"
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this payment"
 msgstr "Nie udało się wczytać płatności"
+
+#: src/app/RequireAuth.tsx
+msgid "Couldn’t reach Settle"
+msgstr "Nie udało się połączyć z Settle"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Couldn’t record the payment. Nothing was saved and your entries are still here. Try again."
@@ -717,6 +731,7 @@ msgstr "Przydziel komuś udział"
 msgid "Go to activity"
 msgstr "Przejdź do aktywności"
 
+#: src/app/ErrorPages.tsx
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Go to contacts"
 msgstr "Przejdź do kontaktów"
@@ -946,6 +961,10 @@ msgstr "Nikt nie ma ci nic do oddania za ten wydatek"
 msgid "Nobody shares this yet"
 msgstr "Nikt jeszcze nie ma udziału w wydatku"
 
+#: src/app/ErrorPages.tsx
+msgid "Not found"
+msgstr "Nie znaleziono"
+
 #: src/features/add/PeopleField.tsx
 msgid "Not in your contacts? Type their email."
 msgstr "Nie ma tej osoby w kontaktach? Wpisz jej adres e-mail."
@@ -1105,6 +1124,14 @@ msgstr "Zapisz płatność"
 msgid "Recording…"
 msgstr "Zapisywanie…"
 
+#: src/app/ErrorPages.tsx
+msgid "Reload"
+msgstr "Odśwież"
+
+#: src/app/ErrorPages.tsx
+msgid "Reload the page to try again."
+msgstr "Odśwież stronę, aby spróbować ponownie."
+
 #: src/features/add/PeopleField.tsx
 msgid "Remove {displayName}"
 msgstr "Usuń: {displayName}"
@@ -1181,6 +1208,10 @@ msgstr "Logowanie…"
 #: src/features/auth/SignUpPage.tsx
 msgid "Someone already added you? Sign up with that same email and your shared expenses will be waiting."
 msgstr "Dodano cię już do Settle? Załóż konto na ten sam adres e-mail, a wspólne wydatki będą na ciebie czekać."
+
+#: src/app/ErrorPages.tsx
+msgid "Something went wrong"
+msgstr "Coś poszło nie tak"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Something went wrong. Please try again."
@@ -1276,6 +1307,10 @@ msgstr "Tego nie można cofnąć."
 #: src/components/ItemStates.tsx
 msgid "This expense doesn’t exist"
 msgstr "Ten wydatek nie istnieje"
+
+#: src/app/ErrorPages.tsx
+msgid "This page doesn’t exist"
+msgstr "Ta strona nie istnieje"
 
 #: src/components/ItemStates.tsx
 msgid "This payment doesn’t exist"
