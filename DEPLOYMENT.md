@@ -160,7 +160,7 @@ On start, `php` applies any migrations newer than the dump, as on a deploy.
 
 ## Adding users
 
-Sign-up claims the account of anyone a user added as a contact by email, without checking that the email belongs to the person signing up. So `deploy/compose.yaml` keeps public sign-up off: `POST /api/register` answers 403 and the app hides its sign-up link. Set `APP_REGISTRATION_ENABLED=1` in the server's `.env` only where that's acceptable, such as a private staging host.
+Sign-up claims the account of anyone a user added as a contact by email, without checking that the email belongs to the person signing up. So public sign-up is off unless enabled: `POST /api/register` answers 403 and the app hides its sign-up link. Set `APP_REGISTRATION_ENABLED=1` in the server's `.env` only where that's acceptable, such as a private staging host.
 
 To add someone, create their account with a temporary password and send it to them:
 

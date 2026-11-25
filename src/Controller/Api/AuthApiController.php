@@ -10,16 +10,15 @@ use App\Dto\PasswordChangeRequest;
 use App\Dto\RegisterRequest;
 use App\Entity\User;
 use App\Exception\EmailAlreadyRegisteredException;
+use App\Security\Voter\RegistrationVoter;
 use App\Services\UserRegistrationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -42,21 +41,16 @@ class AuthApiController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly ValidatorInterface $validator,
         private readonly Security $security,
-        #[Autowire(param: 'app.registration_enabled')]
-        private readonly bool $registrationEnabled,
     ) {
     }
 
     #[Route('/register', name: 'api_register', methods: ['POST'])]
+    #[IsGranted(RegistrationVoter::REGISTER, message: 'Sign-up is closed.', statusCode: JsonResponse::HTTP_FORBIDDEN)]
     public function register(
         Request $request,
         #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: JsonResponse::HTTP_BAD_REQUEST)]
         RegisterRequest $registerRequest,
     ): JsonResponse {
-        if (!$this->registrationEnabled) {
-            throw new AccessDeniedHttpException('Sign-up is closed.');
-        }
-
         $limit = $this->registrationLimiter->create($request->getClientIp())->consume();
         if (!$limit->isAccepted()) {
             throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time(), 'Too many registration attempts. Please try again later.');

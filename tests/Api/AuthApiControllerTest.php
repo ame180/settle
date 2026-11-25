@@ -13,12 +13,14 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthApiControllerTest extends ApiTestCase
 {
-    private ?string $registrationEnabledBefore = null;
+    /** @var array{env: ?string, server: ?string}|null */
+    private ?array $registrationEnabledBefore = null;
 
     protected function tearDown(): void
     {
         if (null !== $this->registrationEnabledBefore) {
-            $_ENV['APP_REGISTRATION_ENABLED'] = $_SERVER['APP_REGISTRATION_ENABLED'] = $this->registrationEnabledBefore;
+            $this->restoreVariable($_ENV, $this->registrationEnabledBefore['env']);
+            $this->restoreVariable($_SERVER, $this->registrationEnabledBefore['server']);
         }
 
         parent::tearDown();
@@ -26,8 +28,24 @@ class AuthApiControllerTest extends ApiTestCase
 
     private function disableRegistration(): void
     {
-        $this->registrationEnabledBefore = $_ENV['APP_REGISTRATION_ENABLED'];
+        $this->registrationEnabledBefore = [
+            'env' => $_ENV['APP_REGISTRATION_ENABLED'] ?? null,
+            'server' => $_SERVER['APP_REGISTRATION_ENABLED'] ?? null,
+        ];
         $_ENV['APP_REGISTRATION_ENABLED'] = $_SERVER['APP_REGISTRATION_ENABLED'] = '0';
+    }
+
+    /**
+     * @param array<string, mixed> $variables
+     */
+    private function restoreVariable(array &$variables, ?string $value): void
+    {
+        if (null === $value) {
+            unset($variables['APP_REGISTRATION_ENABLED']);
+
+            return;
+        }
+        $variables['APP_REGISTRATION_ENABLED'] = $value;
     }
 
     public function testMeNotLoggedInReturnsJson401(): void
@@ -272,6 +290,20 @@ class AuthApiControllerTest extends ApiTestCase
 
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->assertNull($entityManager->getRepository(User::class)->findOneBy(['email' => 'new@example.com']));
+    }
+
+    public function testRegisterIsForbiddenBeforeValidationWhenRegistrationIsDisabled(): void
+    {
+        $this->disableRegistration();
+        $client = static::createClient();
+        $client->request('POST', '/api/register', [], [], ['CONTENT_TYPE' => 'application/json'], '{not json');
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertSame(403, $this->getJsonResponse()['status']);
+
+        $this->requestJson($client, 'POST', '/api/register', ['email' => 'not-an-email', 'password' => 'short']);
+
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testConfigIsPublicAndReportsRegistrationEnabled(): void
