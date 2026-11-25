@@ -90,4 +90,26 @@ describe('EditExpensePage with a malformed id', () => {
       false,
     )
   })
+
+  it('shows StateMessage with a way back when the expense is not found (404)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string) => {
+        if (path === '/api/me') return jsonResponse(200, me)
+        return jsonResponse(404, { status: 404, title: 'Not Found' })
+      }),
+    )
+    renderRoutes(
+      [{ path: '/expenses/:id/edit', element: <EditExpensePage /> }],
+      '/expenses/999999/edit',
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'This expense doesn’t exist' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to activity' })).toHaveAttribute(
+      'href',
+      '/activity',
+    )
+  })
 })

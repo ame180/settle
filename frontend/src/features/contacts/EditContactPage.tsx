@@ -32,10 +32,19 @@ const editContactSchema = z.object({
 
 type EditContactValues = z.infer<typeof editContactSchema>
 
+function EditContactNotFound() {
+  const { t } = useLingui()
+  return (
+    <div className="flex h-full flex-col overflow-y-auto">
+      <ContactNotFound title={t`Edit contact`} />
+    </div>
+  )
+}
+
 export function EditContactPage() {
   const userId = parseIdParam(useParams().userId)
 
-  return userId === null ? <ContactNotFound /> : <EditContact userId={userId} />
+  return userId === null ? <EditContactNotFound /> : <EditContact userId={userId} />
 }
 
 function EditContact({ userId }: { userId: number }) {
@@ -44,7 +53,7 @@ function EditContact({ userId }: { userId: number }) {
   const contact = contactQuery.data
 
   if (contact === null) {
-    return <ContactNotFound />
+    return <EditContactNotFound />
   }
 
   const shortName = contact ? getShortName(contact.person.displayName) : ''

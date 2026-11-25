@@ -70,4 +70,46 @@ describe('EditTransferPage', () => {
       description: 'BLIK',
     })
   })
+
+  it('shows not found without calling the API for a malformed id', async () => {
+    const fetchMock = vi.fn(async (_path: string) => jsonResponse(200, me))
+    vi.stubGlobal('fetch', fetchMock)
+    renderRoutes(
+      [{ path: '/transfers/:id/edit', element: <EditTransferPage /> }],
+      '/transfers/abc/edit',
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'This payment doesn’t exist' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to activity' })).toHaveAttribute(
+      'href',
+      '/activity',
+    )
+    expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith('/api/transfers'))).toBe(
+      false,
+    )
+  })
+
+  it('shows StateMessage with a way back when the payment is not found (404)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string) => {
+        if (path === '/api/me') return jsonResponse(200, me)
+        return jsonResponse(404, { status: 404, title: 'Not Found' })
+      }),
+    )
+    renderRoutes(
+      [{ path: '/transfers/:id/edit', element: <EditTransferPage /> }],
+      '/transfers/999999/edit',
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'This payment doesn’t exist' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to activity' })).toHaveAttribute(
+      'href',
+      '/activity',
+    )
+  })
 })

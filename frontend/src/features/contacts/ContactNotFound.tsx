@@ -6,11 +6,14 @@ import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
 import { buttonClassName } from '@/components/ui/button-variants'
 
-export function ContactNotFound() {
+export function ContactNotFound({ title }: { title?: string } = {}) {
   const { t } = useLingui()
   return (
     <>
-      <PageHeader leading={<BackLink to="/" label={t`Back to contacts`} />} />
+      <PageHeader
+        title={title ?? t`Contact`}
+        leading={<BackLink to="/" label={t`Back to contacts`} />}
+      />
       <ContactNotFoundMessage />
     </>
   )
