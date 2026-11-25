@@ -1,4 +1,4 @@
-import { Link, isRouteErrorResponse, useRouteError } from 'react-router'
+import { Link } from 'react-router'
 import { CircleAlert, RefreshCw, SearchX } from 'lucide-react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { BackLink } from '@/components/BackLink'
@@ -7,42 +7,26 @@ import { StateMessage } from '@/components/StateMessage'
 import { Button } from '@/components/ui/button'
 import { buttonClassName } from '@/components/ui/button-variants'
 
-function NotFoundMessage() {
-  const { t } = useLingui()
-  return (
-    <StateMessage
-      icon={<SearchX className="size-7.5" aria-hidden="true" />}
-      title={t`This page doesn’t exist`}
-      description={t`Check the address or go back to your contacts.`}
-    >
-      <Link to="/" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
-        <Trans>Go to contacts</Trans>
-      </Link>
-    </StateMessage>
-  )
-}
-
 export function NotFoundPage() {
   const { t } = useLingui()
   return (
     <>
       <PageHeader title={t`Not found`} leading={<BackLink to="/" label={t`Back`} />} />
-      <NotFoundMessage />
+      <StateMessage
+        icon={<SearchX className="size-7.5" aria-hidden="true" />}
+        title={t`This page doesn’t exist`}
+        description={t`Check the address or go back to your contacts.`}
+      >
+        <Link to="/" className={buttonClassName({ variant: 'outline', size: 'pill' })}>
+          <Trans>Go to contacts</Trans>
+        </Link>
+      </StateMessage>
     </>
   )
 }
 
 export function RouteErrorPage() {
   const { t } = useLingui()
-  const error = useRouteError()
-
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    return (
-      <main className="h-full overflow-y-auto">
-        <NotFoundMessage />
-      </main>
-    )
-  }
 
   return (
     <main className="h-full overflow-y-auto">

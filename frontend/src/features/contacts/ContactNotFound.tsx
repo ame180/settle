@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
 import { buttonClassName } from '@/components/ui/button-variants'
 
-export function ContactNotFound({ title }: { title?: string } = {}) {
+export function ContactNotFound({ title }: { title?: string }) {
   const { t } = useLingui()
   return (
     <>

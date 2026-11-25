@@ -72,24 +72,6 @@ describe('EditExpensePage', () => {
       description: null,
     })
   })
-})
-
-describe('EditExpensePage with a malformed id', () => {
-  it('shows not found without loading anything', async () => {
-    const fetchMock = vi.fn(async (_path: string) => jsonResponse(200, me))
-    vi.stubGlobal('fetch', fetchMock)
-    renderRoutes(
-      [{ path: '/expenses/:id/edit', element: <EditExpensePage /> }],
-      '/expenses/abc/edit',
-    )
-
-    expect(
-      await screen.findByRole('heading', { name: 'This expense doesn’t exist' }),
-    ).toBeInTheDocument()
-    expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith('/api/expenses'))).toBe(
-      false,
-    )
-  })
 
   it('shows StateMessage with a way back when the expense is not found (404)', async () => {
     vi.stubGlobal(
@@ -110,6 +92,24 @@ describe('EditExpensePage with a malformed id', () => {
     expect(screen.getByRole('link', { name: 'Go to activity' })).toHaveAttribute(
       'href',
       '/activity',
+    )
+  })
+})
+
+describe('EditExpensePage with a malformed id', () => {
+  it('shows not found without loading anything', async () => {
+    const fetchMock = vi.fn(async (_path: string) => jsonResponse(200, me))
+    vi.stubGlobal('fetch', fetchMock)
+    renderRoutes(
+      [{ path: '/expenses/:id/edit', element: <EditExpensePage /> }],
+      '/expenses/abc/edit',
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'This expense doesn’t exist' }),
+    ).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith('/api/expenses'))).toBe(
+      false,
     )
   })
 })
