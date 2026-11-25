@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { useLingui } from '@lingui/react/macro'
 import { useMe } from '@/api/auth'
 import { useContacts } from '@/api/contacts'
 import type { ContactListItem, MeResponse, PersonRef } from '@/api/types'
@@ -40,13 +41,14 @@ type Prefill = {
 }
 
 function AddScreen({ me }: { me: MeResponse }) {
+  const { t } = useLingui()
   const [searchParams] = useSearchParams()
   const contactId = parseIdParam(searchParams.get('contact') ?? undefined)
   const { data: contacts, isError } = useContacts()
 
   // Wait for contacts before prefilling, so the form mounts with its starting state.
   if (contactId !== null && !contacts && !isError) {
-    return <Spinner label="Loading" className="pt-40" />
+    return <Spinner label={t`Loading`} className="pt-40" />
   }
 
   const contact = contacts?.items.find((item) => item.person.id === contactId)
@@ -82,6 +84,7 @@ function AddTabs({
   prefill: Prefill
   backFallback: string
 }) {
+  const { t } = useLingui()
   // Frozen on mount: later contact refetches or a new day mustn't count as the user's input.
   const [initial] = useState(() => {
     const occurredOn = todayIso()
@@ -151,7 +154,10 @@ function AddTabs({
 
   return (
     <div className="flex h-full flex-col">
-      <Header title={tab === 'expense' ? 'Add expense' : 'Record payment'} onClose={guard.goBack} />
+      <Header
+        title={tab === 'expense' ? t`Add expense` : t`Record payment`}
+        onClose={guard.goBack}
+      />
       {tab === 'expense' ? (
         <ExpenseForm
           key="expense"
@@ -178,10 +184,10 @@ function AddTabs({
         guard={guard}
         title={
           expenseDirty && tab === 'expense'
-            ? 'Discard this expense?'
+            ? t`Discard this expense?`
             : expenseDirty
-              ? 'Discard what you’ve entered?'
-              : 'Discard this payment?'
+              ? t`Discard what you’ve entered?`
+              : t`Discard this payment?`
         }
       />
     </div>
@@ -189,10 +195,11 @@ function AddTabs({
 }
 
 function AddTabList({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
+  const { t } = useLingui()
   return (
     <div
       role="tablist"
-      aria-label="What are you adding"
+      aria-label={t`What are you adding`}
       className="grid grid-cols-2 rounded-full bg-secondary p-1"
     >
       {(['expense', 'payment'] as const).map((value) => (
@@ -208,7 +215,7 @@ function AddTabList({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void 
               'bg-background font-semibold text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.08)]',
           )}
         >
-          {value === 'expense' ? 'Expense' : 'Payment'}
+          {value === 'expense' ? t`Expense` : t`Payment`}
         </button>
       ))}
     </div>

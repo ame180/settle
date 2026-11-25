@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { Activity, Users } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useMe } from '@/api/auth'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,7 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
 const scrollPositions = new Map<string, number>()
 
 export function AppShell() {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const location = useLocation()
   const mainRef = useRef<HTMLElement>(null)
@@ -41,7 +43,7 @@ export function AppShell() {
         <Outlet />
       </main>
 
-      <nav aria-label="Main" className="border-t bg-background pb-[env(safe-area-inset-bottom)]">
+      <nav aria-label={t`Main`} className="border-t bg-background pb-[env(safe-area-inset-bottom)]">
         <ul className="grid grid-cols-3">
           <li>
             <Link
@@ -50,13 +52,13 @@ export function AppShell() {
               className={navLinkClassName({ isActive: isContactsActive })}
             >
               <Users className="size-6" aria-hidden="true" />
-              Contacts
+              <Trans>Contacts</Trans>
             </Link>
           </li>
           <li>
             <NavLink to="/activity" className={navLinkClassName}>
               <Activity className="size-6" aria-hidden="true" />
-              Activity
+              <Trans>Activity</Trans>
             </NavLink>
           </li>
           <li>
@@ -71,7 +73,7 @@ export function AppShell() {
                       className={cn(isActive && 'ring-2 ring-foreground')}
                     />
                   )}
-                  Profile
+                  <Trans>Profile</Trans>
                 </>
               )}
             </NavLink>

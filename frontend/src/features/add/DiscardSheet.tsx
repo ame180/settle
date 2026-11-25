@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { ConfirmSheet } from '@/components/ConfirmSheet'
 import type { LeaveGuard } from './navigation'
 
@@ -9,15 +10,16 @@ type DiscardSheetProps = {
 
 /** Asked when the user leaves a form with input in it. Swiping it down keeps editing. */
 export function DiscardSheet({ guard, title }: DiscardSheetProps) {
+  const { t } = useLingui()
   return (
     <ConfirmSheet
       open={guard.blocked}
       onOpenChange={(next) => !next && guard.keepEditing()}
       title={title}
-      description="What you’ve entered won’t be saved."
-      confirmLabel="Discard"
+      description={t`What you’ve entered won’t be saved.`}
+      confirmLabel={t`Discard`}
       onConfirm={guard.discard}
-      cancelLabel="Keep editing"
+      cancelLabel={t`Keep editing`}
     />
   )
 }

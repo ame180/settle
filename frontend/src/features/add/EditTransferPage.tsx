@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
+import { useLingui } from '@lingui/react/macro'
 import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
 import { useTransfer } from '@/api/transfers'
@@ -17,16 +18,18 @@ import { Frame, Header, NotFoundFrame } from './ScreenFrame'
  * only changes amount, date and note, so who paid whom is shown but fixed.
  */
 export function EditTransferPage() {
+  const { t } = useLingui()
   const transferId = parseIdParam(useParams().id)
 
   return transferId === null ? (
-    <NotFoundFrame title="Edit payment" noun="payment" />
+    <NotFoundFrame title={t`Edit payment`} kind="payment" />
   ) : (
     <EditTransferLoader transferId={transferId} />
   )
 }
 
 function EditTransferLoader({ transferId }: { transferId: number }) {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const transfer = useTransfer(transferId)
   const fallback = `/transfers/${transferId}`
@@ -34,18 +37,22 @@ function EditTransferLoader({ transferId }: { transferId: number }) {
 
   if (!me || transfer.isPending) {
     return (
-      <Frame title="Edit payment" onClose={goBack} body={<ItemLoading label="Loading payment" />} />
+      <Frame
+        title={t`Edit payment`}
+        onClose={goBack}
+        body={<ItemLoading label={t`Loading payment`} />}
+      />
     )
   }
   if (transfer.isError) {
     return (
       <Frame
-        title="Edit payment"
+        title={t`Edit payment`}
         onClose={goBack}
         body={
           <ItemError
             error={transfer.error}
-            noun="payment"
+            kind="payment"
             onRetry={() => transfer.refetch()}
             isRetrying={transfer.isFetching}
           />
@@ -66,6 +73,7 @@ function EditTransferForm({
   transfer: TransferResponse
   fallback: string
 }) {
+  const { t } = useLingui()
   const payer = transfer.payer.id === me.id ? 'me' : 'them'
   const [initialDraft] = useState<PaymentDraft>(() => ({
     person: payer === 'me' ? transfer.payee : transfer.payer,
@@ -79,7 +87,7 @@ function EditTransferForm({
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Edit payment" onClose={guard.goBack} />
+      <Header title={t`Edit payment`} onClose={guard.goBack} />
       <PaymentForm
         me={me}
         draft={draft}
@@ -91,7 +99,7 @@ function EditTransferForm({
         }}
         onSaved={guard.leaveAfterSave}
       />
-      <DiscardSheet guard={guard} title="Discard your changes?" />
+      <DiscardSheet guard={guard} title={t`Discard your changes?`} />
     </div>
   )
 }

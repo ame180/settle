@@ -1,18 +1,58 @@
 import type { CurrencyAmount } from '@/api/types'
+import { formattingLocale } from '@/i18n/i18n'
 import { fromScaled, toScaled } from './decimal'
 
-const NO_BREAK_SPACE = ' '
+const currencyFormats = new Map<string, Intl.NumberFormat>()
 
-export function formatPln(amount: string): string {
-  return `${formatPlnNumber(amount)}${NO_BREAK_SPACE}zł`
+function currencyFormat(currency: string): Intl.NumberFormat {
+  const locale = formattingLocale()
+  const key = `${locale}:${currency}`
+  let format = currencyFormats.get(key)
+  if (!format) {
+    format = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'narrowSymbol',
+    })
+    currencyFormats.set(key, format)
+  }
+  return format
 }
 
-/** "1 535.64": grouped, 2 decimals, no sign and no currency. */
-export function formatPlnNumber(amount: string): string {
-  const [integerPart, fractionPart = ''] = amount.replace(/^-/, '').split('.')
-  const groupedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, NO_BREAK_SPACE)
+const amountFormats = new Map<string, Intl.NumberFormat>()
 
-  return `${groupedIntegerPart}.${fractionPart.padEnd(2, '0')}`
+function amountFormat(): Intl.NumberFormat {
+  const locale = formattingLocale()
+  let format = amountFormats.get(locale)
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    amountFormats.set(locale, format)
+  }
+  return format
+}
+
+// Intl formats a decimal string exactly, without going through a float.
+function unsignedDecimal(amount: string): Intl.StringNumericLiteral {
+  return amount.replace(/^-/, '') as Intl.StringNumericLiteral
+}
+
+/** Signless, in the active locale's format: "12,00 zł" in Polish, "zł 12.00" in English. */
+export function formatMoney(amount: string, currency: string): string {
+  return currencyFormat(currency).format(unsignedDecimal(amount))
+}
+
+export function formatPln(amount: string): string {
+  return formatMoney(amount, 'PLN')
+}
+
+/** "12,50–1500,00 zł" in Polish; signless. */
+export function formatPlnRange(min: string, max: string): string {
+  return currencyFormat('PLN').formatRange(unsignedDecimal(min), unsignedDecimal(max))
+}
+
+/** Grouped, 2 decimals, no sign and no currency. */
+export function formatAmountNumber(amount: string): string {
+  return amountFormat().format(unsignedDecimal(amount))
 }
 
 /** True for '0', '0.00', '-0.00' and the like. */
@@ -46,10 +86,37 @@ export function findPlnAmount(amounts: CurrencyAmount[]): string | null {
   return amounts.find((currencyAmount) => currencyAmount.currency === 'PLN')?.amount ?? null
 }
 
-/** PLN reads "12.00 zł"; other currencies keep their code: "12.00 EUR". Drops the sign. */
-export function formatMoney(amount: string, currency: string): string {
-  const formatted = formatPln(amount)
-  return currency === 'PLN' ? formatted : formatted.replace(/zł$/, currency)
+const decimalFormats = new Map<string, Intl.NumberFormat>()
+
+/** A percentage or share count for display: "33.33" / "12.5" / "2", "33,33" in Polish. */
+export function formatDecimal(value: string): string {
+  const locale = formattingLocale()
+  let format = decimalFormats.get(locale)
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false })
+    decimalFormats.set(locale, format)
+  }
+  return format.format(value as Intl.StringNumericLiteral)
+}
+
+/** Shows an amount field's text with the active locale's decimal separator: "12,50" in Polish. */
+export function localizeAmountInput(value: string): string {
+  const separator =
+    amountFormat()
+      .formatToParts(1.5)
+      .find((part) => part.type === 'decimal')?.value ?? '.'
+  return value.replace(/[.,]/, separator)
+}
+
+/** The currency symbol for an amount field, on the side the active locale puts it. */
+export function currencyAffix(currency: string): { symbol: string; position: 'before' | 'after' } {
+  const parts = currencyFormat(currency).formatToParts(1)
+  const symbolIndex = parts.findIndex((part) => part.type === 'currency')
+  const numberIndex = parts.findIndex((part) => part.type === 'integer')
+  return {
+    symbol: parts[symbolIndex]?.value ?? currency,
+    position: symbolIndex < numberIndex ? 'before' : 'after',
+  }
 }
 
 /** Integer digits the API's Decimal(precision: 10, scale: 2) allows before the point. */
@@ -90,7 +157,8 @@ const allowedInput = new RegExp(`^\\d{0,${MAX_AMOUNT_INTEGER_DIGITS}}(?:[.,]\\d{
 /** Keeps the field to something that can become an amount: digits, one separator, 2 decimals. */
 export function sanitizeAmountInput(next: string, previous: string): string {
   const compact = next.replace(/\s/g, '')
-  return allowedInput.test(compact) ? compact : previous
+  // Stored with a point, whichever separator was typed; the field shows the locale's.
+  return allowedInput.test(compact) ? compact.replace(',', '.') : previous
 }
 
 /** Adds 2-decimal money strings exactly (no float math): ['61.43', '61.43'] → '122.86'. */

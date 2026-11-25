@@ -7,6 +7,7 @@ import {
   type RouteObject,
 } from 'react-router'
 import { Toaster } from '@/components/ui/toast'
+import { TestI18nProvider } from './i18n'
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -24,10 +25,12 @@ export function renderRoutes(routes: RouteObject[], initialEntry: InitialEntry |
     initialEntries: Array.isArray(initialEntry) ? initialEntry : [initialEntry],
   })
   render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster />
-    </QueryClientProvider>,
+    <TestI18nProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <Toaster />
+      </QueryClientProvider>
+    </TestI18nProvider>,
   )
   return router
 }

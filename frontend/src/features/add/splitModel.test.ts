@@ -7,7 +7,8 @@ import {
   convertSplit,
   defaultSplit,
   describeCustomSplit,
-  describeOutcome,
+  classifyOutcome,
+  lentEachDetail,
   describeSplit,
   editSplit,
   mirrorSplit,
@@ -388,10 +389,10 @@ describe('describeCustomSplit', () => {
   })
 })
 
-describe('describeOutcome', () => {
+describe('classifyOutcome', () => {
   it('names the one person who owes the user', () => {
     expect(
-      describeOutcome(
+      classifyOutcome(
         new Map([
           [ME, 4950n],
           [ANNA, 4950n],
@@ -400,16 +401,11 @@ describe('describeOutcome', () => {
         duo,
         ME,
       ),
-    ).toEqual({
-      lead: 'Anna owes you',
-      grosze: 4950n,
-      tone: 'positive',
-      detail: null,
-    })
+    ).toEqual({ kind: 'owed-by-one', debtorName: 'Anna', grosze: 4950n })
   })
 
   it('sums a group and says each when shares match', () => {
-    const outcome = describeOutcome(
+    const outcome = classifyOutcome(
       new Map([
         [ME, 6000n],
         [ANNA, 6000n],
@@ -420,14 +416,15 @@ describe('describeOutcome', () => {
       people,
       ME,
     )
-    expect(outcome.lead).toBe('You lent')
-    expect(outcome.grosze).toBe(18000n)
-    expect(outcome.detail).toBe(`Anna, Ewa and Tomasz owe you ${formatPln('60.00')} each`)
+    expect(outcome).toMatchObject({ kind: 'lent', grosze: 18000n })
+    expect(outcome.kind === 'lent' && lentEachDetail(outcome)).toBe(
+      `Anna, Ewa and Tomasz owe you ${formatPln('60.00')} each`,
+    )
   })
 
   it('says what the user owes when someone else paid', () => {
     expect(
-      describeOutcome(
+      classifyOutcome(
         new Map([
           [ME, 4950n],
           [ANNA, 4950n],
@@ -436,10 +433,6 @@ describe('describeOutcome', () => {
         duo,
         ME,
       ),
-    ).toMatchObject({
-      lead: 'You owe Anna',
-      grosze: 4950n,
-      tone: 'negative',
-    })
+    ).toEqual({ kind: 'owe-payer', payerName: 'Anna', grosze: 4950n })
   })
 })

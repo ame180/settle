@@ -122,6 +122,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Translations
+        run: npm run i18n:check
+
       - name: Test
         run: npx vitest run
 

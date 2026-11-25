@@ -13,7 +13,6 @@ describe('expensePosition', () => {
   it('sums what the others owe when the viewer paid', () => {
     expect(expensePosition(expenseResponse(), viewer.id)).toEqual({
       direction: 'owed',
-      label: 'You lent',
       amount: '122.86',
     })
   })
@@ -22,7 +21,6 @@ describe('expensePosition', () => {
     const expense = expenseResponse({ payee: anna })
     expect(expensePosition(expense, viewer.id)).toEqual({
       direction: 'owe',
-      label: 'You borrowed',
       amount: '61.44',
     })
   })

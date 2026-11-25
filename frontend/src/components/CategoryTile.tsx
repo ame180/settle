@@ -1,5 +1,5 @@
 import type { ExpenseCategory } from '@/api/types'
-import { categoryInfo } from '@/lib/categories'
+import { categoryInfo, categoryLabel } from '@/lib/categories'
 import { cn } from '@/lib/utils'
 
 type CategoryTileProps = {
@@ -8,7 +8,8 @@ type CategoryTileProps = {
 }
 
 export function CategoryTile({ category, className }: CategoryTileProps) {
-  const { label, icon: Icon, tileClassName } = categoryInfo[category]
+  const { icon: Icon, tileClassName } = categoryInfo[category]
+  const label = categoryLabel(category)
 
   return (
     <span

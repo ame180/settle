@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createMemoryRouter, RouterProvider } from 'react-router'
+import { TestI18nProvider } from '@/test/i18n'
 import { LoginPage } from './LoginPage'
 
 vi.mock('@/api/auth', async () => {
@@ -23,9 +24,11 @@ function renderLogin() {
     { initialEntries: ['/login'] },
   )
   render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
+    <TestI18nProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </TestI18nProvider>,
   )
   return router
 }

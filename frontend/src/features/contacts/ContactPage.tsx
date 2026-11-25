@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router'
 import { Activity, CircleCheck, Pencil } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useActivity } from '@/api/activity'
 import { useMe } from '@/api/auth'
 import { useContact } from '@/api/contacts'
@@ -29,18 +30,19 @@ export function ContactPage() {
 }
 
 function ContactView({ userId }: { userId: number }) {
+  const { t } = useLingui()
   const contactQuery = useContact(userId)
   const contact = contactQuery.data
 
   return (
     <>
       <PageHeader
-        leading={<BackLink to="/" label="Back to contacts" />}
+        leading={<BackLink to="/" label={t`Back to contacts`} />}
         trailing={
           contact && (
             <Link
               to={`/contacts/${userId}/edit`}
-              aria-label="Edit contact"
+              aria-label={t`Edit contact`}
               className={buttonClassName({
                 variant: 'ghost',
                 size: 'icon',
@@ -58,7 +60,7 @@ function ContactView({ userId }: { userId: number }) {
           <ContactSkeleton />
         ) : contact === undefined ? (
           <LoadError
-            title="Couldn't load contact"
+            title={t`Couldn't load contact`}
             onRetry={() => contactQuery.refetch()}
             isRetrying={contactQuery.isFetching}
           />
@@ -117,7 +119,7 @@ function ContactHeader({ contact, sharedActivity }: ContactHeaderProps) {
           )}
           {!contact.isRegistered && (
             <span className="mt-0.5 rounded-full bg-muted px-2.5 py-0.5 text-xs text-foreground/80">
-              Not on Settle yet
+              <Trans>Not on Settle yet</Trans>
             </span>
           )}
         </div>
@@ -128,6 +130,7 @@ function ContactHeader({ contact, sharedActivity }: ContactHeaderProps) {
 }
 
 function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
+  const { t } = useLingui()
   const name = getShortName(contact.person.displayName)
   const balance = findPlnAmount(contact.balances)
 
@@ -138,7 +141,7 @@ function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
       <div className="flex items-end justify-between gap-3">
         <p className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-sm text-foreground/80">
-            {youOwe ? `You owe ${name}` : `${name} owes you`}
+            {youOwe ? t`You owe ${name}` : t`${name} owes you`}
           </span>
           <span
             className={cn(
@@ -153,7 +156,7 @@ function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
           to={settleUpPath(contact.person.id, balance)}
           className="inline-flex h-11 shrink-0 items-center rounded-full bg-primary px-5 text-[15px] font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none active:bg-primary/85"
         >
-          Settle up
+          <Trans>Settle up</Trans>
         </Link>
       </div>
     )
@@ -161,21 +164,33 @@ function ContactBalance({ contact, sharedActivity }: ContactHeaderProps) {
 
   // The view shows PLN only for now, so a balance in another currency must not read as settled.
   if (contact.balances.length > 0) {
-    return <p className="text-[15px] text-muted-foreground">No PLN balance</p>
+    return (
+      <p className="text-[15px] text-muted-foreground">
+        <Trans>No PLN balance</Trans>
+      </p>
+    )
   }
   if (sharedActivity === 'loading') {
     return null
   }
   if (sharedActivity === 'failed') {
-    return <p className="text-[15px] text-muted-foreground">No balance</p>
+    return (
+      <p className="text-[15px] text-muted-foreground">
+        <Trans>No balance</Trans>
+      </p>
+    )
   }
   if (sharedActivity === 'none') {
-    return <p className="text-[15px] text-muted-foreground">No shared expenses yet</p>
+    return (
+      <p className="text-[15px] text-muted-foreground">
+        <Trans>No shared expenses yet</Trans>
+      </p>
+    )
   }
   return (
     <p className="flex items-center gap-2 text-[15px] text-foreground/80">
       <CircleCheck className="size-5 shrink-0 text-positive" aria-hidden="true" />
-      You and {name} are settled up
+      <Trans>You and {name} are settled up</Trans>
     </p>
   )
 }
@@ -186,6 +201,7 @@ type ContactActivityProps = {
 }
 
 function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
+  const { t } = useLingui()
   const { data: me } = useMe()
   const name = getShortName(contact.person.displayName)
 
@@ -196,7 +212,7 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
     return (
       <LoadError
         compact
-        title="Couldn't load activity"
+        title={t`Couldn't load activity`}
         onRetry={() => activityQuery.refetch()}
         isRetrying={activityQuery.isFetching}
       />
@@ -211,18 +227,18 @@ function ContactActivity({ contact, activityQuery }: ContactActivityProps) {
       <StateMessage
         compact
         icon={<Activity className="size-7.5" aria-hidden="true" />}
-        title={`No expenses with ${name}`}
+        title={t`No expenses with ${name}`}
         description={
           contact.isRegistered
-            ? `Expenses and payments with ${name} show up here.`
-            : `Expenses you split with ${name} show up here. When ${name} signs up with this email, they'll see them too.`
+            ? t`Expenses and payments with ${name} show up here.`
+            : t`Expenses you split with ${name} show up here. When ${name} signs up with this email, they'll see them too.`
         }
       />
     )
   }
 
   return (
-    <section aria-label={`Activity with ${name}`}>
+    <section aria-label={t`Activity with ${name}`}>
       <ul>
         {items.map((item) => (
           <li key={activityItemKey(item)}>
@@ -246,7 +262,9 @@ const skeletonRows = [
 function ContactSkeleton() {
   return (
     <div role="status">
-      <span className="sr-only">Loading contact</span>
+      <span className="sr-only">
+        <Trans>Loading contact</Trans>
+      </span>
       <div className="flex flex-col gap-4 border-b px-4 py-5">
         <div className="flex items-center gap-3">
           <Skeleton className="size-11 shrink-0 rounded-full" />
@@ -271,7 +289,9 @@ function ContactSkeleton() {
 function ActivityRowsSkeleton() {
   return (
     <div role="status">
-      <span className="sr-only">Loading activity</span>
+      <span className="sr-only">
+        <Trans>Loading activity</Trans>
+      </span>
       <SkeletonRows />
     </div>
   )

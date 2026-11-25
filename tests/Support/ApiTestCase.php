@@ -129,9 +129,10 @@ abstract class ApiTestCase extends WebTestCase
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param array<string, mixed>  $payload
+     * @param array<string, string> $server  extra server parameters, e.g. `HTTP_ACCEPT_LANGUAGE`
      */
-    protected function requestJson(KernelBrowser $client, string $method, string $url, array $payload): void
+    protected function requestJson(KernelBrowser $client, string $method, string $url, array $payload, array $server = []): void
     {
         $client->request(
             $method,
@@ -141,6 +142,7 @@ abstract class ApiTestCase extends WebTestCase
             [
                 'CONTENT_TYPE' => 'application/json',
                 'HTTP_ACCEPT' => 'application/json',
+                ...$server,
             ],
             json_encode($payload, JSON_THROW_ON_ERROR)
         );

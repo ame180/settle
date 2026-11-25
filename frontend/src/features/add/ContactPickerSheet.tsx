@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import type { ContactListItem, PersonRef } from '@/api/types'
 import { Input } from '@/components/ui/input'
 import {
@@ -29,6 +30,7 @@ export function ContactPickerSheet({
   selectedId,
   onPick,
 }: ContactPickerSheetProps) {
+  const { t } = useLingui()
   const [query, setQuery] = useState('')
   const all = contacts ?? []
   const rows = query.trim() === '' ? recentContacts(all, all.length) : searchContacts(all, query)
@@ -44,23 +46,23 @@ export function ContactPickerSheet({
       <SheetContent className="h-[80dvh]">
         <SheetHeader className="gap-3">
           <SheetTitle>{title}</SheetTitle>
-          <SheetDescription className="sr-only">Pick a contact.</SheetDescription>
+          <SheetDescription className="sr-only">{t`Pick a contact.`}</SheetDescription>
           <Input
             type="search"
-            aria-label="Search contacts"
-            placeholder="Search contacts"
+            aria-label={t`Search contacts`}
+            placeholder={t`Search contacts`}
             autoComplete="off"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </SheetHeader>
-        <ul aria-label="Contacts" className="min-h-0 flex-1 overflow-y-auto border-t">
+        <ul aria-label={t`Contacts`} className="min-h-0 flex-1 overflow-y-auto border-t">
           {contacts === undefined && (
-            <li className="px-4 py-3 text-muted-foreground">Loading contacts…</li>
+            <li className="px-4 py-3 text-muted-foreground">{t`Loading contacts…`}</li>
           )}
           {contacts !== undefined && rows.length === 0 && (
             <li className="px-4 py-3 text-muted-foreground">
-              {all.length === 0 ? 'No contacts yet.' : 'No contacts match.'}
+              {all.length === 0 ? t`No contacts yet.` : t`No contacts match.`}
             </li>
           )}
           {rows.map((contact) => {

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import type { ExpenseCategory } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import {
@@ -7,7 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { categoryInfo, expenseCategories } from '@/lib/categories'
+import { categoryLabel, expenseCategories } from '@/lib/categories'
 import { cn } from '@/lib/utils'
 
 type CategorySheetProps = {
@@ -18,16 +19,23 @@ type CategorySheetProps = {
 }
 
 export function CategorySheet({ open, onOpenChange, value, onPick }: CategorySheetProps) {
+  const { t } = useLingui()
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Category</SheetTitle>
+          <SheetTitle>
+            <Trans>Category</Trans>
+          </SheetTitle>
           <SheetDescription className="text-[13px]">
-            Guessed from the title. Pick another and it stays.
+            <Trans>Guessed from the title. Pick another and it stays.</Trans>
           </SheetDescription>
         </SheetHeader>
-        <div role="radiogroup" aria-label="Category" className="grid grid-cols-4 gap-2 px-4 pb-6">
+        <div
+          role="radiogroup"
+          aria-label={t`Category`}
+          className="grid grid-cols-4 gap-2 px-4 pb-6"
+        >
           {expenseCategories.map((category) => {
             const checked = category === value
             return (
@@ -36,7 +44,7 @@ export function CategorySheet({ open, onOpenChange, value, onPick }: CategoryShe
                 type="button"
                 role="radio"
                 aria-checked={checked}
-                aria-label={categoryInfo[category].label}
+                aria-label={categoryLabel(category)}
                 onClick={() => onPick(category)}
                 className="flex min-h-22 flex-col items-center gap-1.5 rounded-xl px-0.5 py-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
@@ -54,7 +62,7 @@ export function CategorySheet({ open, onOpenChange, value, onPick }: CategoryShe
                     checked && 'font-semibold text-foreground',
                   )}
                 >
-                  {categoryInfo[category].label}
+                  {categoryLabel(category)}
                 </span>
               </button>
             )

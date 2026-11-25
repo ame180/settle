@@ -72,7 +72,7 @@ describe('AddPage', () => {
     await userEvent.type(title, 'Pizza')
     await userEvent.type(screen.getByLabelText('Amount'), '99,5')
     expect(screen.getByText('Anna owes you')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Add 99.50/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Add zł\s99\.50/ }))
 
     expect(await screen.findByText('Contact page')).toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/expenses')?.body).toEqual({
@@ -101,7 +101,7 @@ describe('AddPage', () => {
     await userEvent.click(screen.getByRole('radio', { name: 'Full amount' }))
     expect(screen.getByRole('radio', { name: 'Full amount' })).toBeChecked()
     expect(screen.getByText('You owe Anna')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Add 40.00/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Add zł\s40\.00/ }))
 
     expect(await screen.findByText('Contact page')).toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/expenses')?.body).toMatchObject({
@@ -125,12 +125,12 @@ describe('AddPage', () => {
     const amount = screen.getByLabelText('Amount')
     await userEvent.clear(amount)
     await userEvent.type(amount, '120')
-    await userEvent.click(screen.getByRole('button', { name: /Add 120.00/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Add zł\s120\.00/ }))
 
     const custom = screen.getByRole('radio', { name: /Custom/ })
     expect(custom).toBeChecked()
     expect(custom).toHaveFocus()
-    expect(custom).toHaveAccessibleDescription(/Adds up to 99\.00\szł of 120\.00\szł/)
+    expect(custom).toHaveAccessibleDescription(/Adds up to zł\s99\.00 of zł\s120\.00/)
     expect(calls.some((call) => call.key === 'POST /api/expenses')).toBe(false)
 
     await userEvent.click(screen.getByRole('button', { name: /By amounts.*Adds up to/ }))
@@ -164,7 +164,7 @@ describe('AddPage', () => {
 
     await userEvent.type(await screen.findByLabelText('What was it for?'), 'Pizza')
     await userEvent.type(screen.getByLabelText('Amount'), '10')
-    await userEvent.click(screen.getByRole('button', { name: /Add 10.00/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Add zł\s10\.00/ }))
 
     expect(await screen.findByText('This value is too long.')).toBeInTheDocument()
     expect(screen.getByLabelText('What was it for?')).toHaveAttribute('aria-invalid', 'true')
@@ -337,7 +337,7 @@ describe('AddPage', () => {
     expect(screen.getByText(/This adds to what Anna already owes you/)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Swap who paid' }))
 
-    await userEvent.click(screen.getByRole('button', { name: /Record 100.00/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Record zł\s100\.00/ }))
 
     expect(await screen.findByText('Contact page')).toBeInTheDocument()
     expect(calls.find((call) => call.key === 'POST /api/transfers')?.body).toEqual({

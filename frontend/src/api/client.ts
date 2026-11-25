@@ -1,3 +1,4 @@
+import { currentLocale } from '@/i18n/i18n'
 import type { ApiProblem, ApiViolation } from './types'
 
 export class ApiError extends Error {
@@ -21,7 +22,10 @@ type RequestOptions = {
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' }
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Accept-Language': currentLocale(),
+  }
   if (options.body !== undefined) {
     headers['Content-Type'] = 'application/json'
   }
