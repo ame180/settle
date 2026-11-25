@@ -491,6 +491,10 @@ msgstr "Couldn't load contacts"
 msgid "Couldn't load more activity."
 msgstr "Couldn't load more activity."
 
+#: src/features/auth/SignUpPage.tsx
+msgid "Couldn't load sign-up"
+msgstr "Couldn't load sign-up"
+
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this expense"
 msgstr "Couldn’t load this expense"
@@ -802,6 +806,7 @@ msgid "Leave empty to show your email."
 msgstr "Leave empty to show your email."
 
 #: src/features/add/AddPage.tsx
+#: src/features/auth/SignUpPage.tsx
 msgid "Loading"
 msgstr "Loading"
 

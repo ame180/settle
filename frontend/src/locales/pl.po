@@ -491,6 +491,10 @@ msgstr "Nie udało się wczytać kontaktów"
 msgid "Couldn't load more activity."
 msgstr "Nie udało się wczytać starszej aktywności."
 
+#: src/features/auth/SignUpPage.tsx
+msgid "Couldn't load sign-up"
+msgstr "Nie udało się wczytać zakładania konta"
+
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this expense"
 msgstr "Nie udało się wczytać wydatku"
@@ -802,6 +806,7 @@ msgid "Leave empty to show your email."
 msgstr "Zostaw puste, aby pokazywać adres e-mail."
 
 #: src/features/add/AddPage.tsx
+#: src/features/auth/SignUpPage.tsx
 msgid "Loading"
 msgstr "Wczytywanie"
 

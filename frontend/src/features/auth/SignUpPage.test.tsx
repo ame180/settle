@@ -7,10 +7,18 @@ import { SignUpPage } from './SignUpPage'
 
 type RegisterReply = { status: number; body?: unknown }
 
-function stubApi(registerReply: RegisterReply, { registrationEnabled = true } = {}) {
+function stubApi(
+  registerReply: RegisterReply,
+  { registrationEnabled = true, configFailures = 0 } = {},
+) {
   let isLoggedIn = false
+  let configFailuresLeft = configFailures
   const fetchMock = vi.fn(async (path: string) => {
     if (path === '/api/config') {
+      if (configFailuresLeft > 0) {
+        configFailuresLeft -= 1
+        return jsonResponse(500, { status: 500 })
+      }
       return jsonResponse(200, { registrationEnabled })
     }
     if (path === '/api/me') {
@@ -121,9 +129,12 @@ describe('SignUpPage', () => {
     stubApi({ status: 201 })
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (path: string) =>
-        path === '/api/register' ? new Promise<Response>(() => {}) : jsonResponse(401, {}),
-      ),
+      vi.fn(async (path: string) => {
+        if (path === '/api/config') {
+          return jsonResponse(200, { registrationEnabled: true })
+        }
+        return path === '/api/register' ? new Promise<Response>(() => {}) : jsonResponse(401, {})
+      }),
     )
     renderSignUp()
 
@@ -222,5 +233,17 @@ describe('SignUpPage', () => {
     await fillForm()
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Sign-up is closed.')
+  })
+
+  it('offers a retry instead of the form when the config fails to load', async () => {
+    stubApi({ status: 201 }, { configFailures: 1 })
+    renderSignUp()
+
+    expect(await screen.findByText("Couldn't load sign-up")).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create account' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(await screen.findByRole('heading', { name: 'Create an account' })).toBeInTheDocument()
   })
 })

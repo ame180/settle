@@ -16,7 +16,9 @@ vi.mock('@/api/auth', async () => {
 })
 
 function renderLogin() {
-  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
   const router = createMemoryRouter(
     [
       { path: '/login', element: <LoginPage /> },
@@ -36,11 +38,11 @@ function renderLogin() {
 
 function stubApi(
   loginReply: { status: number; body: unknown },
-  { registrationEnabled = true } = {},
+  { registrationEnabled = true, configStatus = 200 } = {},
 ) {
   const fetchMock = vi.fn(async (path: string) => {
     if (path === '/api/config') {
-      return jsonResponse(200, { registrationEnabled })
+      return jsonResponse(configStatus, configStatus === 200 ? { registrationEnabled } : {})
     }
     if (path === '/api/login') {
       return jsonResponse(loginReply.status, loginReply.body)
@@ -125,5 +127,14 @@ describe('LoginPage', () => {
     await screen.findByRole('heading', { name: 'Sign in' })
     expect(screen.queryByRole('link', { name: 'Create an account' })).not.toBeInTheDocument()
     expect(screen.queryByText(/New to Settle/)).not.toBeInTheDocument()
+  })
+
+  it('hides the sign-up link when the config fails to load', async () => {
+    const fetchMock = stubApi({ status: 200, body: {} }, { configStatus: 500 })
+    renderLogin()
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/config', expect.anything()))
+    await screen.findByRole('heading', { name: 'Sign in' })
+    expect(screen.queryByRole('link', { name: 'Create an account' })).not.toBeInTheDocument()
   })
 })

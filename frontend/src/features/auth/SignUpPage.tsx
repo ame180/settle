@@ -8,7 +8,9 @@ import { useMe, useRegister } from '@/api/auth'
 import { useAppConfig } from '@/api/config'
 import { ApiError } from '@/api/client'
 import { AlertLine, FieldError } from '@/components/FieldError'
+import { LoadError } from '@/components/LoadError'
 import { PrimaryButton } from '@/components/PrimaryButton'
+import { Spinner } from '@/components/Spinner'
 import { Input } from '@/components/ui/input'
 import { buttonClassName } from '@/components/ui/button-variants'
 import { Label } from '@/components/ui/label'
@@ -43,17 +45,26 @@ function isSignUpField(propertyPath: string): propertyPath is SignUpField {
 }
 
 export function SignUpPage() {
+  const { t } = useLingui()
   const { data: me } = useMe()
-  const { data: config, isPending } = useAppConfig()
+  const configQuery = useAppConfig()
 
   if (me) {
     return <Navigate to="/" replace />
   }
-  if (isPending) {
-    return null
+  if (configQuery.isPending) {
+    return <Spinner label={t`Loading`} className="pt-40" />
   }
-  // If the config can't load, show the form anyway: the server still refuses a closed sign-up.
-  return config?.registrationEnabled === false ? <SignUpClosed /> : <SignUpForm />
+  if (configQuery.isError) {
+    return (
+      <LoadError
+        title={t`Couldn't load sign-up`}
+        onRetry={() => configQuery.refetch()}
+        isRetrying={configQuery.isFetching}
+      />
+    )
+  }
+  return configQuery.data.registrationEnabled ? <SignUpForm /> : <SignUpClosed />
 }
 
 function SignUpClosed() {

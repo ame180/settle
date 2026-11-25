@@ -7,6 +7,5 @@ export function useAppConfig() {
     queryKey: ['config'],
     queryFn: ({ signal }) => apiRequest<AppConfig>('/api/config', { signal }),
     staleTime: Infinity,
-    retry: false,
   })
 }

@@ -12,12 +12,10 @@ export type MeUpdateRequest = {
   name: string
 }
 
-/** GET /api/config: public, so the sign-in screens can read it signed out. */
 export type AppConfig = {
   registrationEnabled: boolean
 }
 
-/** PUT /api/me/password. Signs out every other session of the user. */
 export type PasswordChangeRequest = {
   currentPassword: string
   newPassword: string
