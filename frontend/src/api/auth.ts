@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, apiRequest } from './client'
-import type { MeResponse, MeUpdateRequest, RegisterRequest } from './types'
+import type { MeResponse, MeUpdateRequest, PasswordChangeRequest, RegisterRequest } from './types'
 
 export const meQueryKey = ['me'] as const
 
@@ -83,4 +83,12 @@ export function useUpdateMe() {
       queryClient.setQueryData(meQueryKey, me)
     },
   })
+}
+
+export function changePassword(input: PasswordChangeRequest): Promise<void> {
+  return apiRequest<void>('/api/me/password', { method: 'PUT', body: input })
+}
+
+export function useChangePassword() {
+  return useMutation({ mutationFn: changePassword })
 }

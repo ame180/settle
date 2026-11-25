@@ -17,6 +17,12 @@ export type AppConfig = {
   registrationEnabled: boolean
 }
 
+/** PUT /api/me/password. Signs out every other session of the user. */
+export type PasswordChangeRequest = {
+  currentPassword: string
+  newPassword: string
+}
+
 export type RegisterRequest = {
   email: string
   password: string
