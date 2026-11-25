@@ -36,7 +36,7 @@ export function looksLikeEmail(text: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())
 }
 
-/** "Owes you PLN 192.92", "You owe PLN 120.00", "Settled up". */
+/** "Owes you zł 192.92", "You owe zł 120.00", "Settled up". */
 export function balanceLine(contact: ContactListItem): string {
   const balance = findPlnAmount(contact.balances)
   if (balance === null) {

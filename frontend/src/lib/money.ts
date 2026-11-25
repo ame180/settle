@@ -9,7 +9,11 @@ function currencyFormat(currency: string): Intl.NumberFormat {
   const key = `${locale}:${currency}`
   let format = currencyFormats.get(key)
   if (!format) {
-    format = new Intl.NumberFormat(locale, { style: 'currency', currency })
+    format = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'narrowSymbol',
+    })
     currencyFormats.set(key, format)
   }
   return format
@@ -32,7 +36,7 @@ function unsignedDecimal(amount: string): Intl.StringNumericLiteral {
   return amount.replace(/^-/, '') as Intl.StringNumericLiteral
 }
 
-/** Signless, in the active locale's format: "12,00 zł" in Polish, "PLN 12.00" in English. */
+/** Signless, in the active locale's format: "12,00 zł" in Polish, "zł 12.00" in English. */
 export function formatMoney(amount: string, currency: string): string {
   return currencyFormat(currency).format(unsignedDecimal(amount))
 }
@@ -104,6 +108,17 @@ export function localizeAmountInput(value: string): string {
   return value.replace(/[.,]/, separator)
 }
 
+/** The currency symbol for an amount field, on the side the active locale puts it. */
+export function currencyAffix(currency: string): { symbol: string; position: 'before' | 'after' } {
+  const parts = currencyFormat(currency).formatToParts(1)
+  const symbolIndex = parts.findIndex((part) => part.type === 'currency')
+  const numberIndex = parts.findIndex((part) => part.type === 'integer')
+  return {
+    symbol: parts[symbolIndex]?.value ?? currency,
+    position: symbolIndex < numberIndex ? 'before' : 'after',
+  }
+}
+
 /** Integer digits the API's Decimal(precision: 10, scale: 2) allows before the point. */
 export const MAX_AMOUNT_INTEGER_DIGITS = 8
 
@@ -142,7 +157,8 @@ const allowedInput = new RegExp(`^\\d{0,${MAX_AMOUNT_INTEGER_DIGITS}}(?:[.,]\\d{
 /** Keeps the field to something that can become an amount: digits, one separator, 2 decimals. */
 export function sanitizeAmountInput(next: string, previous: string): string {
   const compact = next.replace(/\s/g, '')
-  return allowedInput.test(compact) ? compact : previous
+  // Stored with a point, whichever separator was typed; the field shows the locale's.
+  return allowedInput.test(compact) ? compact.replace(',', '.') : previous
 }
 
 /** Adds 2-decimal money strings exactly (no float math): ['61.43', '61.43'] → '122.86'. */

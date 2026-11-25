@@ -53,7 +53,7 @@ describe('TransferDetailPage', () => {
     renderTransfer()
 
     expect(await screen.findByText('Anna Kowalska paid you')).toBeInTheDocument()
-    expect(screen.getByText('PLN 150.00')).toBeInTheDocument()
+    expect(screen.getByText('zł 150.00')).toBeInTheDocument()
     expect(screen.getByText('22 Oct')).toBeInTheDocument()
     expect(screen.getByText('BLIK for groceries and coffee')).toBeInTheDocument()
     const header = screen.getByRole('banner')

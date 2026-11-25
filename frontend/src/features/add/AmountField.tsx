@@ -1,6 +1,11 @@
 import { useId, useRef, type ReactNode, type RefObject } from 'react'
 import { Trans } from '@lingui/react/macro'
-import { localizeAmountInput, parseAmountInput, sanitizeAmountInput } from '@/lib/money'
+import {
+  currencyAffix,
+  localizeAmountInput,
+  parseAmountInput,
+  sanitizeAmountInput,
+} from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { FieldError } from '@/components/FieldError'
 
@@ -13,11 +18,13 @@ type AmountFieldProps = {
   inputRef: RefObject<HTMLInputElement | null>
 }
 
-/** Large centred amount with a fixed "zł" suffix; decimal comma or point accepted, shown with the locale's separator. */
+/** Large centred amount with the zł symbol where the locale puts it; decimal comma or point accepted, shown with the locale's separator. */
 export function AmountField({ value, onChange, error, outcome, inputRef }: AmountFieldProps) {
   const id = useId()
   const blockRef = useRef<HTMLDivElement>(null)
   const width = Math.max(value.length, 4)
+  const affix = currencyAffix('PLN')
+  const symbol = <span className="text-lg font-semibold text-muted-foreground">{affix.symbol}</span>
 
   return (
     <div ref={blockRef} className="flex scroll-mt-4 scroll-mb-28 flex-col items-center gap-1.5">
@@ -30,6 +37,7 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
           error && 'border-destructive focus-within:border-destructive',
         )}
       >
+        {affix.position === 'before' && symbol}
         <input
           ref={inputRef}
           id={id}
@@ -57,7 +65,7 @@ export function AmountField({ value, onChange, error, outcome, inputRef }: Amoun
           style={{ width: `${width + 0.5}ch` }}
           className="min-w-0 bg-transparent text-right text-4xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/70"
         />
-        <span className="text-lg font-semibold text-muted-foreground">zł</span>
+        {affix.position === 'after' && symbol}
       </div>
       <div id={`${id}-outcome`} className="min-h-6 self-stretch text-center">
         {error && <FieldError message={error} className="justify-center" />}

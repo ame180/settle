@@ -445,7 +445,7 @@ export function classifyOutcome(
   }
 }
 
-/** "Anna, Ewa and Tomasz owe you PLN 60.00 each", when everyone a user lent to owes the same. */
+/** "Anna, Ewa and Tomasz owe you zł 60.00 each", when everyone a user lent to owes the same. */
 export function lentEachDetail(outcome: Extract<OutcomeCase, { kind: 'lent' }>): string | null {
   if (outcome.eachGrosze === null) {
     return null

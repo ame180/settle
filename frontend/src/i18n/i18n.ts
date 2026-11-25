@@ -28,6 +28,8 @@ export function resolveLocale(
   return sourceLocale
 }
 
+// Call once at boot: core `t` strings and the cached Intl formatters don't follow a later switch,
+// so changing the language at runtime needs a reload.
 export async function activateLocale(locale: Locale): Promise<void> {
   if (locale === 'pl') {
     const { messages } = await import('@/locales/pl.po')
@@ -42,8 +44,8 @@ export function currentLocale(): Locale {
   return isSupportedLocale(i18n.locale) ? i18n.locale : sourceLocale
 }
 
-// English formats dates day-first ("22 Oct"), as the app did before it was translated.
-const formattingLocales: Record<Locale, string> = { en: 'en-GB', pl: 'pl-PL' }
+// International English: day-first dates ("Wed, 22 Oct") and Monday-first weeks, without a country.
+const formattingLocales: Record<Locale, string> = { en: 'en-001', pl: 'pl-PL' }
 
 /** The BCP-47 tag `Intl` formatters use for the active locale. */
 export function formattingLocale(): string {

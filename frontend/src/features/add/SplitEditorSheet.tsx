@@ -13,6 +13,7 @@ import {
   formatAmountNumber,
   formatPlnRange,
   fromGrosze,
+  currencyAffix,
   localizeAmountInput,
   parseAmountInput,
   sanitizeAmountInput,
@@ -384,8 +385,11 @@ function RowControl({
   }
 
   const isPercent = split.type === 'percentage'
+  const affix = isPercent ? { symbol: '%', position: 'after' as const } : currencyAffix('PLN')
+  const symbol = <span className="w-5 text-[15px] text-muted-foreground">{affix.symbol}</span>
   return (
     <span className="flex shrink-0 items-center gap-1.5">
+      {affix.position === 'before' && symbol}
       <Input
         type="text"
         inputMode="decimal"
@@ -397,7 +401,7 @@ function RowControl({
         onChange={(event) => onValue(sanitizeAmountInput(event.target.value, value))}
         className={cn('text-right tabular-nums', isPercent ? 'w-18' : 'w-24')}
       />
-      <span className="w-5 text-[15px] text-muted-foreground">{isPercent ? '%' : 'zł'}</span>
+      {affix.position === 'after' && symbol}
     </span>
   )
 }

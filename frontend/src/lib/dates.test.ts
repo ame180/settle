@@ -28,7 +28,7 @@ describe('formatDayLabel', () => {
   it.each([
     ['2026-11-05T00:00:00+00:00', 'Today'],
     ['2026-11-04T00:00:00+00:00', 'Yesterday'],
-    ['2026-10-22T00:00:00+00:00', 'Thu 22 Oct'],
+    ['2026-10-22T00:00:00+00:00', 'Thu, 22 Oct'],
     ['2025-12-31T00:00:00+00:00', 'Wed, 31 Dec 2025'],
   ])('labels %s as %s', (date, expected) => {
     expect(formatDayLabel(date, now)).toBe(expected)

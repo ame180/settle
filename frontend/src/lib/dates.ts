@@ -66,7 +66,7 @@ function relativeDayLabel(isoDate: string, today: string): string | null {
   return null
 }
 
-/** Day header label: "Today", "Yesterday", "Thu 22 Oct", or "Wed, 31 Dec 2025" in other years. */
+/** Day header label: "Today", "Yesterday", "Thu, 22 Oct", or "Wed, 31 Dec 2025" in other years. */
 export function formatDayLabel(isoDate: string, now: Date = new Date()): string {
   const today = todayIso(now)
   return relativeDayLabel(isoDate, today) ?? formatDate(isoDate, today, true)

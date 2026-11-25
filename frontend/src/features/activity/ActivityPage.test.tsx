@@ -73,11 +73,11 @@ describe('ActivityPage', () => {
     })
     renderRoutes([{ path: '/', element: <ActivityPage /> }], '/')
 
-    const firstDay = await screen.findByRole('region', { name: 'Thu 22 Oct' })
-    expect(within(firstDay).getByRole('heading')).toHaveTextContent('Thu 22 Oct')
+    const firstDay = await screen.findByRole('region', { name: 'Thu, 22 Oct' })
+    expect(within(firstDay).getByRole('heading')).toHaveTextContent('Thu, 22 Oct')
     expect(within(firstDay).getByRole('link')).toHaveTextContent('Anna Kowalska paid you')
 
-    const secondDay = screen.getByRole('region', { name: 'Tue 20 Oct' })
+    const secondDay = screen.getByRole('region', { name: 'Tue, 20 Oct' })
     const rows = within(secondDay).getAllByRole('link')
     expect(rows.map((row) => row.getAttribute('href'))).toEqual(['/expenses/2', '/expenses/1'])
     expect(rows[0]).toHaveTextContent('you borrowed')
