@@ -28,8 +28,9 @@ export function resolveLocale(
   return sourceLocale
 }
 
-// Call once at boot: core `t` strings and the cached Intl formatters don't follow a later switch,
-// so changing the language at runtime needs a reload.
+// Call once at boot: components that use core `t` or the Intl helpers without `useLingui()`, and
+// strings already kept in state, don't re-render on a later switch, so changing the language needs
+// a reload.
 export async function activateLocale(locale: Locale): Promise<void> {
   if (locale === 'pl') {
     const { messages } = await import('@/locales/pl.po')

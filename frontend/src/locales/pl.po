@@ -1195,7 +1195,7 @@ msgstr "Zamień"
 
 #: src/features/add/SplitCard.tsx
 msgid "Switch who paid"
-msgstr "Zamień, kto płaci"
+msgstr "Zmień, kto płaci"
 
 #: src/features/add/expenseDraft.ts
 msgid "That amount is too large"

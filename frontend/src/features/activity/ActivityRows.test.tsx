@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { screen } from '@testing-library/react'
+import { cleanup, screen } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { anna, expenseItem, transferItem, viewer } from '@/test/activity'
 import { activateLocale } from '@/i18n/i18n'
@@ -101,6 +101,8 @@ describe('SettlementRow', () => {
 
   describe('in Polish', () => {
     afterEach(async () => {
+      // Unmount first, so switching back doesn't update a mounted I18nProvider outside act().
+      cleanup()
       await activateLocale('en')
     })
 
