@@ -33,3 +33,9 @@ if (!Element.prototype.setPointerCapture) {
   Element.prototype.releasePointerCapture = () => {}
   Element.prototype.hasPointerCapture = () => false
 }
+
+// jsdom computes vaul's exit animation but never fires animationend, so Radix would keep a
+// closed sheet mounted.
+const noAnimations = document.createElement('style')
+noAnimations.textContent = '*, *::before, *::after { animation: none !important; }'
+document.head.append(noAnimations)
