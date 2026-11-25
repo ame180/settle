@@ -6,6 +6,10 @@ framework:
     session:
         cookie_secure: auto
         cookie_samesite: lax
+        # 30 days. The server side slides with each request; the cookie is only re-sent with a new
+        # session id (sign-in), so the browser drops it 30 days after the last sign-in.
+        cookie_lifetime: 2592000
+        gc_maxlifetime: 2592000
         # Outside the cache dir, so sessions survive cache clears and image rebuilds.
         save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'
 
