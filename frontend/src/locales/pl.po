@@ -27,6 +27,10 @@ msgstr "{assignedPercent}% ze 100%"
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
 
+#: src/features/detail/commentTime.ts
+msgid "{day}, {time}"
+msgstr "{day}, {time}"
+
 #: src/features/add/ExpenseForm.tsx
 msgid "{debtorName} owes you <0>{amount}</0>"
 msgstr "{debtorName} ma ci oddać <0>{amount}</0>"
@@ -218,6 +222,10 @@ msgstr "Dodaj wydatek {totalLabel}"
 msgid "Add {trimmedQuery} as a new contact"
 msgstr "Dodaj {trimmedQuery} jako nowy kontakt"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Add a comment"
+msgstr "Dodaj komentarz"
+
 #: src/features/contacts/ContactsPage.tsx
 msgid "Add an expense with someone, or add a contact by email."
 msgstr "Dodaj wydatek z kimś albo dodaj kontakt przez adres e-mail."
@@ -396,6 +404,14 @@ msgstr "Wybierz, komu płacisz"
 msgid "Close"
 msgstr "Zamknij"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Comment"
+msgstr "Komentarz"
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "Comments"
+msgstr "Komentarze"
+
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Contact not found"
 msgstr "Nie znaleziono kontaktu"
@@ -448,6 +464,10 @@ msgstr "Nie udało się usunąć płatności. Spróbuj ponownie."
 msgid "Couldn't load activity"
 msgstr "Nie udało się wczytać aktywności"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Couldn’t load comments"
+msgstr "Nie udało się wczytać komentarzy"
+
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Couldn't load contact"
@@ -485,6 +505,10 @@ msgstr "Nie udało się zapisać imienia. Spróbuj ponownie."
 #: src/features/contacts/EditContactPage.tsx
 msgid "Couldn't save. Try again."
 msgstr "Nie udało się zapisać. Spróbuj ponownie."
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "Couldn’t send the comment. Try again."
+msgstr "Nie udało się wysłać komentarza. Spróbuj ponownie."
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Create account"
@@ -764,6 +788,10 @@ msgstr "Wczytywanie"
 msgid "Loading activity"
 msgstr "Wczytywanie aktywności"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Loading comments…"
+msgstr "Wczytywanie komentarzy…"
+
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Loading contact"
@@ -852,6 +880,10 @@ msgstr "brak salda"
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "No balance"
 msgstr "Brak salda"
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "No comments yet."
+msgstr "Nie ma jeszcze komentarzy."
 
 #: src/features/add/ContactPickerSheet.tsx
 #: src/features/add/PeopleField.tsx
@@ -1100,6 +1132,10 @@ msgstr "Zapisywanie…"
 #: src/features/add/ContactPickerSheet.tsx
 msgid "Search contacts"
 msgstr "Szukaj kontaktów"
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "Send comment"
+msgstr "Wyślij komentarz"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Settle up"
