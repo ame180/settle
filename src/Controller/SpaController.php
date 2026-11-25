@@ -15,7 +15,7 @@ class SpaController extends AbstractController
     ) {
     }
 
-    #[Route('/{path}', name: 'spa', requirements: ['path' => '^(?!api(/|$)|_(profiler|wdt)(/|$)).*'], methods: ['GET'], priority: -100)]
+    #[Route('/{path}', name: 'spa', requirements: ['path' => '^(?!api(/|$)|app(/|$)|_(profiler|wdt)(/|$)|.*\.[^/.]+/?$).*'], methods: ['GET'], priority: -100)]
     public function index(): Response
     {
         if (!is_file($this->indexPath)) {
