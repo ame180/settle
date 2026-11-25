@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type RefObject } from 'react'
 import { SendHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { type useComments, usePostComment } from '@/api/comments'
 import { LoadError } from '@/components/LoadError'
 import { PersonAvatar } from '@/components/PersonAvatar'
@@ -19,16 +20,19 @@ type CommentListProps = {
 }
 
 export function CommentList({ commentsQuery, viewerId, endRef }: CommentListProps) {
+  const { t } = useLingui()
   const comments = commentsQuery.data
 
   return (
     <section aria-labelledby="comments-heading" className="mt-5">
       <h3 id="comments-heading" className="mx-4 mb-1 text-sm font-medium text-muted-foreground">
-        Comments
+        <Trans>Comments</Trans>
       </h3>
       {comments ? (
         comments.length === 0 ? (
-          <p className="mx-4 py-2 text-[15px] text-muted-foreground">No comments yet.</p>
+          <p className="mx-4 py-2 text-[15px] text-muted-foreground">
+            <Trans>No comments yet.</Trans>
+          </p>
         ) : (
           <ul>
             {comments.map((comment) => (
@@ -58,12 +62,14 @@ export function CommentList({ commentsQuery, viewerId, endRef }: CommentListProp
       ) : commentsQuery.isError ? (
         <LoadError
           compact
-          title="Couldn’t load comments"
+          title={t`Couldn’t load comments`}
           onRetry={() => commentsQuery.refetch()}
           isRetrying={commentsQuery.isFetching}
         />
       ) : (
-        <p className="mx-4 py-2 text-[15px] text-muted-foreground">Loading comments…</p>
+        <p className="mx-4 py-2 text-[15px] text-muted-foreground">
+          <Trans>Loading comments…</Trans>
+        </p>
       )}
       <div ref={endRef} />
     </section>
@@ -76,6 +82,7 @@ type CommentComposerProps = {
 }
 
 export function CommentComposer({ expenseId, onSent }: CommentComposerProps) {
+  const { t } = useLingui()
   const [body, setBody] = useState('')
   const postComment = usePostComment(expenseId)
   const trimmed = body.trim()
@@ -92,7 +99,7 @@ export function CommentComposer({ expenseId, onSent }: CommentComposerProps) {
           setBody((current) => (current.trim() === trimmed ? '' : current))
           onSent()
         },
-        onError: () => toast.error('Couldn’t send the comment. Try again.'),
+        onError: () => toast.error(t`Couldn’t send the comment. Try again.`),
       },
     )
   }
@@ -105,8 +112,8 @@ export function CommentComposer({ expenseId, onSent }: CommentComposerProps) {
       <Input
         value={body}
         onChange={(event) => setBody(event.target.value)}
-        placeholder="Add a comment"
-        aria-label="Comment"
+        placeholder={t`Add a comment`}
+        aria-label={t`Comment`}
         maxLength={maxCommentLength}
         enterKeyHint="send"
         className="flex-1 rounded-full px-4"
@@ -114,7 +121,7 @@ export function CommentComposer({ expenseId, onSent }: CommentComposerProps) {
       <Button
         type="submit"
         size="icon"
-        aria-label="Send comment"
+        aria-label={t`Send comment`}
         disabled={trimmed === '' || postComment.isPending}
         className="[&_svg]:size-5"
       >

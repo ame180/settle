@@ -88,6 +88,11 @@ export function formatLongDate(isoDate: string): string {
   return dateFormat({ day: 'numeric', month: 'long' }).format(fromIsoDate(isoDate))
 }
 
+/** "09:07" in 24-hour time, in every locale. */
+export function formatTime(date: Date): string {
+  return dateFormat({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date)
+}
+
 /** "November 2026"; "listopad 2026" in Polish. */
 export function formatMonthYear(date: Date): string {
   return dateFormat({ month: 'long', year: 'numeric' }).format(date)

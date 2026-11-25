@@ -27,6 +27,10 @@ msgstr "{assignedPercent}% of 100%"
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
 
+#: src/features/detail/commentTime.ts
+msgid "{day}, {time}"
+msgstr "{day}, {time}"
+
 #: src/features/add/ExpenseForm.tsx
 msgid "{debtorName} owes you <0>{amount}</0>"
 msgstr "{debtorName} owes you <0>{amount}</0>"
@@ -218,6 +222,10 @@ msgstr "Add {totalLabel} expense"
 msgid "Add {trimmedQuery} as a new contact"
 msgstr "Add {trimmedQuery} as a new contact"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Add a comment"
+msgstr "Add a comment"
+
 #: src/features/contacts/ContactsPage.tsx
 msgid "Add an expense with someone, or add a contact by email."
 msgstr "Add an expense with someone, or add a contact by email."
@@ -396,6 +404,14 @@ msgstr "Choose who you paid"
 msgid "Close"
 msgstr "Close"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Comment"
+msgstr "Comment"
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "Comments"
+msgstr "Comments"
+
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Contact not found"
 msgstr "Contact not found"
@@ -448,6 +464,10 @@ msgstr "Couldn’t delete the payment. Try again."
 msgid "Couldn't load activity"
 msgstr "Couldn't load activity"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Couldn’t load comments"
+msgstr "Couldn’t load comments"
+
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Couldn't load contact"
@@ -485,6 +505,10 @@ msgstr "Couldn't save your name. Try again."
 #: src/features/contacts/EditContactPage.tsx
 msgid "Couldn't save. Try again."
 msgstr "Couldn't save. Try again."
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "Couldn’t send the comment. Try again."
+msgstr "Couldn’t send the comment. Try again."
 
 #: src/features/auth/SignUpPage.tsx
 msgid "Create account"
@@ -764,6 +788,10 @@ msgstr "Loading"
 msgid "Loading activity"
 msgstr "Loading activity"
 
+#: src/features/detail/ExpenseComments.tsx
+msgid "Loading comments…"
+msgstr "Loading comments…"
+
 #: src/features/contacts/ContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx
 msgid "Loading contact"
@@ -852,6 +880,10 @@ msgstr "no balance"
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "No balance"
 msgstr "No balance"
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "No comments yet."
+msgstr "No comments yet."
 
 #: src/features/add/ContactPickerSheet.tsx
 #: src/features/add/PeopleField.tsx
@@ -1100,6 +1132,10 @@ msgstr "Saving…"
 #: src/features/add/ContactPickerSheet.tsx
 msgid "Search contacts"
 msgstr "Search contacts"
+
+#: src/features/detail/ExpenseComments.tsx
+msgid "Send comment"
+msgstr "Send comment"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Settle up"
