@@ -29,7 +29,7 @@ msgstr "{date} · {subline}"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{debtorName} owes you <0>{amount}</0>"
-msgstr "{debtorName} ma ci do oddania <0>{amount}</0>"
+msgstr "{debtorName} ma ci oddać <0>{amount}</0>"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{differenceAmount} left to assign"
@@ -69,27 +69,27 @@ msgstr "{name} ma do oddania całość"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "{name} owes you"
-msgstr "{name} ma ci do oddania"
+msgstr "Ma ci oddać"
 
 #: src/features/add/paymentModel.ts
 msgid "{name} owes you {amount} now."
-msgstr "Teraz {name} ma ci do oddania {amount}."
+msgstr "Teraz {name} ma ci oddać {amount}."
 
 #: src/features/add/PaymentForm.tsx
 msgid "{name} paid you"
-msgstr "Płatność od: {name}, dla ciebie"
+msgstr "{name} płaci, ty otrzymujesz"
 
 #: src/features/add/paymentModel.ts
 msgid "{name} will owe you {amount}"
-msgstr "Po płatności {name} ma ci do oddania {amount}"
+msgstr "Po płatności {name} ma ci oddać {amount}"
 
 #: src/features/add/paymentModel.ts
 msgid "{name} will still owe you {remaining}"
-msgstr "Po płatności {name} nadal ma ci do oddania {remaining}"
+msgstr "Po płatności {name} nadal ma ci oddać {remaining}"
 
 #: src/features/add/splitModel.ts
 msgid "{names} owe you {each} each"
-msgstr "{names} mają ci do oddania po {each}"
+msgstr "{names} mają ci oddać po {each}"
 
 #: src/features/activity/ActivityRows.tsx
 msgid "{payerName} paid {amount}"
@@ -97,11 +97,11 @@ msgstr "{payerName} płaci {amount}"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "{payerName} paid {payeeName}"
-msgstr "Płatność od: {payerName}, dla: {payeeName}"
+msgstr "{payerName} płaci, {payeeName} otrzymuje"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "{payerName} paid you"
-msgstr "Płatność od: {payerName}, dla ciebie"
+msgstr "{payerName} płaci, ty otrzymujesz"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{peopleCount, plural, one {{sharing} of # person sharing} other {{sharing} of # people sharing}}"
@@ -159,7 +159,7 @@ msgstr "Dodano „{title}”."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added. {debtorName} owes you {amount}."
-msgstr "Dodano „{title}”. {debtorName} ma ci do oddania {amount}."
+msgstr "Dodano „{title}”. {debtorName} ma ci oddać {amount}."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added. You lent {amount}."
@@ -348,7 +348,7 @@ msgstr "Zmień"
 
 #: src/features/add/SplitCard.tsx
 msgid "Change who paid"
-msgstr "Zmień osobę płacącą"
+msgstr "Zmień, kto płaci"
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
@@ -385,11 +385,11 @@ msgstr "Wybierz, kto płaci i jak podzielić koszt."
 
 #: src/features/add/PaymentForm.tsx
 msgid "Choose who paid you"
-msgstr "Wybierz, od kogo jest płatność"
+msgstr "Wybierz, kto ci płaci"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Choose who you paid"
-msgstr "Wybierz, dla kogo jest płatność"
+msgstr "Wybierz, komu płacisz"
 
 #: src/features/add/ScreenFrame.tsx
 #: src/features/add/SplitEditorSheet.tsx
@@ -425,7 +425,7 @@ msgstr "Nie udało się dodać kontaktu. Spróbuj ponownie."
 
 #: src/features/add/ExpenseForm.tsx
 msgid "Couldn’t add the expense. Nothing was saved and your entries are still here. Try again."
-msgstr "Nie udało się dodać wydatku. Niczego nie zapisano, a wpisane dane są nadal tutaj. Spróbuj ponownie."
+msgstr "Nie udało się dodać wydatku. Niczego nie zapisano, ale wpisane dane nie zniknęły. Spróbuj ponownie."
 
 #: src/lib/contact.ts
 msgid "Couldn’t add this contact. Try again."
@@ -471,12 +471,12 @@ msgstr "Nie udało się wczytać płatności"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Couldn’t record the payment. Nothing was saved and your entries are still here. Try again."
-msgstr "Nie udało się zapisać płatności. Niczego nie zapisano, a wpisane dane są nadal tutaj. Spróbuj ponownie."
+msgstr "Nie udało się zapisać płatności. Niczego nie zapisano, ale wpisane dane nie zniknęły. Spróbuj ponownie."
 
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
 msgid "Couldn’t save your changes. Nothing was changed and your entries are still here. Try again."
-msgstr "Nie udało się zapisać zmian. Niczego nie zmieniono, a wpisane dane są nadal tutaj. Spróbuj ponownie."
+msgstr "Nie udało się zapisać zmian. Niczego nie zmieniono, ale wpisane dane nie zniknęły. Spróbuj ponownie."
 
 #: src/features/profile/EditNamePage.tsx
 msgid "Couldn't save your name. Try again."
@@ -655,7 +655,7 @@ msgstr "Usunięto wydatek"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Expenses and payments with {name} show up here."
-msgstr "Tu pojawią się wydatki i płatności, w których uczestniczycie ty i {name}."
+msgstr "Tu pojawią się wspólne wydatki i płatności ({name})."
 
 #: src/features/activity/ActivityPage.tsx
 msgid "Expenses and payments you take part in show up here, newest first."
@@ -663,7 +663,7 @@ msgstr "Tu pojawią się wydatki i płatności, w których uczestniczysz, od naj
 
 #: src/features/contacts/ContactPage.tsx
 msgid "Expenses you split with {name} show up here. When {name} signs up with this email, they'll see them too."
-msgstr "Tu pojawią się wydatki, które dzielicie ty i {name}. Gdy {name} założy konto na ten adres e-mail, też je zobaczy."
+msgstr "Tu pojawią się wspólne wydatki ({name}). Gdy {name} założy konto na ten adres e-mail, też je zobaczy."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Fill the {remaining} left"
@@ -731,7 +731,7 @@ msgstr "Nieprawidłowy e-mail lub hasło."
 
 #: src/features/detail/expenseSummary.ts
 msgid "It disappears for {names} too, and balances change. This can’t be undone."
-msgstr "Zniknie też dla: {names}, a salda się zmienią. Tego nie można cofnąć."
+msgstr "Zniknie też z historii ({names}), a salda się zmienią. Tego nie można cofnąć."
 
 #: src/components/ItemStates.tsx
 msgctxt "expense"
@@ -982,15 +982,15 @@ msgstr "Łącznie masz do oddania <0>{amount}</0>"
 
 #: src/features/contacts/ContactRow.tsx
 msgid "owes you"
-msgstr "ma ci do oddania"
+msgstr "ma ci oddać"
 
 #: src/features/add/contactOptions.ts
 msgid "Owes you {amount}"
-msgstr "Ma ci do oddania {amount}"
+msgstr "Ma ci oddać {amount}"
 
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Paid {paidAmount}"
-msgstr "Płaci {paidAmount}"
+msgstr "Zapłacono {paidAmount}"
 
 #: src/features/add/PaymentForm.tsx
 #: src/features/add/SplitEditorSheet.tsx
@@ -1195,7 +1195,7 @@ msgstr "Zamień"
 
 #: src/features/add/SplitCard.tsx
 msgid "Switch who paid"
-msgstr "Zamień osobę płacącą"
+msgstr "Zamień, kto płaci"
 
 #: src/features/add/expenseDraft.ts
 msgid "That amount is too large"
@@ -1203,11 +1203,11 @@ msgstr "Ta kwota jest za duża"
 
 #: src/features/add/paymentModel.ts
 msgid "That’s more than {name} owes you ({current})."
-msgstr "To więcej, niż {name} ma ci do oddania ({current})."
+msgstr "To więcej, niż {name} ma ci oddać ({current})."
 
 #: src/features/add/paymentModel.ts
 msgid "That’s more than you owe {name} ({current})."
-msgstr "To więcej, niż {name} ma od ciebie dostać ({current})."
+msgstr "To więcej, niż masz do oddania ({name}: {current})."
 
 #: src/features/add/PeopleField.tsx
 msgid "That’s your email. You’re always in it."
@@ -1227,11 +1227,11 @@ msgstr "Ta osoba może nie być w twoich kontaktach."
 
 #: src/features/add/paymentModel.ts
 msgid "This adds to what {name} already owes you ({current})."
-msgstr "Doliczy się to do kwoty, którą {name} już ma ci do oddania ({current})."
+msgstr "Doliczy się to do kwoty, którą {name} już ma ci oddać ({current})."
 
 #: src/features/add/paymentModel.ts
 msgid "This adds to what you already owe {name} ({current})."
-msgstr "Doliczy się to do kwoty, którą {name} już ma od ciebie dostać ({current})."
+msgstr "Doliczy się to do kwoty, którą masz do oddania ({name}: {current})."
 
 #: src/features/detail/expenseSummary.ts
 msgid "This can’t be undone."
@@ -1255,7 +1255,7 @@ msgstr "Zaznacz osoby, które dzielą koszt."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Tick yourself or pay"
-msgstr "Zaznacz siebie lub zostań osobą płacącą"
+msgstr "Zaznacz siebie lub ustaw, że płacisz"
 
 #: src/features/add/DateSheet.tsx
 #: src/lib/dates.ts
@@ -1289,7 +1289,7 @@ msgstr "Użyj co najmniej 8 znaków."
 
 #: src/features/add/expenseDraft.ts
 msgid "Use at most 2 decimal places"
-msgstr "Użyj maksymalnie 2 miejsc po przecinku"
+msgstr "Maksymalnie 2 miejsca po przecinku"
 
 #: src/features/auth/SignUpPage.tsx
 #: src/features/profile/EditNamePage.tsx
@@ -1302,7 +1302,7 @@ msgstr "Użyj cyfr, maks. 2 miejsca po przecinku"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Use full balance ({fullBalanceAmount})"
-msgstr "Użyj całego salda ({fullBalanceAmount})"
+msgstr "Wpisz całe saldo ({fullBalanceAmount})"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Use the email and password of your account."
@@ -1322,7 +1322,7 @@ msgstr "Wpisane dane nie zostaną zapisane."
 
 #: src/features/add/PaymentForm.tsx
 msgid "Who did you pay?"
-msgstr "Dla kogo jest płatność?"
+msgstr "Komu płacisz?"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Who paid"
@@ -1334,7 +1334,7 @@ msgstr "Kto płaci i jak podzielić"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Who paid you?"
-msgstr "Od kogo jest płatność?"
+msgstr "Kto ci płaci?"
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Whole numbers. 2 nights = 2 shares."
@@ -1413,7 +1413,7 @@ msgstr "Musisz płacić albo mieć udział w tym wydatku."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "You need to pay or share in this expense. Tick yourself, or make yourself the payer."
-msgstr "Musisz płacić albo mieć udział w tym wydatku. Zaznacz siebie lub zostań osobą płacącą."
+msgstr "Musisz płacić albo mieć udział w tym wydatku. Zaznacz siebie lub ustaw, że płacisz."
 
 #: src/features/contacts/ContactRow.tsx
 msgid "you owe"
@@ -1425,7 +1425,7 @@ msgstr "Masz do oddania {amount}"
 
 #: src/features/contacts/ContactPage.tsx
 msgid "You owe {name}"
-msgstr "{name} ma od ciebie dostać"
+msgstr "Masz do oddania"
 
 #: src/features/add/paymentModel.ts
 msgid "You owe {name} {amount} now."
@@ -1449,11 +1449,11 @@ msgstr "Płacisz {amount}"
 
 #: src/features/add/PaymentForm.tsx
 msgid "You paid {name}"
-msgstr "Płatność od ciebie, dla: {name}"
+msgstr "Ty płacisz, {name} otrzymuje"
 
 #: src/features/detail/TransferDetailPage.tsx
 msgid "You paid {payeeName}"
-msgstr "Płatność od ciebie, dla: {payeeName}"
+msgstr "Ty płacisz, {payeeName} otrzymuje"
 
 #: src/features/add/paymentModel.ts
 msgid "You’ll owe {name} {amount}"
