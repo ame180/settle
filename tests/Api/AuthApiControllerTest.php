@@ -121,6 +121,15 @@ class AuthApiControllerTest extends ApiTestCase
         $this->assertSame(415, $this->getJsonResponse()['status']);
     }
 
+    public function testApiPrefixedNonApiPathIsNotTreatedAsApi(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/apifoo', ['title' => 'form encoded']);
+
+        $this->assertResponseStatusCodeSame(405);
+        $this->assertStringNotContainsString('application/json', (string) $client->getResponse()->headers->get('Content-Type'));
+    }
+
     public function testRegisterCreatesUserAndLogsIn(): void
     {
         $client = static::createClient();
