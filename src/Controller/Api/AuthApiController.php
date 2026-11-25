@@ -63,7 +63,7 @@ class AuthApiController extends AbstractController
             throw new ConflictHttpException($exception->getMessage(), $exception);
         }
 
-        $this->security->login($user, 'json_login', 'main');
+        $this->security->login($user, 'json_login', 'main', [(new RememberMeBadge())->enable()]);
 
         return $this->json(MeResponse::fromUser($user), JsonResponse::HTTP_CREATED);
     }

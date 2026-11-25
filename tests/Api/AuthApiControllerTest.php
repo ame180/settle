@@ -172,6 +172,7 @@ class AuthApiControllerTest extends ApiTestCase
         $response = $this->getJsonResponse();
         $this->assertSame('new.user@example.com', $response['email']);
         $this->assertSame('New User', $response['name']);
+        $this->assertNotNull($client->getCookieJar()->get('REMEMBERME'));
 
         $client->request('GET', '/api/me');
         $this->assertJsonResponseIsSuccessful(200);
