@@ -8,7 +8,9 @@ use App\Entity\User;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Cookie as HttpCookie;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthApiControllerTest extends ApiTestCase
@@ -341,36 +343,93 @@ class AuthApiControllerTest extends ApiTestCase
         $this->assertSame($user->getId(), $this->getJsonResponse()['id']);
     }
 
-    public function testChangePasswordSignsOutOtherSessions(): void
+    public function testChangePasswordSignsOutOtherDevices(): void
     {
         $client = static::createClient();
         $this->persistUserWithPassword('me@example.com', 'old-password');
 
         $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'old-password']);
         $this->assertJsonResponseIsSuccessful(200);
-        $otherSessionCookies = $client->getCookieJar()->all();
+        $otherDeviceCookies = $client->getCookieJar()->all();
 
         $client->getCookieJar()->clear();
         $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'old-password']);
         $this->assertJsonResponseIsSuccessful(200);
         $sessionIdBefore = $client->getCookieJar()->get('MOCKSESSID')?->getValue();
+        $rememberMeBefore = $client->getCookieJar()->get('REMEMBERME')?->getValue();
 
         $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
         $this->assertResponseStatusCodeSame(204);
         $this->assertNotSame($sessionIdBefore, $client->getCookieJar()->get('MOCKSESSID')?->getValue());
+        $rememberMeAfter = $client->getCookieJar()->get('REMEMBERME')?->getValue();
+        $this->assertNotNull($rememberMeAfter);
+        $this->assertNotSame($rememberMeBefore, $rememberMeAfter);
 
         $client->request('GET', '/api/me');
         $this->assertJsonResponseIsSuccessful(200);
 
-        $client->getCookieJar()->clear();
-        foreach ($otherSessionCookies as $cookie) {
-            $client->getCookieJar()->set($cookie);
-        }
-        $client->request('GET', '/api/me');
+        $this->requestWithCookies($client, $otherDeviceCookies);
         $this->assertResponseStatusCodeSame(401);
 
-        $client->getCookieJar()->clear();
-        $client->getCookieJar()->set(new Cookie('MOCKSESSID', (string) $sessionIdBefore));
+        $this->requestWithCookies($client, [new Cookie('MOCKSESSID', (string) $sessionIdBefore)]);
+        $this->assertResponseStatusCodeSame(401);
+
+        $this->requestWithCookies($client, [new Cookie('REMEMBERME', (string) $rememberMeBefore)]);
+        $this->assertResponseStatusCodeSame(401);
+
+        $this->requestWithCookies($client, [new Cookie('REMEMBERME', $rememberMeAfter)]);
+        $this->assertJsonResponseIsSuccessful(200);
+    }
+
+    public function testLoginSetsRememberMeCookie(): void
+    {
+        $client = static::createClient();
+        $this->persistUserWithPassword('me@example.com', 'password123');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'password123']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $rememberMe = $client->getCookieJar()->get('REMEMBERME');
+        $this->assertNotNull($rememberMe);
+        $this->assertTrue($rememberMe->isHttpOnly());
+        $this->assertEqualsWithDelta(time() + 31536000, (int) $rememberMe->getExpiresTime(), 5);
+    }
+
+    public function testRememberMeCookieSignsInWithoutSessionAndIsRefreshed(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'password123');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'password123']);
+        $rememberMe = $client->getCookieJar()->get('REMEMBERME');
+        $this->assertNotNull($rememberMe);
+
+        $this->requestWithCookies($client, [$rememberMe]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame($user->getId(), $this->getJsonResponse()['id']);
+        $refreshed = $this->findResponseCookie($client, 'REMEMBERME');
+        $this->assertNotNull($refreshed);
+        $this->assertNotNull($refreshed->getValue());
+        $this->assertGreaterThan(time() + 31536000 - 5, $refreshed->getExpiresTime());
+    }
+
+    public function testLogoutClearsRememberMeCookie(): void
+    {
+        $client = static::createClient();
+        $this->persistUserWithPassword('me@example.com', 'password123');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'password123']);
+        $this->assertNotNull($client->getCookieJar()->get('REMEMBERME'));
+
+        $client->request('POST', '/api/logout');
+
+        $this->assertResponseStatusCodeSame(204);
+        $cleared = $this->findResponseCookie($client, 'REMEMBERME');
+        $this->assertNotNull($cleared);
+        $this->assertTrue($cleared->isCleared());
+        $this->assertNull($client->getCookieJar()->get('REMEMBERME'));
+
         $client->request('GET', '/api/me');
         $this->assertResponseStatusCodeSame(401);
     }
@@ -495,6 +554,29 @@ class AuthApiControllerTest extends ApiTestCase
         $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
 
         $this->assertResponseStatusCodeSame(401);
+    }
+
+    /**
+     * @param Cookie[] $cookies
+     */
+    private function requestWithCookies(KernelBrowser $client, array $cookies): void
+    {
+        $client->getCookieJar()->clear();
+        foreach ($cookies as $cookie) {
+            $client->getCookieJar()->set($cookie);
+        }
+        $client->request('GET', '/api/me');
+    }
+
+    private function findResponseCookie(KernelBrowser $client, string $name): ?HttpCookie
+    {
+        foreach ($client->getResponse()->headers->getCookies() as $cookie) {
+            if ($name === $cookie->getName()) {
+                return $cookie;
+            }
+        }
+
+        return null;
     }
 
     private function persistUserWithPassword(string $email, string $plainPassword): User

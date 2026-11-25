@@ -53,6 +53,8 @@ chmod 600 .env
 
 `deploy/.env.example` documents each value. The first deploy fills in `IMAGE_TAG` and brings `compose.yaml`.
 
+Devices stay signed in for a year through a remember-me cookie signed with `APP_SECRET`, so the app refuses to start without it. Keep it stable: with a new one, every device has to sign in again once its session ends. Changing a password signs out that user's other devices.
+
 ### 2. Deploy key
 
 On any machine, create a key used only by this environment's deploys:

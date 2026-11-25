@@ -22,6 +22,9 @@ security:
                 failure_handler: App\Security\JsonLoginFailureHandler
             login_throttling:
                 max_attempts: 5
+            remember_me:
+                lifetime: 31536000
+                always_remember_me: true
             logout:
                 path: api_logout
 

@@ -27,6 +27,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -104,11 +105,6 @@ class AuthApiController extends AbstractController
         return $this->json(MeResponse::fromUser($user));
     }
 
-    /**
-     * Changing the hash signs out every other session: Symfony drops a session whose stored user
-     * no longer matches the password. This session's token holds the same User, so it stays signed
-     * in; a new id retires any copy of its old cookie.
-     */
     #[Route('/me/password', name: 'api_me_password', methods: ['PUT'])]
     #[IsGranted('ROLE_USER')]
     public function changePassword(
@@ -119,13 +115,13 @@ class AuthApiController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // Every attempt counts and a correct one resets the count, like login throttling.
         $limiter = $this->passwordChangeLimiter->create((string) $user->getId());
         $limit = $limiter->consume();
         if (!$limit->isAccepted()) {
             throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time(), 'Too many password change attempts. Please try again later.');
         }
 
+        // Not #[UserPassword] on the DTO: that would check the password before the limiter counts the attempt.
         $violations = $this->validator->startContext()
             ->atPath('currentPassword')
             ->validate($passwordChangeRequest->currentPassword, new UserPassword())
@@ -138,7 +134,9 @@ class AuthApiController extends AbstractController
         $user->setPassword($this->passwordHasher->hashPassword($user, $passwordChangeRequest->newPassword));
         $this->entityManager->flush();
 
+        // The new hash invalidates every session and remember-me cookie; this device gets fresh ones.
         $request->getSession()->migrate(true);
+        $this->security->login($user, 'json_login', 'main', [(new RememberMeBadge())->enable()]);
 
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
