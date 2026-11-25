@@ -30,8 +30,8 @@ class CommentRepository extends ServiceEntityRepository
             ->join('comment.author', 'author')
             ->where('comment.expense = :expense')
             ->setParameter('expense', $expense)
-            ->orderBy('comment.createdAt', 'ASC')
-            ->addOrderBy('comment.id', 'ASC')
+            ->orderBy('comment.createdAt', \SortDirection::Ascending)
+            ->addOrderBy('comment.id', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

@@ -15,3 +15,7 @@ Quality gates, run locally (not in the container): `composer checkup`, `composer
 ## Production
 
 `docker/Dockerfile` builds the production images (`prod`: PHP-FPM app, `web`: nginx), which are deployed with Docker Compose over SSH. See [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## License
+
+AGPL-3.0-or-later, see [LICENSE](LICENSE).
