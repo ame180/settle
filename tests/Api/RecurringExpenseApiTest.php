@@ -113,6 +113,43 @@ class RecurringExpenseApiTest extends ApiTestCase
         $this->assertStringStartsWith('2026-11-27', $this->getJsonResponse()['repeat']['nextOn']);
     }
 
+    public function testMovingTheLatestsDateMovesTheSchedule(): void
+    {
+        $this->requestJson($this->client, 'POST', '/api/expenses', $this->payload('2026-11-10', ['unit' => 'month', 'every' => 1]));
+        $id = $this->getJsonResponse()['id'];
+
+        $this->requestJson($this->client, 'PUT', '/api/expenses/'.$id, $this->payload('2026-11-15', ['unit' => 'month', 'every' => 1]));
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertStringStartsWith('2026-12-15', $this->getJsonResponse()['repeat']['nextOn']);
+    }
+
+    public function testADateMovedWhileStoppedCountsOnRestart(): void
+    {
+        $this->requestJson($this->client, 'POST', '/api/expenses', $this->payload('2026-11-10', ['unit' => 'month', 'every' => 1]));
+        $id = $this->getJsonResponse()['id'];
+        $this->requestJson($this->client, 'PUT', '/api/expenses/'.$id, $this->payload('2026-11-10', null));
+        $this->requestJson($this->client, 'PUT', '/api/expenses/'.$id, $this->payload('2026-11-15', null));
+
+        $this->requestJson($this->client, 'PUT', '/api/expenses/'.$id, $this->payload('2026-11-15', ['unit' => 'month', 'every' => 1]));
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertStringStartsWith('2026-12-15', $this->getJsonResponse()['repeat']['nextOn']);
+    }
+
+    public function testDeletingAnOlderMemberKeepsTheSeries(): void
+    {
+        [$olderId, $latestId] = $this->createSeriesWithTwoMembers();
+
+        $this->client->request('DELETE', '/api/expenses/'.$olderId);
+        $this->assertResponseStatusCodeSame(204);
+
+        $this->client->request('GET', '/api/expenses/'.$latestId);
+        $response = $this->getJsonResponse();
+        $this->assertSame(['latestId' => $latestId, 'isLatest' => true], $response['series']);
+        $this->assertTrue($response['repeat']['active']);
+    }
+
     public function testDeletingTheLatestStopsTheSeries(): void
     {
         [$olderId, $latestId] = $this->createSeriesWithTwoMembers();

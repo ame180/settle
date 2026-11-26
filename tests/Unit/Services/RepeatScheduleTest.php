@@ -43,6 +43,35 @@ class RepeatScheduleTest extends TestCase
         $this->assertSame($expected, $next->format('Y-m-d'));
     }
 
+    /**
+     * @return iterable<string, array{string, RepeatUnit, int, string, bool}>
+     */
+    public static function onScheduleCases(): iterable
+    {
+        yield 'the anchor itself' => ['2027-01-31', RepeatUnit::Month, 1, '2027-01-31', true];
+        yield 'a clamped date' => ['2027-01-31', RepeatUnit::Month, 1, '2027-02-28', true];
+        yield 'another day in a short month' => ['2027-01-31', RepeatUnit::Month, 1, '2027-02-27', false];
+        yield 'before the anchor' => ['2027-01-31', RepeatUnit::Month, 1, '2026-12-31', false];
+        yield 'every 2 weeks, off week' => ['2026-11-02', RepeatUnit::Week, 2, '2026-11-09', false];
+        yield 'every 2 weeks, on week' => ['2026-11-02', RepeatUnit::Week, 2, '2026-11-16', true];
+    }
+
+    /**
+     * @dataProvider onScheduleCases
+     */
+    public function testIsOnSchedule(string $anchorOn, RepeatUnit $unit, int $every, string $date, bool $expected): void
+    {
+        $this->assertSame($expected, (new RepeatSchedule())->isOnSchedule(new \DateTimeImmutable($anchorOn), $unit, $every, new \DateTimeImmutable($date)));
+    }
+
+    public function testUsesTheCalendarDateWhateverTheOffset(): void
+    {
+        $date = RepeatSchedule::toDate(new \DateTimeImmutable('2026-11-10T00:00:00+02:00'));
+
+        $this->assertSame('2026-11-10', $date->format('Y-m-d'));
+        $this->assertEquals(new \DateTimeImmutable('2026-11-10'), $date);
+    }
+
     public function testIgnoresTimeOfDay(): void
     {
         $next = (new RepeatSchedule())->firstAfter(

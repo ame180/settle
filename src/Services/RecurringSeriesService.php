@@ -50,9 +50,10 @@ class RecurringSeriesService
     }
 
     /**
-     * Call with the expense already updated; `$previousOccurredOn` is its date before the edit.
+     * Call with the expense already updated. The schedule keeps its anchor while the latest's
+     * date is one of its dates, so a clamped 28 Feb still returns to the 31st.
      */
-    public function applyOnUpdate(Expense $expense, ?RepeatRequest $repeat, \DateTimeImmutable $previousOccurredOn): void
+    public function applyOnUpdate(Expense $expense, ?RepeatRequest $repeat): void
     {
         $series = $expense->getSeries();
         if (null === $series) {
@@ -71,18 +72,14 @@ class RecurringSeriesService
             return;
         }
 
-        $dateChanged = $previousOccurredOn->format('Y-m-d') !== $expense->getOccurredOn()->format('Y-m-d');
-        if ($dateChanged || !$series->hasFrequency($repeat->unit, $repeat->every)) {
-            $anchorOn = RepeatSchedule::toDate($expense->getOccurredOn());
-            $series->reschedule($repeat->unit, $repeat->every, $anchorOn, $this->nextRunOn($anchorOn, $repeat, $expense));
-
+        $keepsAnchor = $series->hasFrequency($repeat->unit, $repeat->every)
+            && $this->schedule->isOnSchedule($series->getAnchorOn(), $repeat->unit, $repeat->every, $expense->getOccurredOn());
+        if ($keepsAnchor && $series->isActive()) {
             return;
         }
 
-        if (!$series->isActive()) {
-            $anchorOn = $series->getAnchorOn();
-            $series->reschedule($repeat->unit, $repeat->every, $anchorOn, $this->nextRunOn($anchorOn, $repeat, $expense));
-        }
+        $anchorOn = $keepsAnchor ? $series->getAnchorOn() : RepeatSchedule::toDate($expense->getOccurredOn());
+        $series->reschedule($repeat->unit, $repeat->every, $anchorOn, $this->nextRunOn($anchorOn, $repeat, $expense));
     }
 
     /**
@@ -104,7 +101,7 @@ class RecurringSeriesService
         $series->stop();
     }
 
-    public function isLatest(Expense $expense): bool
+    private function isLatest(Expense $expense): bool
     {
         $series = $expense->getSeries();
 

@@ -136,6 +136,29 @@ class RecurringExpenseRunnerTest extends KernelTestCase
         $this->assertCount(1, $this->membersOf($seriesId));
     }
 
+    public function testAFailingSeriesIsSkippedAndKeptForTheNextRun(): void
+    {
+        $connection = $this->entityManager->getConnection();
+        $connection->executeStatement(
+            "INSERT INTO recurring_series (unit, every, anchor_on, next_run_on, active, created_at, updated_at) VALUES ('decade', 1, '2026-10-01', '2026-11-01', 1, NOW(), NOW())",
+        );
+        $brokenId = (int) $connection->lastInsertId();
+
+        self::mockTime('2026-11-01');
+        $first = $this->createExpense('2026-11-01', new RepeatRequest(RepeatUnit::Week));
+        $seriesId = (int) $first->getSeries()?->getId();
+
+        self::mockTime('2026-11-08');
+        $this->assertSame(1, $this->runner->run());
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $this->assertCount(2, $entityManager->getRepository(Expense::class)->findBy(['series' => $seriesId]));
+        $this->assertSame(
+            ['next_run_on' => '2026-11-01', 'active' => 1],
+            $connection->fetchAssociative('SELECT next_run_on, active FROM recurring_series WHERE id = ?', [$brokenId]),
+        );
+    }
+
     private function createExpense(string $occurredOn, ?RepeatRequest $repeat): Expense
     {
         return static::getContainer()->get(ExpenseCreateService::class)->create($this->payee, $this->request($occurredOn, '100.00', $repeat));

@@ -29,9 +29,19 @@ class RepeatSchedule
         return $date;
     }
 
+    public function isOnSchedule(\DateTimeImmutable $anchorOn, RepeatUnit $unit, int $every, \DateTimeImmutable $date): bool
+    {
+        $date = self::toDate($date);
+
+        return $this->firstAfter($anchorOn, $unit, $every, $date->modify('-1 day')) == $date;
+    }
+
+    /**
+     * The calendar date in the default timezone, whatever offset the value carries.
+     */
     public static function toDate(\DateTimeImmutable $dateTime): \DateTimeImmutable
     {
-        return $dateTime->setTime(0, 0);
+        return new \DateTimeImmutable($dateTime->format('Y-m-d'));
     }
 
     private function occurrence(\DateTimeImmutable $anchorOn, RepeatUnit $unit, int $every, int $step): \DateTimeImmutable

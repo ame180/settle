@@ -33,7 +33,7 @@ readonly class ExpenseResponse
      * @param array<int, PersonRef> $people         keyed by user id, must cover the payee and every debtor
      * @param ?int                  $seriesLatestId the latest expense of the expense's series, if it has one
      */
-    public static function fromExpense(Expense $expense, array $people, ?int $seriesLatestId = null): self
+    public static function fromExpense(Expense $expense, array $people, ?int $seriesLatestId): self
     {
         $series = $expense->getSeries();
 

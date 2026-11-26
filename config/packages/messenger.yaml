@@ -18,7 +18,10 @@ framework:
         default_bus: messenger.bus.default
 
         buses:
-            messenger.bus.default: []
+            # The scheduler worker idles between hourly ticks, long enough for the DB to drop the connection.
+            messenger.bus.default:
+                middleware:
+                    - doctrine_ping_connection
 
         routing:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: async

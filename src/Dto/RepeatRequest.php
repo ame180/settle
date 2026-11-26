@@ -10,9 +10,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 readonly class RepeatRequest
 {
-    /**
-     * Weekly, every 2 weeks, monthly and yearly for now. Custom intervals only loosen this list.
-     */
+    /** Weekly, every 2 weeks, monthly and yearly. */
     private const array ALLOWED_EVERY = [
         RepeatUnit::Week->value => [1, 2],
         RepeatUnit::Month->value => [1],
@@ -21,8 +19,6 @@ readonly class RepeatRequest
 
     public function __construct(
         public RepeatUnit $unit,
-
-        #[Assert\Positive]
         public int $every = 1,
     ) {
     }

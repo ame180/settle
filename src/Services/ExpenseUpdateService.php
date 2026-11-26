@@ -56,7 +56,6 @@ class ExpenseUpdateService
             $this->entityManager->remove($debt);
         }
 
-        $previousOccurredOn = $expense->getOccurredOn();
         $expense
             ->setPayee($usersById[$request->payeeId])
             ->setTitle($request->title)
@@ -72,7 +71,7 @@ class ExpenseUpdateService
             $this->entityManager->persist($debt);
         }
 
-        $this->recurringSeriesService->applyOnUpdate($expense, $request->repeat, $previousOccurredOn);
+        $this->recurringSeriesService->applyOnUpdate($expense, $request->repeat);
 
         $this->entityManager->flush();
 

@@ -6,7 +6,7 @@ Expense sharing for ad-hoc groups of friends. Symfony 7.4 JSON API plus a React 
 
 1. Copy `.env.example` to `.env` and fill in the values.
 2. `docker login ghcr.io -u <username> -p <token>` (nginx/mariadb images live there).
-3. `docker compose up -d` starts PHP, nginx (port `NGINX_PORT`, default 80) and the database. The PHP container installs Composer dependencies and runs migrations on start.
+3. `docker compose up -d` starts PHP, nginx (port `NGINX_PORT`, default 80), the database and the `scheduler` that creates repeating expenses. The PHP container installs Composer dependencies and runs migrations on start; restart `scheduler` to pick up code changes.
 4. Create a user: `docker compose exec php bin/console app:user:create <email> <password>`.
 5. Frontend: `cd frontend && npm install && npm run dev`, then open http://localhost:5173. The Vite dev server proxies `/api` to nginx (override with `VITE_API_PROXY`).
 
