@@ -308,6 +308,7 @@ msgstr "Amounts"
 msgid "An account with this email already exists."
 msgstr "An account with this email already exists."
 
+#: src/app/ErrorPages.tsx
 #: src/features/contacts/EditContactPage.tsx
 #: src/features/detail/DetailParts.tsx
 msgid "Back"
@@ -369,6 +370,10 @@ msgstr "Change who paid"
 msgid "Changes saved."
 msgstr "Changes saved."
 
+#: src/app/ErrorPages.tsx
+msgid "Check the address or go back to your contacts."
+msgstr "Check the address or go back to your contacts."
+
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Check the numbers"
 msgstr "Check the numbers"
@@ -417,6 +422,11 @@ msgstr "Comment"
 #: src/features/detail/ExpenseComments.tsx
 msgid "Comments"
 msgstr "Comments"
+
+#: src/features/contacts/ContactNotFound.tsx
+#: src/features/contacts/ContactPage.tsx
+msgid "Contact"
+msgstr "Contact"
 
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Contact not found"
@@ -502,6 +512,10 @@ msgstr "Couldn’t load this expense"
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this payment"
 msgstr "Couldn’t load this payment"
+
+#: src/app/RequireAuth.tsx
+msgid "Couldn’t reach Settle"
+msgstr "Couldn’t reach Settle"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Couldn’t record the payment. Nothing was saved and your entries are still here. Try again."
@@ -739,6 +753,7 @@ msgstr "Give someone a share"
 msgid "Go to activity"
 msgstr "Go to activity"
 
+#: src/app/ErrorPages.tsx
 #: src/features/contacts/ContactNotFound.tsx
 msgid "Go to contacts"
 msgstr "Go to contacts"
@@ -981,6 +996,10 @@ msgstr "Nobody owes you for this"
 msgid "Nobody shares this yet"
 msgstr "Nobody shares this yet"
 
+#: src/app/ErrorPages.tsx
+msgid "Not found"
+msgstr "Not found"
+
 #: src/features/add/PeopleField.tsx
 msgid "Not in your contacts? Type their email."
 msgstr "Not in your contacts? Type their email."
@@ -1145,6 +1164,14 @@ msgstr "Record payment"
 msgid "Recording…"
 msgstr "Recording…"
 
+#: src/app/ErrorPages.tsx
+msgid "Reload"
+msgstr "Reload"
+
+#: src/app/ErrorPages.tsx
+msgid "Reload the page to try again."
+msgstr "Reload the page to try again."
+
 #: src/features/add/PeopleField.tsx
 msgid "Remove {displayName}"
 msgstr "Remove {displayName}"
@@ -1238,6 +1265,10 @@ msgstr "Signing in…"
 #: src/features/auth/SignUpPage.tsx
 msgid "Someone already added you? Sign up with that same email and your shared expenses will be waiting."
 msgstr "Someone already added you? Sign up with that same email and your shared expenses will be waiting."
+
+#: src/app/ErrorPages.tsx
+msgid "Something went wrong"
+msgstr "Something went wrong"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Something went wrong. Please try again."
@@ -1341,6 +1372,10 @@ msgstr "This can’t be undone."
 #: src/components/ItemStates.tsx
 msgid "This expense doesn’t exist"
 msgstr "This expense doesn’t exist"
+
+#: src/app/ErrorPages.tsx
+msgid "This page doesn’t exist"
+msgstr "This page doesn’t exist"
 
 #: src/components/ItemStates.tsx
 msgid "This payment doesn’t exist"

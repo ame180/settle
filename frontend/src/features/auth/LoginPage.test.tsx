@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { createMemoryRouter, RouterProvider, type InitialEntry } from 'react-router'
 import { TestI18nProvider } from '@/test/i18n'
 import { jsonResponse } from '@/test/utils'
 import { LoginPage } from './LoginPage'
@@ -15,7 +15,7 @@ vi.mock('@/api/auth', async () => {
   }
 })
 
-function renderLogin() {
+function renderLogin(initialEntry: InitialEntry = '/login') {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
@@ -23,8 +23,9 @@ function renderLogin() {
     [
       { path: '/login', element: <LoginPage /> },
       { path: '/', element: <div>Feed home</div> },
+      { path: '/add', element: <div>Add screen</div> },
     ],
-    { initialEntries: ['/login'] },
+    { initialEntries: [initialEntry] },
   )
   render(
     <TestI18nProvider>
@@ -107,6 +108,23 @@ describe('LoginPage', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
     expect(await screen.findByText('Feed home')).toBeInTheDocument()
+  })
+
+  it('navigates back to the saved path including query string and hash', async () => {
+    stubApi({ status: 200, body: { id: 1, email: 'alice@example.com' } })
+    const router = renderLogin({
+      pathname: '/login',
+      state: { from: '/add?tab=payment&contact=2#note' },
+    })
+
+    await userEvent.type(screen.getByLabelText('Email'), 'alice@example.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'secret')
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/add'))
+    expect(router.state.location.search).toBe('?tab=payment&contact=2')
+    expect(router.state.location.hash).toBe('#note')
+    expect(await screen.findByText('Add screen')).toBeInTheDocument()
   })
 
   it('links to sign-up when registration is open', async () => {

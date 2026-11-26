@@ -37,6 +37,7 @@ function ContactView({ userId }: { userId: number }) {
   return (
     <>
       <PageHeader
+        title={!contactQuery.isPending && !contact ? t`Contact` : undefined}
         leading={<BackLink to="/" label={t`Back to contacts`} />}
         trailing={
           contact && (

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ContactListItem } from '@/api/types'
 import { jsonResponse, renderRoutes } from '@/test/utils'
@@ -33,13 +33,13 @@ function putCalls(fetchMock: ReturnType<typeof stubApi>) {
     .map(([input, init]) => [input, JSON.parse(String(init?.body))])
 }
 
-function renderEdit() {
+function renderEdit(userId: number | string = 2) {
   return renderRoutes(
     [
       { path: '/contacts/:userId/edit', element: <EditContactPage /> },
       { path: '/contacts/:userId', element: <p>Contact view</p> },
     ],
-    '/contacts/2/edit',
+    `/contacts/${userId}/edit`,
   )
 }
 
@@ -116,5 +116,26 @@ describe('EditContactPage', () => {
 
     expect(await screen.findByText('Nickname can be at most 64 characters.')).toBeInTheDocument()
     expect(putCalls(fetchMock)).toEqual([])
+  })
+
+  it('shows contact not found with the Edit contact header for a missing contact', async () => {
+    stubApi()
+    renderEdit(99)
+
+    expect(await screen.findByRole('heading', { name: 'Contact not found' })).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('banner')).getByRole('heading', { name: 'Edit contact' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows contact not found without fetching for a non-numeric id', async () => {
+    const fetchMock = stubApi()
+    renderEdit('abc')
+
+    expect(await screen.findByRole('heading', { name: 'Contact not found' })).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('banner')).getByRole('heading', { name: 'Edit contact' }),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

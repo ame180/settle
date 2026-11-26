@@ -1,5 +1,6 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, type RouteObject } from 'react-router'
 import { AppShell } from './AppShell'
+import { NotFoundPage, RouteErrorPage } from './ErrorPages'
 import { RequireAuth } from './RequireAuth'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignUpPage } from '@/features/auth/SignUpPage'
@@ -17,30 +18,38 @@ import { ProfilePage } from '@/features/profile/ProfilePage'
 import { EditNamePage } from '@/features/profile/EditNamePage'
 import { ChangePasswordPage } from '@/features/profile/ChangePasswordPage'
 
-export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/signup', element: <SignUpPage /> },
+export const routes: RouteObject[] = [
   {
-    element: <RequireAuth />,
+    errorElement: <RouteErrorPage />,
     children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/signup', element: <SignUpPage /> },
       {
-        element: <AppShell />,
+        element: <RequireAuth />,
         children: [
-          { index: true, element: <ContactsPage /> },
-          { path: 'activity', element: <ActivityPage /> },
-          { path: 'profile', element: <ProfilePage /> },
-          { path: 'contacts/:userId', element: <ContactPage /> },
+          {
+            element: <AppShell />,
+            children: [
+              { index: true, element: <ContactsPage /> },
+              { path: 'activity', element: <ActivityPage /> },
+              { path: 'profile', element: <ProfilePage /> },
+              { path: 'contacts/:userId', element: <ContactPage /> },
+              { path: '*', element: <NotFoundPage /> },
+            ],
+          },
+          { path: 'contacts/new', element: <AddContactPage /> },
+          { path: 'contacts/:userId/edit', element: <EditContactPage /> },
+          { path: 'profile/name', element: <EditNamePage /> },
+          { path: 'profile/password', element: <ChangePasswordPage /> },
+          { path: 'expenses/:id', element: <ExpenseDetailPage /> },
+          { path: 'transfers/:id', element: <TransferDetailPage /> },
+          { path: 'add', element: <AddPage /> },
+          { path: 'expenses/:id/edit', element: <EditExpensePage /> },
+          { path: 'transfers/:id/edit', element: <EditTransferPage /> },
         ],
       },
-      { path: 'contacts/new', element: <AddContactPage /> },
-      { path: 'contacts/:userId/edit', element: <EditContactPage /> },
-      { path: 'profile/name', element: <EditNamePage /> },
-      { path: 'profile/password', element: <ChangePasswordPage /> },
-      { path: 'expenses/:id', element: <ExpenseDetailPage /> },
-      { path: 'transfers/:id', element: <TransferDetailPage /> },
-      { path: 'add', element: <AddPage /> },
-      { path: 'expenses/:id/edit', element: <EditExpensePage /> },
-      { path: 'transfers/:id/edit', element: <EditTransferPage /> },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

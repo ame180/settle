@@ -155,9 +155,22 @@ describe('ContactPage', () => {
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
   })
 
-  it('says the contact was not found for an unknown or invalid id', async () => {
+  it('says the contact was not found with a header title for an unknown or invalid id', async () => {
     stubApi([contact()])
     renderContact(99)
     expect(await screen.findByRole('heading', { name: 'Contact not found' })).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('banner')).getByRole('heading', { name: 'Contact' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows contact not found with a header title for a non-numeric id without calling the API', async () => {
+    const fetchMock = stubApi([contact()])
+    renderContact('abc')
+    expect(await screen.findByRole('heading', { name: 'Contact not found' })).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('banner')).getByRole('heading', { name: 'Contact' }),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
