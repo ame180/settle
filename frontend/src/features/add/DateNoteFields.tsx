@@ -1,7 +1,7 @@
 import { useState, type RefObject } from 'react'
 import { Textarea } from '@/components/ui/input'
 import { flushSync } from 'react-dom'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Calendar, FileText, Repeat } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDateLabel } from '@/lib/dates'
@@ -36,18 +36,20 @@ export function DateNoteFields({
   noteRef,
   notePlaceholder,
 }: DateNoteFieldsProps) {
+  const { t } = useLingui()
   const [dateOpen, setDateOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(note !== '')
   const noteId = `${idPrefix}-note`
   const repeats = repeat !== undefined && repeat.value !== 'off'
   const dateLabel = formatDateLabel(occurredOn)
+  const frequency = repeats ? repeatChoiceLabel(repeat.value) : ''
 
   return (
     <>
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="pill" onClick={() => setDateOpen(true)}>
           {repeats ? <Repeat aria-hidden="true" /> : <Calendar aria-hidden="true" />}
-          {repeats ? `${dateLabel} · ${repeatChoiceLabel(repeat.value)}` : dateLabel}
+          {repeats ? t`${dateLabel} · ${frequency}` : dateLabel}
         </Button>
         {!noteOpen && (
           <Button

@@ -45,6 +45,7 @@ export function DateSheet({ open, onOpenChange, value, onChange, repeat }: DateS
 
   function pick(isoDate: string) {
     onChange(isoDate)
+    setMonth(startOfMonth(isoDate))
     if (isoDate <= today && !repeat) {
       onOpenChange(false)
     }
@@ -177,7 +178,7 @@ export function DateSheet({ open, onOpenChange, value, onChange, repeat }: DateS
                     size="pill"
                     aria-pressed={repeat.value === choice}
                     onClick={() => repeat.onChange(choice)}
-                    className="aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:font-semibold aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary"
+                    className={pressedRepeatClassName}
                   >
                     {repeatChoiceLabel(choice)}
                   </Button>
@@ -189,7 +190,7 @@ export function DateSheet({ open, onOpenChange, value, onChange, repeat }: DateS
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="h-12 rounded-full bg-primary text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="h-12 shrink-0 rounded-full bg-primary text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <Trans>Done</Trans>
             </button>
@@ -199,6 +200,9 @@ export function DateSheet({ open, onOpenChange, value, onChange, repeat }: DateS
     </Sheet>
   )
 }
+
+const pressedRepeatClassName =
+  'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:font-semibold aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary aria-pressed:active:bg-primary'
 
 function startOfMonth(isoDate: string): string {
   return `${isoDate.slice(0, 7)}-01`

@@ -13,7 +13,7 @@ import { expenseCategories } from '@/lib/categories'
 import { calendarDayKey } from '@/lib/dates'
 import { trimDecimal } from '@/lib/decimal'
 import { peopleOtherThan } from '@/lib/person'
-import { choiceOf, repeatOf, type RepeatChoice } from '@/lib/repeat'
+import { choiceOf, continuesRepeat, repeatOf, type RepeatChoice } from '@/lib/repeat'
 import { checkSplit, defaultSplit, splitDebts, type SplitDraft } from './splitModel'
 
 /** The Add expense form, as typed. The user is always in it and isn't listed in `others`. */
@@ -78,7 +78,7 @@ export function draftFromExpense(expense: ExpenseResponse, meId: number): Expens
     categoryPicked: true,
     amount: expense.amount,
     occurredOn: calendarDayKey(expense.occurredOn),
-    repeat: expense.series?.isLatest && expense.repeat?.active ? choiceOf(expense.repeat) : 'off',
+    repeat: continuesRepeat(expense) ? choiceOf(expense.repeat) : 'off',
     note: expense.description ?? '',
     split: {
       payerId: expense.payee.id,
@@ -221,7 +221,6 @@ export function buildExpenseRequest(draft: ExpenseDraft, meId: number): BuildRes
     splitType: draft.split.type,
     category: draft.category,
     description: draft.note.trim() === '' ? null : draft.note.trim(),
-    // Always sent: an omitted repeat stops it.
     repeat: repeatOf(draft.repeat),
   }
   const parsed = expenseRequestSchema.safeParse(candidate)

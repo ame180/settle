@@ -19,7 +19,7 @@ type ConfirmSheetProps = {
   onOpenChange: (open: boolean) => void
   title: string
   description: string
-  /** An extra line under the description, such as what else the action stops. */
+  /** Inline content ending the description, such as what else the action stops. */
   note?: ReactNode
   /** The destructive action: "Delete expense", "Discard". */
   confirmLabel: string
@@ -51,8 +51,10 @@ export function ConfirmSheet({
       <SheetContent>
         <SheetHeader className="pt-3">
           <SheetTitle className="break-words">{title}</SheetTitle>
-          <SheetDescription className="leading-[1.45]">{description}</SheetDescription>
-          {note}
+          <SheetDescription className="leading-[1.45]">
+            {description}
+            {note}
+          </SheetDescription>
         </SheetHeader>
         <SheetFooter className="pb-6">
           <Button

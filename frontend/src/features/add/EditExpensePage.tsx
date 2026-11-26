@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLingui } from '@lingui/react/macro'
 import { useParams } from 'react-router'
 import { parseIdParam } from '@/lib/parseIdParam'
-import { calendarDayKey } from '@/lib/dates'
+import { continuesRepeat } from '@/lib/repeat'
 import { useMe } from '@/api/auth'
 import { useExpense } from '@/api/expenses'
 import type { ExpenseResponse, MeResponse } from '@/api/types'
@@ -76,7 +76,6 @@ function EditExpenseForm({
   const [draft, setDraft] = useState(initialDraft)
   const guard = useLeaveGuard(draftChanged(draft, initialDraft), fallback)
   const series = expense.series
-  const continuesRepeat = series?.isLatest === true && expense.repeat?.active === true
   // The server's next date only holds while the date and the repeat stay as loaded.
   const scheduleKept =
     draft.occurredOn === initialDraft.occurredOn && draft.repeat === initialDraft.repeat
@@ -94,8 +93,8 @@ function EditExpenseForm({
           expenseId: expense.id,
           canRepeat: series === null || series.isLatest,
           nextCopy:
-            continuesRepeat && draft.repeat !== 'off'
-              ? { on: scheduleKept && nextOn ? calendarDayKey(nextOn) : null }
+            continuesRepeat(expense) && draft.repeat !== 'off'
+              ? { on: scheduleKept && nextOn ? nextOn : null }
               : null,
         }}
         onSaved={guard.leaveAfterSave}

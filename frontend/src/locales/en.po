@@ -27,6 +27,10 @@ msgstr "{assignedPercent}% of 100%"
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
 
+#: src/features/add/DateNoteFields.tsx
+msgid "{dateLabel} · {frequency}"
+msgstr "{dateLabel} · {frequency}"
+
 #: src/features/detail/commentTime.ts
 msgid "{day}, {time}"
 msgstr "{day}, {time}"
@@ -62,6 +66,14 @@ msgstr "{each} each"
 #: src/features/add/DateSheet.tsx
 msgid "{futureDate} is in the future. It still counts towards your balances straight away."
 msgstr "{futureDate} is in the future. It still counts towards your balances straight away."
+
+#: src/features/detail/ExpenseDetailPage.tsx
+msgid "{label} · latest {latestOn}"
+msgstr "{label} · latest {latestOn}"
+
+#: src/features/detail/ExpenseDetailPage.tsx
+msgid "{label} · next on {nextOn}"
+msgstr "{label} · next on {nextOn}"
 
 #: src/features/add/DateSheet.tsx
 msgid "{longDate}, today"
@@ -820,10 +832,6 @@ msgstr "Keep editing"
 msgid "Keep the title under 255 characters"
 msgstr "Keep the title under 255 characters"
 
-#: src/features/detail/ExpenseDetailPage.tsx
-msgid "latest {latestOn}"
-msgstr "latest {latestOn}"
-
 #: src/features/profile/EditNamePage.tsx
 msgid "Leave empty to show your email."
 msgstr "Leave empty to show your email."
@@ -918,10 +926,6 @@ msgstr "New to Settle? <0>Create an account</0>"
 #: src/features/add/DateSheet.tsx
 msgid "Next month"
 msgstr "Next month"
-
-#: src/features/detail/ExpenseDetailPage.tsx
-msgid "next on {nextOn}"
-msgstr "next on {nextOn}"
 
 #: src/features/contacts/AddContactPage.tsx
 #: src/features/contacts/EditContactPage.tsx

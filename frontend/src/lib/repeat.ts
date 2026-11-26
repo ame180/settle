@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import type { Repeat } from '@/api/types'
+import type { ExpenseResponse, Repeat } from '@/api/types'
 
 export type RepeatChoice = 'off' | 'weekly' | 'biweekly' | 'monthly' | 'yearly'
 
@@ -10,6 +10,11 @@ const repeats: Record<Exclude<RepeatChoice, 'off'>, Repeat> = {
   biweekly: { unit: 'week', every: 2 },
   monthly: { unit: 'month', every: 1 },
   yearly: { unit: 'year', every: 1 },
+}
+
+/** The latest expense of a repeat that is still running: the next one copies it. */
+export function continuesRepeat(expense: ExpenseResponse): boolean {
+  return expense.series?.isLatest === true && expense.repeat?.active === true
 }
 
 export function repeatOf(choice: RepeatChoice): Repeat | null {
@@ -27,7 +32,6 @@ export function choiceOf(repeat: Repeat | null): RepeatChoice {
   return match ?? 'off'
 }
 
-/** The chip label: "Off", "Weekly", "Every 2 weeks", "Monthly", "Yearly". */
 export function repeatChoiceLabel(choice: RepeatChoice): string {
   switch (choice) {
     case 'off':
@@ -43,7 +47,7 @@ export function repeatChoiceLabel(choice: RepeatChoice): string {
   }
 }
 
-/** On the latest expense: "Repeats monthly". */
+/** On the latest expense. */
 export function repeatsLabel(repeat: Repeat): string {
   switch (choiceOf(repeat)) {
     case 'weekly':
@@ -57,7 +61,7 @@ export function repeatsLabel(repeat: Repeat): string {
   }
 }
 
-/** On an older expense: "Part of a monthly repeat". */
+/** On an older expense. */
 export function partOfRepeatLabel(repeat: Repeat): string {
   switch (choiceOf(repeat)) {
     case 'weekly':

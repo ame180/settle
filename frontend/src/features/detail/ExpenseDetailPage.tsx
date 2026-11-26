@@ -10,8 +10,8 @@ import type { ExpenseResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { categoryLabel } from '@/lib/categories'
-import { calendarDayKey, formatShortDate } from '@/lib/dates'
-import { partOfRepeatLabel, repeatsLabel, repeatStopsLabel } from '@/lib/repeat'
+import { formatShortDate } from '@/lib/dates'
+import { continuesRepeat, partOfRepeatLabel, repeatsLabel, repeatStopsLabel } from '@/lib/repeat'
 import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { ItemError, ItemLoading, ItemNotFound } from '@/components/ItemStates'
@@ -35,7 +35,7 @@ export function ExpenseDetailPage() {
       <ItemNotFound kind="expense" />
     </DetailScreen>
   ) : (
-    <ExpenseDetailScreen id={id} />
+    <ExpenseDetailScreen key={id} id={id} />
   )
 }
 
@@ -66,11 +66,11 @@ function ExpenseDetailScreen({ id }: { id: number }) {
             confirmTitle={t`Delete “${expenseTitle}”?`}
             confirmDescription={deleteWarning(otherParticipantNames(expense, me.id))}
             confirmNote={
-              expense.series?.isLatest && expense.repeat?.active ? (
-                <p className="flex items-center gap-2 text-[15px] text-foreground/75">
+              continuesRepeat(expense) && expense.repeat ? (
+                <span className="mt-2 flex items-center gap-2 text-foreground/75">
                   <Repeat className="size-4 shrink-0" aria-hidden="true" />
                   {repeatStopsLabel(expense.repeat)}
-                </p>
+                </span>
               ) : undefined
             }
             deletion={deletion}
@@ -188,11 +188,12 @@ function RepeatLine({ expense }: { expense: ExpenseResponse }) {
     return null
   }
 
-  const nextOn = formatShortDate(calendarDayKey(repeat.nextOn))
+  const label = repeatsLabel(repeat)
+  const nextOn = formatShortDate(repeat.nextOn)
   return (
     <p className="-mt-1 flex items-center gap-1.5 text-[13px] text-muted-foreground">
       <Repeat className="size-3.5 shrink-0" aria-hidden="true" />
-      {repeatsLabel(repeat)} · {t`next on ${nextOn}`}
+      {t`${label} · next on ${nextOn}`}
     </p>
   )
 }
@@ -200,7 +201,7 @@ function RepeatLine({ expense }: { expense: ExpenseResponse }) {
 function OlderRepeatLink({ label, latestId }: { label: string; latestId: number }) {
   const { t } = useLingui()
   const latest = useExpense(latestId).data
-  const latestOn = latest ? formatShortDate(calendarDayKey(latest.occurredOn)) : null
+  const latestOn = latest ? formatShortDate(latest.occurredOn) : null
 
   return (
     <Link
@@ -208,7 +209,7 @@ function OlderRepeatLink({ label, latestId }: { label: string; latestId: number 
       className="-mt-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-[13px] font-medium text-foreground/75 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       <Repeat className="size-3.5 shrink-0" aria-hidden="true" />
-      {latestOn === null ? label : `${label} · ${t`latest ${latestOn}`}`}
+      {latestOn === null ? label : t`${label} · latest ${latestOn}`}
       <ChevronRight className="size-3.5 shrink-0" aria-hidden="true" />
     </Link>
   )

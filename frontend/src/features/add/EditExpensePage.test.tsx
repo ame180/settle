@@ -112,6 +112,8 @@ describe('EditExpensePage', () => {
     )
     await userEvent.click(within(sheet).getByRole('button', { name: 'Every 2 weeks' }))
     expect(screen.getByText('The next one copies them.')).toBeInTheDocument()
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Yesterday' }))
+    expect(sheet).toBeInTheDocument()
     await userEvent.click(within(sheet).getByRole('button', { name: 'Done' }))
 
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
