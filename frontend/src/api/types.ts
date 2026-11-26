@@ -12,6 +12,15 @@ export type MeUpdateRequest = {
   name: string
 }
 
+export type AppConfig = {
+  registrationEnabled: boolean
+}
+
+export type PasswordChangeRequest = {
+  currentPassword: string
+  newPassword: string
+}
+
 export type RegisterRequest = {
   email: string
   password: string

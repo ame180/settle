@@ -14,6 +14,7 @@ services:
       # Required by the messenger and mailer config, though nothing sends messages or mail yet.
       MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
       MAILER_DSN: null://null
+      APP_REGISTRATION_ENABLED: ${APP_REGISTRATION_ENABLED:-}
     restart: unless-stopped
     volumes:
       - sessions:/app/var/sessions

@@ -22,12 +22,16 @@ security:
                 failure_handler: App\Security\JsonLoginFailureHandler
             login_throttling:
                 max_attempts: 5
+            remember_me:
+                lifetime: 31536000
+                always_remember_me: true
             logout:
                 path: api_logout
 
     access_control:
         - { path: ^/api/login$, roles: PUBLIC_ACCESS }
         - { path: ^/api/register$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/config$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: ROLE_USER }
 
 when@test:

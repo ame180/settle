@@ -15,6 +15,7 @@ import { ContactPage } from '@/features/contacts/ContactPage'
 import { EditContactPage } from '@/features/contacts/EditContactPage'
 import { ProfilePage } from '@/features/profile/ProfilePage'
 import { EditNamePage } from '@/features/profile/EditNamePage'
+import { ChangePasswordPage } from '@/features/profile/ChangePasswordPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'contacts/new', element: <AddContactPage /> },
       { path: 'contacts/:userId/edit', element: <EditContactPage /> },
       { path: 'profile/name', element: <EditNamePage /> },
+      { path: 'profile/password', element: <ChangePasswordPage /> },
       { path: 'expenses/:id', element: <ExpenseDetailPage /> },
       { path: 'transfers/:id', element: <TransferDetailPage /> },
       { path: 'add', element: <AddPage /> },

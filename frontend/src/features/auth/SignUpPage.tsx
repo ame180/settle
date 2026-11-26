@@ -5,10 +5,14 @@ import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useMe, useRegister } from '@/api/auth'
+import { useAppConfig } from '@/api/config'
 import { ApiError } from '@/api/client'
 import { AlertLine, FieldError } from '@/components/FieldError'
+import { LoadError } from '@/components/LoadError'
 import { PrimaryButton } from '@/components/PrimaryButton'
+import { Spinner } from '@/components/Spinner'
 import { Input } from '@/components/ui/input'
+import { buttonClassName } from '@/components/ui/button-variants'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { AuthLayout, authLinkClassName } from './AuthLayout'
@@ -43,6 +47,48 @@ function isSignUpField(propertyPath: string): propertyPath is SignUpField {
 export function SignUpPage() {
   const { t } = useLingui()
   const { data: me } = useMe()
+  const configQuery = useAppConfig()
+
+  if (me) {
+    return <Navigate to="/" replace />
+  }
+  if (configQuery.isPending) {
+    return <Spinner label={t`Loading`} className="pt-40" />
+  }
+  if (configQuery.isError) {
+    return (
+      <LoadError
+        title={t`Couldn't load sign-up`}
+        onRetry={() => configQuery.refetch()}
+        isRetrying={configQuery.isFetching}
+      />
+    )
+  }
+  return configQuery.data.registrationEnabled ? <SignUpForm /> : <SignUpClosed />
+}
+
+function SignUpClosed() {
+  const { t } = useLingui()
+  return (
+    <AuthLayout
+      title={t`Sign-up is closed`}
+      description={t`New accounts are by invitation only. Ask the person who runs this Settle to create one for you.`}
+    >
+      <Link
+        to="/login"
+        className={buttonClassName({
+          size: 'lg',
+          className: 'w-full rounded-full text-base font-semibold',
+        })}
+      >
+        <Trans>Go to sign in</Trans>
+      </Link>
+    </AuthLayout>
+  )
+}
+
+function SignUpForm() {
+  const { t } = useLingui()
   const registerMutation = useRegister()
   const navigate = useNavigate()
 
@@ -53,10 +99,6 @@ export function SignUpPage() {
   const { errors } = form.formState
   const isPending = registerMutation.isPending
   const isEmailTaken = errors.email?.type === 'taken'
-
-  if (me) {
-    return <Navigate to="/" replace />
-  }
 
   const onSubmit = form.handleSubmit((values) => {
     registerMutation.mutate(
@@ -74,6 +116,10 @@ export function SignUpPage() {
               { type: 'taken', message: t`An account with this email already exists.` },
               { shouldFocus: true },
             )
+            return
+          }
+          if (error.status === 403) {
+            form.setError('root', { message: t`Sign-up is closed.` })
             return
           }
           if (error.status === 429) {
