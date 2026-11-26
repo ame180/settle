@@ -3,7 +3,7 @@ services:
   php:
     image: ghcr.io/ame180/settle-php:${IMAGE_TAG:?set IMAGE_TAG}
     # Explicit list rather than env_file, so the DB root password never reaches the app.
-    environment:
+    environment: &php-environment
       APP_SECRET: ${APP_SECRET:?set APP_SECRET}
       MYSQL_HOST: mariadb
       MYSQL_PORT: 3306
@@ -11,7 +11,7 @@ services:
       MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
       SYMFONY_TRUSTED_PROXIES: private_ranges
-      # Required by the messenger and mailer config, though nothing sends messages or mail yet.
+      # Required by the messenger and mailer config, though nothing queues messages or sends mail yet.
       MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
       MAILER_DSN: null://null
       APP_REGISTRATION_ENABLED: ${APP_REGISTRATION_ENABLED:-}
@@ -27,6 +27,17 @@ services:
       retries: 3
     depends_on:
       mariadb:
+        condition: service_healthy
+
+  # Creates repeating expenses when due. Skips the image's entrypoint, so only `php` runs migrations,
+  # and waits for it, so it starts on the migrated schema. Catches up on start, then ticks hourly.
+  scheduler:
+    image: ghcr.io/ame180/settle-php:${IMAGE_TAG:?set IMAGE_TAG}
+    environment: *php-environment
+    entrypoint: ["sh", "-c", "bin/console app:recurring:run; exec bin/console messenger:consume scheduler_default --memory-limit=128M"]
+    restart: unless-stopped
+    depends_on:
+      php:
         condition: service_healthy
 
   web:
