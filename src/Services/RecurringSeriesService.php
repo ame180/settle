@@ -50,10 +50,11 @@ class RecurringSeriesService
     }
 
     /**
-     * Call with the expense already updated. The schedule keeps its anchor while the latest's
-     * date is one of its dates, so a clamped 28 Feb still returns to the 31st.
+     * Call with the expense already updated; `$previousOccurredOn` is its date before the edit.
+     * The schedule keeps its anchor while the latest's date is one of its dates, so a clamped
+     * 28 Feb still returns to the 31st.
      */
-    public function applyOnUpdate(Expense $expense, ?RepeatRequest $repeat): void
+    public function applyOnUpdate(Expense $expense, ?RepeatRequest $repeat, \DateTimeImmutable $previousOccurredOn): void
     {
         $series = $expense->getSeries();
         if (null === $series) {
@@ -74,7 +75,8 @@ class RecurringSeriesService
 
         $keepsAnchor = $series->hasFrequency($repeat->unit, $repeat->every)
             && $this->schedule->isOnSchedule($series->getAnchorOn(), $repeat->unit, $repeat->every, $expense->getOccurredOn());
-        if ($keepsAnchor && $series->isActive()) {
+        $dateChanged = $previousOccurredOn->format('Y-m-d') !== $expense->getOccurredOn()->format('Y-m-d');
+        if ($keepsAnchor && !$dateChanged && $series->isActive()) {
             return;
         }
 

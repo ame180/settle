@@ -124,6 +124,28 @@ class RecurringExpenseApiTest extends ApiTestCase
         $this->assertStringStartsWith('2026-12-15', $this->getJsonResponse()['repeat']['nextOn']);
     }
 
+    public function testMovingTheLatestOntoALaterScheduleDateCreatesNoDuplicate(): void
+    {
+        $this->requestJson($this->client, 'POST', '/api/expenses', $this->payload('2026-11-10', ['unit' => 'month', 'every' => 1]));
+        $id = $this->getJsonResponse()['id'];
+
+        $this->requestJson($this->client, 'PUT', '/api/expenses/'.$id, $this->payload('2027-01-10', ['unit' => 'month', 'every' => 1]));
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertStringStartsWith('2027-02-10', $this->getJsonResponse()['repeat']['nextOn']);
+    }
+
+    public function testMovingTheLatestBackOntoAnEarlierScheduleDateSkipsNothing(): void
+    {
+        $this->requestJson($this->client, 'POST', '/api/expenses', $this->payload('2026-12-10', ['unit' => 'month', 'every' => 1]));
+        $id = $this->getJsonResponse()['id'];
+
+        $this->requestJson($this->client, 'PUT', '/api/expenses/'.$id, $this->payload('2026-11-10', ['unit' => 'month', 'every' => 1]));
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertStringStartsWith('2026-12-10', $this->getJsonResponse()['repeat']['nextOn']);
+    }
+
     public function testADateMovedWhileStoppedCountsOnRestart(): void
     {
         $this->requestJson($this->client, 'POST', '/api/expenses', $this->payload('2026-11-10', ['unit' => 'month', 'every' => 1]));

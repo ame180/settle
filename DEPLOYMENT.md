@@ -137,7 +137,7 @@ On the server, point `IMAGE_TAG` in `.env` at an earlier tag and restart:
 cd ~/settle-staging && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v0.1.0/' .env && docker compose up -d --wait
 ```
 
-v0.1.0 has no `scheduler`; when rolling back to it, stop it first with `docker compose rm -sf scheduler`, or it restarts in a loop on the older image.
+v0.1.0 has no `scheduler`, so it restarts in a loop on that image. When rolling back to it, add `--scale scheduler=0` to the `up` command above and to any later `up` until the next deploy.
 
 Rolling back code does not roll back the database. Migrations run on every start of `php`, so they must stay backward-compatible: the previous release has to work against the newer schema. A failing migration keeps `php` restarting (and `web` waiting) until it is fixed or rolled back.
 

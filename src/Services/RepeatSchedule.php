@@ -37,7 +37,7 @@ class RepeatSchedule
     }
 
     /**
-     * The calendar date in the default timezone, whatever offset the value carries.
+     * The value's own calendar date, at midnight in the default timezone.
      */
     public static function toDate(\DateTimeImmutable $dateTime): \DateTimeImmutable
     {
