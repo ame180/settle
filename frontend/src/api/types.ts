@@ -56,6 +56,14 @@ export type ExpenseDebtRequest = {
   value?: string | null
 }
 
+export type RepeatUnit = 'week' | 'month' | 'year'
+
+/** Weekly, every 2 weeks, monthly or yearly: the only combinations the API accepts for now. */
+export type Repeat = {
+  unit: RepeatUnit
+  every: number
+}
+
 export type ExpenseRequest = {
   title: string
   amount: string
@@ -65,6 +73,8 @@ export type ExpenseRequest = {
   splitType?: SplitType
   category?: ExpenseCategory
   description?: string | null
+  /** null or omitted: no repeat (on the latest, that stops it). Only the latest in a repeat may set it. */
+  repeat?: Repeat | null
 }
 
 export type ExpenseDebtResponse = {
@@ -84,6 +94,20 @@ export type ExpenseResponse = {
   splitType: SplitType
   category: ExpenseCategory
   debts: ExpenseDebtResponse[]
+  /** Set on every expense in a repeat, the latest or an older one, active or stopped. */
+  repeat: RepeatResponse | null
+  series: SeriesResponse | null
+}
+
+export type RepeatResponse = Repeat & {
+  /** Null once the repeat has stopped. */
+  nextOn: string | null
+  active: boolean
+}
+
+export type SeriesResponse = {
+  latestId: number
+  isLatest: boolean
 }
 
 export type CommentRequest = {
@@ -138,6 +162,8 @@ export type ActivityItem = {
   /** Transfers only. */
   payer: PersonRef | null
   category: ExpenseCategory | null
+  /** The expense is part of a repeat, active or stopped. */
+  recurring: boolean
 }
 
 export type ContactRequest = {

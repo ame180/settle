@@ -26,6 +26,15 @@ describe('ExpenseRow', () => {
     expect(label.parentElement).toHaveTextContent('zł 1,234.50')
   })
 
+  it('marks an expense that is part of a repeat', () => {
+    renderRow(<ExpenseRow item={expenseItem({ recurring: true })} viewerId={viewer.id} />)
+    expect(screen.getByRole('img', { name: 'Repeats' })).toBeInTheDocument()
+    cleanup()
+
+    renderRow(<ExpenseRow item={expenseItem()} viewerId={viewer.id} />)
+    expect(screen.queryByRole('img', { name: 'Repeats' })).not.toBeInTheDocument()
+  })
+
   it('shows what the viewer borrowed, unsigned, with the payer named', () => {
     renderRow(
       <ExpenseRow

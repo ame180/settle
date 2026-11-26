@@ -12,6 +12,7 @@ import {
   toIsoDate,
 } from '@/lib/dates'
 import { cn } from '@/lib/utils'
+import { repeatChoiceLabel, repeatChoices, type RepeatChoice } from '@/lib/repeat'
 import { Button } from '@/components/ui/button'
 
 type DateSheetProps = {
@@ -19,13 +20,15 @@ type DateSheetProps = {
   onOpenChange: (open: boolean) => void
   value: string
   onChange: (isoDate: string) => void
+  /** Adds the repeat choices; the sheet then stays open until Done. */
+  repeat?: { value: RepeatChoice; onChange: (repeat: RepeatChoice) => void }
 }
 
 /**
  * Today / Yesterday shortcuts and a month grid. Future dates are allowed; picking one keeps
  * the sheet open to say it counts towards balances straight away.
  */
-export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProps) {
+export function DateSheet({ open, onOpenChange, value, onChange, repeat }: DateSheetProps) {
   const { t } = useLingui()
   const today = todayIso()
   const [month, setMonth] = useState(() => startOfMonth(value))
@@ -42,7 +45,7 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
 
   function pick(isoDate: string) {
     onChange(isoDate)
-    if (isoDate <= today) {
+    if (isoDate <= today && !repeat) {
       onOpenChange(false)
     }
   }
@@ -147,24 +150,49 @@ export function DateSheet({ open, onOpenChange, value, onChange }: DateSheetProp
             })}
           </div>
           {isFuture && (
-            <>
-              <p role="status" className="flex items-start gap-2 text-[13px] text-foreground/80">
-                <Info className="mt-px size-4 shrink-0" aria-hidden="true" />
-                <span>
-                  <Trans>
-                    {futureDate} is in the future. It still counts towards your balances straight
-                    away.
-                  </Trans>
-                </span>
-              </p>
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="h-12 rounded-full bg-primary text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            <p role="status" className="flex items-start gap-2 text-[13px] text-foreground/80">
+              <Info className="mt-px size-4 shrink-0" aria-hidden="true" />
+              <span>
+                <Trans>
+                  {futureDate} is in the future. It still counts towards your balances straight
+                  away.
+                </Trans>
+              </span>
+            </p>
+          )}
+          {repeat && (
+            <div className="flex flex-col gap-2 border-t pt-3">
+              <h3 id="date-sheet-repeat" className="text-sm font-medium">
+                <Trans>Repeat</Trans>
+              </h3>
+              <div
+                role="group"
+                aria-labelledby="date-sheet-repeat"
+                className="flex flex-wrap gap-2"
               >
-                <Trans>Done</Trans>
-              </button>
-            </>
+                {repeatChoices.map((choice) => (
+                  <Button
+                    key={choice}
+                    variant="outline"
+                    size="pill"
+                    aria-pressed={repeat.value === choice}
+                    onClick={() => repeat.onChange(choice)}
+                    className="aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:font-semibold aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary"
+                  >
+                    {repeatChoiceLabel(choice)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+          {(isFuture || repeat) && (
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="h-12 rounded-full bg-primary text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              <Trans>Done</Trans>
+            </button>
           )}
         </div>
       </SheetContent>

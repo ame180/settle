@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Banknote } from 'lucide-react'
+import { Banknote, Repeat } from 'lucide-react'
 import type { ActivityItem } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
@@ -51,7 +51,16 @@ export function ExpenseRow({
         <PersonAvatar id={payee.id} name={payee.displayName} />
       )}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate">{item.title}</span>{' '}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate">{item.title}</span>
+          {item.recurring && (
+            <Repeat
+              role="img"
+              aria-label={t`Repeats`}
+              className="size-3.5 shrink-0 text-muted-foreground"
+            />
+          )}
+        </span>{' '}
         <span className="truncate text-[13px] text-muted-foreground">
           {showDate ? t`${date} · ${subline}` : subline}
         </span>

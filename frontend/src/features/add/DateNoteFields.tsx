@@ -2,9 +2,10 @@ import { useState, type RefObject } from 'react'
 import { Textarea } from '@/components/ui/input'
 import { flushSync } from 'react-dom'
 import { Trans } from '@lingui/react/macro'
-import { Calendar, FileText } from 'lucide-react'
+import { Calendar, FileText, Repeat } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDateLabel } from '@/lib/dates'
+import { repeatChoiceLabel, type RepeatChoice } from '@/lib/repeat'
 import { DateSheet } from './DateSheet'
 import { FieldError } from '@/components/FieldError'
 
@@ -12,6 +13,8 @@ type DateNoteFieldsProps = {
   idPrefix: string
   occurredOn: string
   onDateChange: (occurredOn: string) => void
+  /** Offered in the date sheet when given. */
+  repeat?: { value: RepeatChoice; onChange: (repeat: RepeatChoice) => void }
   dateError?: string
   note: string
   onNoteChange: (note: string) => void
@@ -25,6 +28,7 @@ export function DateNoteFields({
   idPrefix,
   occurredOn,
   onDateChange,
+  repeat,
   dateError,
   note,
   onNoteChange,
@@ -35,13 +39,15 @@ export function DateNoteFields({
   const [dateOpen, setDateOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(note !== '')
   const noteId = `${idPrefix}-note`
+  const repeats = repeat !== undefined && repeat.value !== 'off'
+  const dateLabel = formatDateLabel(occurredOn)
 
   return (
     <>
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="pill" onClick={() => setDateOpen(true)}>
-          <Calendar aria-hidden="true" />
-          {formatDateLabel(occurredOn)}
+          {repeats ? <Repeat aria-hidden="true" /> : <Calendar aria-hidden="true" />}
+          {repeats ? `${dateLabel} · ${repeatChoiceLabel(repeat.value)}` : dateLabel}
         </Button>
         {!noteOpen && (
           <Button
@@ -90,6 +96,7 @@ export function DateNoteFields({
         onOpenChange={setDateOpen}
         value={occurredOn}
         onChange={onDateChange}
+        repeat={repeat}
       />
     </>
   )

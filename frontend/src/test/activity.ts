@@ -16,6 +16,7 @@ export function expenseItem(overrides: Partial<ActivityItem> = {}): ActivityItem
     payee: viewer,
     payer: null,
     category: 'groceries',
+    recurring: false,
     ...overrides,
   }
 }
@@ -33,6 +34,7 @@ export function transferItem(overrides: Partial<ActivityItem> = {}): ActivityIte
     payee: viewer,
     payer: anna,
     category: null,
+    recurring: false,
     ...overrides,
   }
 }
