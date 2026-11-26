@@ -30,6 +30,34 @@ class SpaControllerTest extends WebTestCase
             'root' => ['/'],
             'login' => ['/login'],
             'nested' => ['/contacts/42/settle'],
+            'app prefix word' => ['/application'],
+        ];
+    }
+
+    /**
+     * @dataProvider missingStaticPathProvider
+     */
+    public function testMissingStaticFilesReturnNotFound(string $path): void
+    {
+        $client = static::createClient();
+        $client->request('GET', $path);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function missingStaticPathProvider(): array
+    {
+        return [
+            'app asset' => ['/app/assets/nope.js'],
+            'app path without extension' => ['/app/missing'],
+            'app root' => ['/app'],
+            'favicon' => ['/favicon.ico'],
+            'robots' => ['/robots.txt'],
+            'nested file' => ['/assets/logo.svg'],
+            'multi-dot asset' => ['/assets/index.abc123.css'],
         ];
     }
 

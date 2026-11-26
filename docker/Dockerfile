@@ -15,39 +15,47 @@ COPY public /app/public
 COPY --from=frontend-build /app/public/app /app/public/app
 
 
-FROM php:8.4-fpm AS base
+FROM php:8.4-fpm AS php-runtime
 
-# Install composer
-COPY --from=composer:2.11 /usr/bin/composer /usr/bin/composer
-
-# Install PHP extensions
 RUN docker-php-ext-install pdo_mysql bcmath
-
-# Install dependencies
-RUN apt-get update && apt-get -y install git unzip && apt-get clean
-
-RUN git config --global --add safe.directory /app
 
 WORKDIR /app
 
 
+FROM php-runtime AS base
+
+COPY --from=composer:2.11 /usr/bin/composer /usr/bin/composer
+
+RUN apt-get update && apt-get -y install git unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN git config --global --add safe.directory /app
+
+
+FROM base AS backend-build
+
+ENV APP_ENV=prod
+
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+
+COPY . .
+
+RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
+    && composer dump-env prod --empty
+
+
 # Last stage, so a build without --target produces the app image.
-FROM base AS prod
+FROM php-runtime AS prod
 
 ENV APP_ENV=prod
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php/prod.ini "$PHP_INI_DIR/conf.d/zz-prod.ini"
 
-COPY composer.json composer.lock symfony.lock ./
-RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
-
-COPY . .
+COPY --from=backend-build /app /app
 COPY --from=frontend-build /app/public/app ./public/app
 
-RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
-    && composer dump-env prod --empty \
-    && mkdir -p var/sessions \
+RUN mkdir -p var/sessions \
     && chown -R www-data:www-data var
 
 # FPM workers run as www-data, so the cache must be built as www-data to stay writable at runtime.

@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Makes every /api request behave as a JSON API: errors render as
- * application/problem+json and request bodies must be JSON. Rejecting
+ * application/json and request bodies must be JSON. Rejecting
  * form-encoded bodies, together with the SameSite=Lax session cookie,
  * is what protects the API against cross-site request forgery.
  */
@@ -27,7 +27,8 @@ class ApiJsonRequestListener
         }
 
         $request = $event->getRequest();
-        if (!str_starts_with($request->getPathInfo(), '/api')) {
+        $path = $request->getPathInfo();
+        if ('/api' !== $path && !str_starts_with($path, '/api/')) {
             return;
         }
 
