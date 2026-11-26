@@ -12,7 +12,7 @@ afterEach(() => {
 
 describe('router', () => {
   it('renders a not-found screen inside AppShell for unknown routes', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, me)))
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse(200, me)))
     renderRoutes(routes, '/nope')
 
     expect(
@@ -26,7 +26,7 @@ describe('router', () => {
   it('redirects unknown routes to /login when signed out', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(jsonResponse(401, { status: 401, title: 'Unauthorized' })),
+      vi.fn(async () => jsonResponse(401, { status: 401, title: 'Unauthorized' })),
     )
     const router = renderRoutes(routes, '/nope?x=1')
 
@@ -35,7 +35,7 @@ describe('router', () => {
   })
 
   it('keeps specific routes outside AppShell matched ahead of the catch-all', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, me)))
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse(200, me)))
     renderRoutes(routes, '/expenses/abc')
 
     expect(

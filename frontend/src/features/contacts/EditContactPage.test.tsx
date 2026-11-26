@@ -127,4 +127,15 @@ describe('EditContactPage', () => {
       within(screen.getByRole('banner')).getByRole('heading', { name: 'Edit contact' }),
     ).toBeInTheDocument()
   })
+
+  it('shows contact not found without fetching for a non-numeric id', async () => {
+    const fetchMock = stubApi()
+    renderEdit('abc')
+
+    expect(await screen.findByRole('heading', { name: 'Contact not found' })).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('banner')).getByRole('heading', { name: 'Edit contact' }),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })
