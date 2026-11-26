@@ -41,6 +41,9 @@ readonly class ExpenseRequest
         public ExpenseCategory $category = ExpenseCategory::General,
 
         public ?string $description = null,
+
+        #[Assert\Valid]
+        public ?RepeatRequest $repeat = null,
     ) {
     }
 }

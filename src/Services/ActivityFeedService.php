@@ -197,6 +197,7 @@ class ActivityFeedService
             payee: $people[(int) $expense->getPayee()->getId()],
             payer: null,
             category: $expense->getCategory(),
+            recurring: null !== $expense->getSeries(),
         );
     }
 

@@ -21,6 +21,7 @@ readonly class ActivityItem
         public PersonRef $payee,
         public ?PersonRef $payer,
         public ?ExpenseCategory $category,
+        public bool $recurring = false,
     ) {
     }
 }
