@@ -53,6 +53,8 @@ chmod 600 .env
 
 `deploy/.env.example` documents each value. The first deploy fills in `IMAGE_TAG` and brings `compose.yaml`.
 
+Devices stay signed in for a year through a remember-me cookie signed with `APP_SECRET`, so the app refuses to start without it. Keep it stable: with a new one, every device has to sign in again once its session ends. Changing a password signs out that user's other devices.
+
 ### 2. Deploy key
 
 On any machine, create a key used only by this environment's deploys:
@@ -105,6 +107,8 @@ Also add the network to the proxy's own compose file as an external network, so 
 
 ### 6. First user
 
+Public sign-up is off (see [Adding users](#adding-users)), so create the first account by hand:
+
 ```bash
 docker compose exec php bin/console app:user:create <email> <password>
 ```
@@ -134,6 +138,39 @@ cd ~/settle-staging && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v0.1.0/' .env && docker
 ```
 
 Rolling back code does not roll back the database. Migrations run on every start of `php`, so they must stay backward-compatible: the previous release has to work against the newer schema. A failing migration keeps `php` restarting (and `web` waiting) until it is fixed or rolled back.
+
+## Backups
+
+The app has no backup job of its own. The host dumps production's database nightly and keeps the dumps offsite; that setup lives with the server, not in this repo.
+
+Before releasing a risky migration, take a dump by hand in the environment's directory:
+
+```bash
+docker compose exec -T mariadb sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" --single-transaction --routines --triggers "$MARIADB_DATABASE"' | gzip > "settle-$(date -u +%Y%m%d-%H%M%S).sql.gz"
+```
+
+To restore a dump (from that command or the nightly backups), stop the app so nothing writes, empty the database, load the dump and start again:
+
+```bash
+docker compose stop web php
+docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "DROP DATABASE \`$MARIADB_DATABASE\`; CREATE DATABASE \`$MARIADB_DATABASE\`"'
+gunzip -c <dump>.sql.gz | docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" "$MARIADB_DATABASE"'
+docker compose start php web
+```
+
+On start, `php` applies any migrations newer than the dump, as on a deploy.
+
+## Adding users
+
+Sign-up claims the account of anyone a user added as a contact by email, without checking that the email belongs to the person signing up. So public sign-up is off unless enabled: `POST /api/register` answers 403 and the app hides its sign-up link. Set `APP_REGISTRATION_ENABLED=1` in the server's `.env` only where that's acceptable, such as a private staging host.
+
+To add someone, create their account with a temporary password and send it to them:
+
+```bash
+docker compose exec php bin/console app:user:create <email> <temporary password>
+```
+
+If someone already added them as a contact, this claims that account, so their shared expenses are waiting. They change the password in the app under Profile → Password, which signs out their other devices.
 
 ## Operations
 

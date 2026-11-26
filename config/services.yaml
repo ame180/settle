@@ -6,6 +6,8 @@
 parameters:
     app.mysql_server_version: '12.3.0-MariaDB'
     app.spa_index: '%kernel.project_dir%/public/app/index.html'
+    env(APP_REGISTRATION_ENABLED): '0'
+    app.registration_enabled: '%env(bool:APP_REGISTRATION_ENABLED)%'
 
 services:
     # default configuration for services in *this* file

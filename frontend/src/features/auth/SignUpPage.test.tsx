@@ -7,9 +7,20 @@ import { SignUpPage } from './SignUpPage'
 
 type RegisterReply = { status: number; body?: unknown }
 
-function stubApi(registerReply: RegisterReply) {
+function stubApi(
+  registerReply: RegisterReply,
+  { registrationEnabled = true, configFailures = 0 } = {},
+) {
   let isLoggedIn = false
+  let configFailuresLeft = configFailures
   const fetchMock = vi.fn(async (path: string) => {
+    if (path === '/api/config') {
+      if (configFailuresLeft > 0) {
+        configFailuresLeft -= 1
+        return jsonResponse(500, { status: 500 })
+      }
+      return jsonResponse(200, { registrationEnabled })
+    }
     if (path === '/api/me') {
       return isLoggedIn
         ? jsonResponse(200, { id: 7, email: 'ame@example.com', name: 'Ame' })
@@ -118,9 +129,12 @@ describe('SignUpPage', () => {
     stubApi({ status: 201 })
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (path: string) =>
-        path === '/api/register' ? new Promise<Response>(() => {}) : jsonResponse(401, {}),
-      ),
+      vi.fn(async (path: string) => {
+        if (path === '/api/config') {
+          return jsonResponse(200, { registrationEnabled: true })
+        }
+        return path === '/api/register' ? new Promise<Response>(() => {}) : jsonResponse(401, {})
+      }),
     )
     renderSignUp()
 
@@ -196,5 +210,40 @@ describe('SignUpPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       "Couldn't create your account. Try again.",
     )
+  })
+
+  it('says sign-up is closed and links to sign in when registration is off', async () => {
+    const fetchMock = stubApi({ status: 201 }, { registrationEnabled: false })
+    const router = renderSignUp()
+
+    expect(await screen.findByRole('heading', { name: 'Sign-up is closed' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create account' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('link', { name: 'Go to sign in' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'))
+    expect(registerCalls(fetchMock)).toHaveLength(0)
+  })
+
+  it('says sign-up is closed when the server refuses it', async () => {
+    stubApi({ status: 403, body: { status: 403 } })
+    renderSignUp()
+
+    await screen.findByRole('heading', { name: 'Create an account' })
+    await fillForm()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Sign-up is closed.')
+  })
+
+  it('offers a retry instead of the form when the config fails to load', async () => {
+    stubApi({ status: 201 }, { configFailures: 1 })
+    renderSignUp()
+
+    expect(await screen.findByText("Couldn't load sign-up")).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create account' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(await screen.findByRole('heading', { name: 'Create an account' })).toBeInTheDocument()
   })
 })

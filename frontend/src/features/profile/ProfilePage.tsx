@@ -62,6 +62,15 @@ export function ProfilePage() {
                 <span className="truncate text-foreground/80">{me.email}</span>
               </span>
             </div>
+            <Link to="/profile/password" className={cn(rowClassName, 'hover:bg-secondary')}>
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="text-sm text-muted-foreground">
+                  <Trans>Password</Trans>
+                </span>
+                <span aria-hidden="true">••••••••</span>
+              </span>
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            </Link>
           </div>
         </>
       )}

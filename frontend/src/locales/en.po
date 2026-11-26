@@ -198,6 +198,7 @@ msgid "0% of 100%"
 msgstr "0% of 100%"
 
 #: src/features/auth/SignUpPage.tsx
+#: src/features/profile/ChangePasswordPage.tsx
 msgid "8 to 64 characters."
 msgstr "8 to 64 characters."
 
@@ -323,6 +324,7 @@ msgstr "Back to {shortName}"
 msgid "Back to contacts"
 msgstr "Back to contacts"
 
+#: src/features/profile/ChangePasswordPage.tsx
 #: src/features/profile/EditNamePage.tsx
 msgid "Back to profile"
 msgstr "Back to profile"
@@ -354,6 +356,10 @@ msgstr "Category: {currentCategory}. Change category"
 #: src/features/add/SplitCard.tsx
 msgid "Change"
 msgstr "Change"
+
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Change password"
+msgstr "Change password"
 
 #: src/features/add/SplitCard.tsx
 msgid "Change who paid"
@@ -457,6 +463,10 @@ msgstr "Couldn’t add the expense. Nothing was saved and your entries are still
 msgid "Couldn’t add this contact. Try again."
 msgstr "Couldn’t add this contact. Try again."
 
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Couldn't change your password. Try again."
+msgstr "Couldn't change your password. Try again."
+
 #: src/features/auth/SignUpPage.tsx
 msgid "Couldn't create your account. Try again."
 msgstr "Couldn't create your account. Try again."
@@ -490,6 +500,10 @@ msgstr "Couldn't load contacts"
 #: src/features/activity/ActivityListFooter.tsx
 msgid "Couldn't load more activity."
 msgstr "Couldn't load more activity."
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Couldn't load sign-up"
+msgstr "Couldn't load sign-up"
 
 #: src/components/ItemStates.tsx
 msgid "Couldn’t load this expense"
@@ -535,6 +549,10 @@ msgstr "Create an account"
 #: src/features/auth/SignUpPage.tsx
 msgid "Creating account…"
 msgstr "Creating account…"
+
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Current password"
+msgstr "Current password"
 
 #: src/features/add/SplitCard.tsx
 msgid "Custom"
@@ -670,6 +688,10 @@ msgstr "Enter the amount to check it adds up"
 msgid "Enter the amount to see each share"
 msgstr "Enter the amount to see each share"
 
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Enter your current password."
+msgstr "Enter your current password."
+
 #: src/lib/categories.ts
 msgid "Entertainment"
 msgstr "Entertainment"
@@ -736,6 +758,10 @@ msgstr "Go to activity"
 msgid "Go to contacts"
 msgstr "Go to contacts"
 
+#: src/features/auth/SignUpPage.tsx
+msgid "Go to sign in"
+msgstr "Go to sign in"
+
 #: src/lib/categories.ts
 msgid "Groceries"
 msgstr "Groceries"
@@ -795,6 +821,7 @@ msgid "Leave empty to show your email."
 msgstr "Leave empty to show your email."
 
 #: src/features/add/AddPage.tsx
+#: src/features/auth/SignUpPage.tsx
 msgid "Loading"
 msgstr "Loading"
 
@@ -863,6 +890,14 @@ msgstr "Name or email"
 #: src/features/profile/EditNamePage.tsx
 msgid "Name saved"
 msgstr "Name saved"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "New accounts are by invitation only. Ask the person who runs this Settle to create one for you."
+msgstr "New accounts are by invitation only. Ask the person who runs this Settle to create one for you."
+
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "New password"
+msgstr "New password"
 
 #: src/features/auth/LoginPage.tsx
 msgid "New to Settle? <0>Create an account</0>"
@@ -1054,8 +1089,13 @@ msgstr "Paid to"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/SignUpPage.tsx
+#: src/features/profile/ProfilePage.tsx
 msgid "Password"
 msgstr "Password"
+
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Password changed"
+msgstr "Password changed"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Password is required"
@@ -1136,6 +1176,10 @@ msgstr "Reload the page to try again."
 msgid "Remove {displayName}"
 msgstr "Remove {displayName}"
 
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Repeat new password"
+msgstr "Repeat new password"
+
 #: src/features/contacts/EditContactPage.tsx
 msgid "Save"
 msgstr "Save"
@@ -1149,9 +1193,14 @@ msgstr "Save changes"
 msgid "Save name"
 msgstr "Save name"
 
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Save password"
+msgstr "Save password"
+
 #: src/features/add/ExpenseForm.tsx
 #: src/features/add/PaymentForm.tsx
 #: src/features/contacts/EditContactPage.tsx
+#: src/features/profile/ChangePasswordPage.tsx
 #: src/features/profile/EditNamePage.tsx
 msgid "Saving…"
 msgstr "Saving…"
@@ -1200,6 +1249,14 @@ msgstr "Sign in"
 #: src/features/auth/SignUpPage.tsx
 msgid "Sign in instead"
 msgstr "Sign in instead"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Sign-up is closed"
+msgstr "Sign-up is closed"
+
+#: src/features/auth/SignUpPage.tsx
+msgid "Sign-up is closed."
+msgstr "Sign-up is closed."
 
 #: src/features/auth/LoginPage.tsx
 msgid "Signing in…"
@@ -1268,6 +1325,10 @@ msgstr "Switch who paid"
 msgid "That amount is too large"
 msgstr "That amount is too large"
 
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "That isn't your current password."
+msgstr "That isn't your current password."
+
 #: src/features/add/paymentModel.ts
 msgid "That’s more than {name} owes you ({current})."
 msgstr "That’s more than {name} owes you ({current})."
@@ -1279,6 +1340,10 @@ msgstr "That’s more than you owe {name} ({current})."
 #: src/features/add/PeopleField.tsx
 msgid "That’s your email. You’re always in it."
 msgstr "That’s your email. You’re always in it."
+
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "The passwords don't match."
+msgstr "The passwords don't match."
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Their name on Settle"
@@ -1333,6 +1398,10 @@ msgstr "Tick yourself or pay"
 msgid "Today"
 msgstr "Today"
 
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "Too many attempts. Try again later."
+msgstr "Too many attempts. Try again later."
+
 #: src/features/auth/LoginPage.tsx
 msgid "Too many sign-in attempts. Wait a few minutes and try again."
 msgstr "Too many sign-in attempts. Wait a few minutes and try again."
@@ -1351,10 +1420,12 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/auth/SignUpPage.tsx
+#: src/features/profile/ChangePasswordPage.tsx
 msgid "Use 8 to 64 characters."
 msgstr "Use 8 to 64 characters."
 
 #: src/features/auth/SignUpPage.tsx
+#: src/features/profile/ChangePasswordPage.tsx
 msgid "Use at least 8 characters."
 msgstr "Use at least 8 characters."
 
@@ -1363,6 +1434,7 @@ msgid "Use at most 2 decimal places"
 msgstr "Use at most 2 decimal places"
 
 #: src/features/auth/SignUpPage.tsx
+#: src/features/profile/ChangePasswordPage.tsx
 #: src/features/profile/EditNamePage.tsx
 msgid "Use at most 64 characters."
 msgstr "Use at most 64 characters."
@@ -1525,6 +1597,10 @@ msgstr "You paid {name}"
 #: src/features/detail/TransferDetailPage.tsx
 msgid "You paid {payeeName}"
 msgstr "You paid {payeeName}"
+
+#: src/features/profile/ChangePasswordPage.tsx
+msgid "You stay signed in here. Other devices will be signed out."
+msgstr "You stay signed in here. Other devices will be signed out."
 
 #: src/features/add/paymentModel.ts
 msgid "You’ll owe {name} {amount}"

@@ -5,6 +5,7 @@ import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useLogin, useMe } from '@/api/auth'
+import { useAppConfig } from '@/api/config'
 import { ApiError } from '@/api/client'
 import { AlertLine, FieldError } from '@/components/FieldError'
 import { PrimaryButton } from '@/components/PrimaryButton'
@@ -27,6 +28,7 @@ export type LoginLocationState = { from?: string; email?: string } | null
 export function LoginPage() {
   const { t } = useLingui()
   const { data: me } = useMe()
+  const { data: config } = useAppConfig()
   const loginMutation = useLogin()
   const navigate = useNavigate()
   const location = useLocation()
@@ -56,12 +58,14 @@ export function LoginPage() {
       title={t`Sign in`}
       description={t`Use the email and password of your account.`}
       footer={
-        <Trans>
-          New to Settle?{' '}
-          <Link to="/signup" className={authLinkClassName}>
-            Create an account
-          </Link>
-        </Trans>
+        config?.registrationEnabled && (
+          <Trans>
+            New to Settle?{' '}
+            <Link to="/signup" className={authLinkClassName}>
+              Create an account
+            </Link>
+          </Trans>
+        )
       }
     >
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">

@@ -8,10 +8,48 @@ use App\Entity\User;
 use App\Tests\Support\ApiTestCase;
 use App\Tests\Support\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Cookie as HttpCookie;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthApiControllerTest extends ApiTestCase
 {
+    /** @var array{env: ?string, server: ?string}|null */
+    private ?array $registrationEnabledBefore = null;
+
+    protected function tearDown(): void
+    {
+        if (null !== $this->registrationEnabledBefore) {
+            $this->restoreVariable($_ENV, $this->registrationEnabledBefore['env']);
+            $this->restoreVariable($_SERVER, $this->registrationEnabledBefore['server']);
+        }
+
+        parent::tearDown();
+    }
+
+    private function disableRegistration(): void
+    {
+        $this->registrationEnabledBefore = [
+            'env' => $_ENV['APP_REGISTRATION_ENABLED'] ?? null,
+            'server' => $_SERVER['APP_REGISTRATION_ENABLED'] ?? null,
+        ];
+        $_ENV['APP_REGISTRATION_ENABLED'] = $_SERVER['APP_REGISTRATION_ENABLED'] = '0';
+    }
+
+    /**
+     * @param array<string, mixed> $variables
+     */
+    private function restoreVariable(array &$variables, ?string $value): void
+    {
+        if (null === $value) {
+            unset($variables['APP_REGISTRATION_ENABLED']);
+
+            return;
+        }
+        $variables['APP_REGISTRATION_ENABLED'] = $value;
+    }
+
     public function testMeNotLoggedInReturnsJson401(): void
     {
         $client = static::createClient();
@@ -121,6 +159,15 @@ class AuthApiControllerTest extends ApiTestCase
         $this->assertSame(415, $this->getJsonResponse()['status']);
     }
 
+    public function testApiPrefixedNonApiPathIsNotTreatedAsApi(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/apifoo', ['title' => 'form encoded']);
+
+        $this->assertResponseStatusCodeSame(405);
+        $this->assertStringNotContainsString('application/json', (string) $client->getResponse()->headers->get('Content-Type'));
+    }
+
     public function testRegisterCreatesUserAndLogsIn(): void
     {
         $client = static::createClient();
@@ -134,6 +181,7 @@ class AuthApiControllerTest extends ApiTestCase
         $response = $this->getJsonResponse();
         $this->assertSame('new.user@example.com', $response['email']);
         $this->assertSame('New User', $response['name']);
+        $this->assertNotNull($client->getCookieJar()->get('REMEMBERME'));
 
         $client->request('GET', '/api/me');
         $this->assertJsonResponseIsSuccessful(200);
@@ -240,5 +288,326 @@ class AuthApiControllerTest extends ApiTestCase
         $this->requestJson($client, 'POST', '/api/register', ['email' => 'user11@example.com', 'password' => 'password123']);
 
         $this->assertJsonResponseIsSuccessful(201);
+    }
+
+    public function testRegisterIsForbiddenWhenRegistrationIsDisabled(): void
+    {
+        $this->disableRegistration();
+        $client = static::createClient();
+        $this->requestJson($client, 'POST', '/api/register', ['email' => 'new@example.com', 'password' => 'password123']);
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertSame(403, $this->getJsonResponse()['status']);
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $this->assertNull($entityManager->getRepository(User::class)->findOneBy(['email' => 'new@example.com']));
+    }
+
+    public function testRegisterIsForbiddenBeforeValidationWhenRegistrationIsDisabled(): void
+    {
+        $this->disableRegistration();
+        $client = static::createClient();
+        $client->request('POST', '/api/register', [], [], ['CONTENT_TYPE' => 'application/json'], '{not json');
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertSame(403, $this->getJsonResponse()['status']);
+
+        $this->requestJson($client, 'POST', '/api/register', ['email' => 'not-an-email', 'password' => 'short']);
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    public function testConfigIsPublicAndReportsRegistrationEnabled(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/config');
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['registrationEnabled' => true], $this->getJsonResponse());
+    }
+
+    public function testConfigReportsRegistrationDisabled(): void
+    {
+        $this->disableRegistration();
+        $client = static::createClient();
+        $client->request('GET', '/api/config');
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['registrationEnabled' => false], $this->getJsonResponse());
+    }
+
+    public function testChangePasswordSetsNewPasswordAndKeepsSession(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
+
+        $this->assertResponseStatusCodeSame(204);
+        $this->assertTrue($this->isPasswordValid($user, 'new-password'));
+
+        $client->request('GET', '/api/me');
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame($user->getId(), $this->getJsonResponse()['id']);
+    }
+
+    public function testChangePasswordSignsOutOtherDevices(): void
+    {
+        $client = static::createClient();
+        $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'old-password']);
+        $this->assertJsonResponseIsSuccessful(200);
+        $otherDeviceCookies = $client->getCookieJar()->all();
+
+        $client->getCookieJar()->clear();
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'old-password']);
+        $this->assertJsonResponseIsSuccessful(200);
+        $sessionIdBefore = $client->getCookieJar()->get('MOCKSESSID')?->getValue();
+        $rememberMeBefore = $client->getCookieJar()->get('REMEMBERME')?->getValue();
+
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
+        $this->assertResponseStatusCodeSame(204);
+        $this->assertNotSame($sessionIdBefore, $client->getCookieJar()->get('MOCKSESSID')?->getValue());
+        $rememberMeAfter = $client->getCookieJar()->get('REMEMBERME')?->getValue();
+        $this->assertNotNull($rememberMeAfter);
+        $this->assertNotSame($rememberMeBefore, $rememberMeAfter);
+
+        $client->request('GET', '/api/me');
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $this->requestWithCookies($client, $otherDeviceCookies);
+        $this->assertResponseStatusCodeSame(401);
+
+        $this->requestWithCookies($client, [new Cookie('MOCKSESSID', (string) $sessionIdBefore)]);
+        $this->assertResponseStatusCodeSame(401);
+
+        $this->requestWithCookies($client, [new Cookie('REMEMBERME', (string) $rememberMeBefore)]);
+        $this->assertResponseStatusCodeSame(401);
+
+        $this->requestWithCookies($client, [new Cookie('REMEMBERME', $rememberMeAfter)]);
+        $this->assertJsonResponseIsSuccessful(200);
+    }
+
+    public function testLoginSetsRememberMeCookie(): void
+    {
+        $client = static::createClient();
+        $this->persistUserWithPassword('me@example.com', 'password123');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'password123']);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $rememberMe = $client->getCookieJar()->get('REMEMBERME');
+        $this->assertNotNull($rememberMe);
+        $this->assertTrue($rememberMe->isHttpOnly());
+        $this->assertEqualsWithDelta(time() + 31536000, (int) $rememberMe->getExpiresTime(), 5);
+    }
+
+    public function testRememberMeCookieSignsInWithoutSessionAndIsRefreshed(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'password123');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'password123']);
+        $rememberMe = $client->getCookieJar()->get('REMEMBERME');
+        $this->assertNotNull($rememberMe);
+
+        $this->requestWithCookies($client, [$rememberMe]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame($user->getId(), $this->getJsonResponse()['id']);
+        $refreshed = $this->findResponseCookie($client, 'REMEMBERME');
+        $this->assertNotNull($refreshed);
+        $this->assertNotNull($refreshed->getValue());
+        $this->assertGreaterThan(time() + 31536000 - 5, $refreshed->getExpiresTime());
+    }
+
+    public function testLogoutClearsRememberMeCookie(): void
+    {
+        $client = static::createClient();
+        $this->persistUserWithPassword('me@example.com', 'password123');
+
+        $this->requestJson($client, 'POST', '/api/login', ['email' => 'me@example.com', 'password' => 'password123']);
+        $this->assertNotNull($client->getCookieJar()->get('REMEMBERME'));
+
+        $client->request('POST', '/api/logout');
+
+        $this->assertResponseStatusCodeSame(204);
+        $cleared = $this->findResponseCookie($client, 'REMEMBERME');
+        $this->assertNotNull($cleared);
+        $this->assertTrue($cleared->isCleared());
+        $this->assertNull($client->getCookieJar()->get('REMEMBERME'));
+
+        $client->request('GET', '/api/me');
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    public function testChangePasswordAllowsTheCurrentPassword(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'old-password']);
+
+        $this->assertResponseStatusCodeSame(204);
+        $this->assertTrue($this->isPasswordValid($user, 'old-password'));
+    }
+
+    public function testChangePasswordRejectsWrongCurrentPassword(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'not-my-password', 'newPassword' => 'new-password']);
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertSame(['currentPassword'], array_column($this->getJsonResponse()['violations'], 'propertyPath'));
+        $this->assertTrue($this->isPasswordValid($user, 'old-password'));
+    }
+
+    /**
+     * @dataProvider invalidPasswordChangeProvider
+     *
+     * @param array<string, mixed> $payload
+     */
+    public function testChangePasswordValidatesPayload(array $payload, string $propertyPath): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PUT', '/api/me/password', $payload);
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertContains($propertyPath, array_column($this->getJsonResponse()['violations'], 'propertyPath'));
+        $this->assertTrue($this->isPasswordValid($user, 'old-password'));
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, string}>
+     */
+    public static function invalidPasswordChangeProvider(): iterable
+    {
+        yield 'blank current password' => [['currentPassword' => '', 'newPassword' => 'new-password'], 'currentPassword'];
+        yield 'too short new password' => [['currentPassword' => 'old-password', 'newPassword' => str_repeat('a', 7)], 'newPassword'];
+        yield 'too long new password' => [['currentPassword' => 'old-password', 'newPassword' => str_repeat('a', 65)], 'newPassword'];
+    }
+
+    public function testChangePasswordAcceptsLengthBounds(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $client->loginUser($user);
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => str_repeat('a', 8)]);
+        $this->assertResponseStatusCodeSame(204);
+
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => str_repeat('a', 8), 'newPassword' => str_repeat('b', 64)]);
+        $this->assertResponseStatusCodeSame(204);
+        $this->assertTrue($this->isPasswordValid($user, str_repeat('b', 64)));
+    }
+
+    public function testChangePasswordIsRateLimitedPerUser(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+        $otherUser = $this->persistUserWithPassword('other@example.com', 'other-password');
+
+        $client->loginUser($user);
+        for ($i = 1; $i <= 5; ++$i) {
+            $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => "wrong-$i", 'newPassword' => 'new-password']);
+            $this->assertResponseStatusCodeSame(400);
+        }
+
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
+
+        $this->assertResponseStatusCodeSame(429);
+        $this->assertResponseHasHeader('Retry-After');
+        $this->assertSame(429, $this->getJsonResponse()['status']);
+        $this->assertTrue($this->isPasswordValid($user, 'old-password'));
+
+        $client->loginUser($otherUser);
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'other-password', 'newPassword' => 'new-password']);
+
+        $this->assertResponseStatusCodeSame(204);
+    }
+
+    public function testChangePasswordSuccessResetsTheAttemptCount(): void
+    {
+        $client = static::createClient();
+        $user = $this->persistUserWithPassword('me@example.com', 'old-password');
+
+        $client->loginUser($user);
+        for ($i = 1; $i <= 4; ++$i) {
+            $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => "wrong-$i", 'newPassword' => 'new-password']);
+            $this->assertResponseStatusCodeSame(400);
+        }
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
+        $this->assertResponseStatusCodeSame(204);
+
+        for ($i = 1; $i <= 4; ++$i) {
+            $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => "wrong-$i", 'newPassword' => 'other-password']);
+            $this->assertResponseStatusCodeSame(400);
+        }
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'new-password', 'newPassword' => 'other-password']);
+        $this->assertResponseStatusCodeSame(204);
+    }
+
+    public function testChangePasswordNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        $this->requestJson($client, 'PUT', '/api/me/password', ['currentPassword' => 'old-password', 'newPassword' => 'new-password']);
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    /**
+     * @param Cookie[] $cookies
+     */
+    private function requestWithCookies(KernelBrowser $client, array $cookies): void
+    {
+        $client->getCookieJar()->clear();
+        foreach ($cookies as $cookie) {
+            $client->getCookieJar()->set($cookie);
+        }
+        $client->request('GET', '/api/me');
+    }
+
+    private function findResponseCookie(KernelBrowser $client, string $name): ?HttpCookie
+    {
+        foreach ($client->getResponse()->headers->getCookies() as $cookie) {
+            if ($name === $cookie->getName()) {
+                return $cookie;
+            }
+        }
+
+        return null;
+    }
+
+    private function persistUserWithPassword(string $email, string $plainPassword): User
+    {
+        $user = UserFactory::createUser($email);
+        $passwordHasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+        $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
+    }
+
+    private function isPasswordValid(User $user, string $plainPassword): bool
+    {
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $storedUser = $entityManager->getRepository(User::class)->find($user->getId());
+        $this->assertNotNull($storedUser);
+        $entityManager->refresh($storedUser);
+
+        return static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($storedUser, $plainPassword);
     }
 }
