@@ -42,7 +42,7 @@ describe('draftChanged', () => {
 })
 
 describe('buildExpenseRequest', () => {
-  it('builds the request, always sending category and split type', () => {
+  it('builds the request, always sending category, split type and repeat', () => {
     expect(buildExpenseRequest(draft(), ME)).toEqual({
       ok: true,
       request: {
@@ -54,6 +54,7 @@ describe('buildExpenseRequest', () => {
         splitType: 'equal',
         category: 'food_and_drink',
         description: null,
+        repeat: null,
       },
     })
   })
@@ -149,6 +150,8 @@ describe('draftFromExpense', () => {
       { payer: anna, amount: '61.43', splitValue: null },
       { payer: ewa, amount: '61.43', splitValue: null },
     ],
+    repeat: null,
+    series: null,
   }
 
   it('loads people, split and fields, and round-trips to the same request', () => {
@@ -166,6 +169,29 @@ describe('draftFromExpense', () => {
       description: 'Weekly shop',
       debts: [{ payerId: ME }, { payerId: 2 }, { payerId: 3 }],
     })
+  })
+
+  it('loads the repeat only from the active latest, and always sends one', () => {
+    const repeat = {
+      unit: 'week' as const,
+      every: 2,
+      nextOn: '2026-11-03T00:00:00+00:00',
+      active: true,
+    }
+    const latest = { ...expense, repeat, series: { latestId: 7, isLatest: true } }
+    const older = { ...latest, series: { latestId: 9, isLatest: false } }
+    const stopped = { ...latest, repeat: { ...repeat, nextOn: null, active: false } }
+
+    expect(draftFromExpense(latest, ME).repeat).toBe('biweekly')
+    expect(draftFromExpense(older, ME).repeat).toBe('off')
+    expect(draftFromExpense(stopped, ME).repeat).toBe('off')
+
+    const sent = (draft: ExpenseDraft) => {
+      const result = buildExpenseRequest(draft, ME)
+      return result.ok ? result.request.repeat : undefined
+    }
+    expect(sent(draftFromExpense(latest, ME))).toEqual({ unit: 'week', every: 2 })
+    expect(sent(draftFromExpense(older, ME))).toBeNull()
   })
 
   it('keeps someone who paid but does not share out of the split, and shares as typed', () => {

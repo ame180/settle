@@ -19,6 +19,8 @@ export function expenseResponse(overrides: Partial<ExpenseResponse> = {}): Expen
       { payer: anna, amount: '61.43', splitValue: null },
       { payer: ewa, amount: '61.43', splitValue: null },
     ],
+    repeat: null,
+    series: null,
     ...overrides,
   }
 }

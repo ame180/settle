@@ -84,6 +84,7 @@ describe('AddPage', () => {
       splitType: 'equal',
       category: 'food_and_drink',
       description: null,
+      repeat: null,
     })
   })
 

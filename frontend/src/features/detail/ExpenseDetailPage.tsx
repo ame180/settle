@@ -1,5 +1,6 @@
 import { useRef } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
+import { ChevronRight, Repeat } from 'lucide-react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { parseIdParam } from '@/lib/parseIdParam'
 import { useMe } from '@/api/auth'
@@ -10,6 +11,7 @@ import { CategoryTile } from '@/components/CategoryTile'
 import { PersonAvatar } from '@/components/PersonAvatar'
 import { categoryLabel } from '@/lib/categories'
 import { formatShortDate } from '@/lib/dates'
+import { continuesRepeat, partOfRepeatLabel, repeatsLabel, repeatStopsLabel } from '@/lib/repeat'
 import { balanceTextClassName, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { ItemError, ItemLoading, ItemNotFound } from '@/components/ItemStates'
@@ -33,7 +35,7 @@ export function ExpenseDetailPage() {
       <ItemNotFound kind="expense" />
     </DetailScreen>
   ) : (
-    <ExpenseDetailScreen id={id} />
+    <ExpenseDetailScreen key={id} id={id} />
   )
 }
 
@@ -63,6 +65,14 @@ function ExpenseDetailScreen({ id }: { id: number }) {
             deleteLabel={t`Delete expense`}
             confirmTitle={t`Delete “${expenseTitle}”?`}
             confirmDescription={deleteWarning(otherParticipantNames(expense, me.id))}
+            confirmNote={
+              continuesRepeat(expense) && expense.repeat ? (
+                <span className="mt-2 flex items-center gap-2 text-foreground/75">
+                  <Repeat className="size-4 shrink-0" aria-hidden="true" />
+                  {repeatStopsLabel(expense.repeat)}
+                </span>
+              ) : undefined
+            }
             deletion={deletion}
           />
         )
@@ -134,6 +144,7 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
         <p className="text-[13px] text-muted-foreground">
           {formatShortDate(expense.occurredOn)} · {categoryLabel(expense.category)}
         </p>
+        <RepeatLine expense={expense} />
       </section>
 
       <h3 className="mx-4 mt-1 mb-1 text-sm font-medium text-muted-foreground">
@@ -161,5 +172,45 @@ function ExpenseDetail({ expense, viewerId }: { expense: ExpenseResponse; viewer
 
       <NoteBlock note={expense.description} />
     </>
+  )
+}
+
+function RepeatLine({ expense }: { expense: ExpenseResponse }) {
+  const { t } = useLingui()
+  const { repeat, series } = expense
+  if (repeat === null || series === null) {
+    return null
+  }
+  if (!series.isLatest) {
+    return <OlderRepeatLink label={partOfRepeatLabel(repeat)} latestId={series.latestId} />
+  }
+  if (!repeat.active || repeat.nextOn === null) {
+    return null
+  }
+
+  const label = repeatsLabel(repeat)
+  const nextOn = formatShortDate(repeat.nextOn)
+  return (
+    <p className="-mt-1 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+      <Repeat className="size-3.5 shrink-0" aria-hidden="true" />
+      {t`${label} · next on ${nextOn}`}
+    </p>
+  )
+}
+
+function OlderRepeatLink({ label, latestId }: { label: string; latestId: number }) {
+  const { t } = useLingui()
+  const latest = useExpense(latestId).data
+  const latestOn = latest ? formatShortDate(latest.occurredOn) : null
+
+  return (
+    <Link
+      to={`/expenses/${latestId}`}
+      className="-mt-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-[13px] font-medium text-foreground/75 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      <Repeat className="size-3.5 shrink-0" aria-hidden="true" />
+      {latestOn === null ? label : t`${label} · latest ${latestOn}`}
+      <ChevronRight className="size-3.5 shrink-0" aria-hidden="true" />
+    </Link>
   )
 }

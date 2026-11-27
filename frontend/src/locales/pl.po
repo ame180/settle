@@ -27,6 +27,10 @@ msgstr "{assignedPercent}% ze 100%"
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
 
+#: src/features/add/DateNoteFields.tsx
+msgid "{dateLabel} · {frequency}"
+msgstr "{dateLabel} · {frequency}"
+
 #: src/features/detail/commentTime.ts
 msgid "{day}, {time}"
 msgstr "{day}, {time}"
@@ -62,6 +66,14 @@ msgstr "Po {each}"
 #: src/features/add/DateSheet.tsx
 msgid "{futureDate} is in the future. It still counts towards your balances straight away."
 msgstr "{futureDate} to data z przyszłości. Mimo to od razu wlicza się do sald."
+
+#: src/features/detail/ExpenseDetailPage.tsx
+msgid "{label} · latest {latestOn}"
+msgstr "{label} · ostatni {latestOn}"
+
+#: src/features/detail/ExpenseDetailPage.tsx
+msgid "{label} · next on {nextOn}"
+msgstr "{label} · następny {nextOn}"
 
 #: src/features/add/DateSheet.tsx
 msgid "{longDate}, today"
@@ -704,6 +716,10 @@ msgstr "Po równo"
 msgid "Equally"
 msgstr "Po równo"
 
+#: src/lib/repeat.ts
+msgid "Every 2 weeks"
+msgstr "Co 2 tygodnie"
+
 #: src/features/add/AddPage.tsx
 #: src/features/detail/ExpenseDetailPage.tsx
 msgid "Expense"
@@ -874,6 +890,10 @@ msgstr "Wyloguj się"
 msgid "Main"
 msgstr "Nawigacja główna"
 
+#: src/lib/repeat.ts
+msgid "Monthly"
+msgstr "Co miesiąc"
+
 #: src/features/profile/EditNamePage.tsx
 #: src/features/profile/ProfilePage.tsx
 msgid "Name"
@@ -1034,6 +1054,10 @@ msgstr "Nie ma nic do rozliczenia"
 msgid "Notifications"
 msgstr "Powiadomienia"
 
+#: src/lib/repeat.ts
+msgid "Off"
+msgstr "Nie"
+
 #: src/features/add/SplitEditorSheet.tsx
 msgid "One share less for {personName}"
 msgstr "Odejmij udział: {personName}"
@@ -1086,6 +1110,22 @@ msgstr "Płaci"
 #: src/features/add/PaymentForm.tsx
 msgid "Paid to"
 msgstr "Otrzymuje"
+
+#: src/lib/repeat.ts
+msgid "Part of a monthly repeat"
+msgstr "Część powtórzenia co miesiąc"
+
+#: src/lib/repeat.ts
+msgid "Part of a repeat every 2 weeks"
+msgstr "Część powtórzenia co 2 tygodnie"
+
+#: src/lib/repeat.ts
+msgid "Part of a weekly repeat"
+msgstr "Część powtórzenia co tydzień"
+
+#: src/lib/repeat.ts
+msgid "Part of a yearly repeat"
+msgstr "Część powtórzenia co rok"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/SignUpPage.tsx
@@ -1176,9 +1216,33 @@ msgstr "Odśwież stronę, aby spróbować ponownie."
 msgid "Remove {displayName}"
 msgstr "Usuń: {displayName}"
 
+#: src/features/add/DateSheet.tsx
+msgid "Repeat"
+msgstr "Powtarzaj"
+
 #: src/features/profile/ChangePasswordPage.tsx
 msgid "Repeat new password"
 msgstr "Powtórz nowe hasło"
+
+#: src/features/activity/ActivityRows.tsx
+msgid "Repeats"
+msgstr "Powtarza się"
+
+#: src/lib/repeat.ts
+msgid "Repeats every 2 weeks"
+msgstr "Powtarza się co 2 tygodnie"
+
+#: src/lib/repeat.ts
+msgid "Repeats monthly"
+msgstr "Powtarza się co miesiąc"
+
+#: src/lib/repeat.ts
+msgid "Repeats weekly"
+msgstr "Powtarza się co tydzień"
+
+#: src/lib/repeat.ts
+msgid "Repeats yearly"
+msgstr "Powtarza się co rok"
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Save"
@@ -1341,9 +1405,33 @@ msgstr "To więcej, niż masz do oddania ({name}: {current})."
 msgid "That’s your email. You’re always in it."
 msgstr "To twój adres e-mail. Zawsze bierzesz udział w wydatku."
 
+#: src/lib/repeat.ts
+msgid "The monthly repeat stops too."
+msgstr "Powtarzanie co miesiąc też się zatrzyma."
+
+#: src/features/add/ExpenseForm.tsx
+msgid "The next one copies them."
+msgstr "Następny wydatek skopiuje te zmiany."
+
+#: src/features/add/ExpenseForm.tsx
+msgid "The next one, on {date}, copies them."
+msgstr "Następny wydatek, {date}, skopiuje te zmiany."
+
 #: src/features/profile/ChangePasswordPage.tsx
 msgid "The passwords don't match."
 msgstr "Hasła się nie zgadzają."
+
+#: src/lib/repeat.ts
+msgid "The repeat every 2 weeks stops too."
+msgstr "Powtarzanie co 2 tygodnie też się zatrzyma."
+
+#: src/lib/repeat.ts
+msgid "The weekly repeat stops too."
+msgstr "Powtarzanie co tydzień też się zatrzyma."
+
+#: src/lib/repeat.ts
+msgid "The yearly repeat stops too."
+msgstr "Powtarzanie co rok też się zatrzyma."
 
 #: src/features/contacts/EditContactPage.tsx
 msgid "Their name on Settle"
@@ -1451,6 +1539,10 @@ msgstr "Wpisz całe saldo ({fullBalanceAmount})"
 msgid "Use the email and password of your account."
 msgstr "Użyj adresu e-mail i hasła do swojego konta."
 
+#: src/lib/repeat.ts
+msgid "Weekly"
+msgstr "Co tydzień"
+
 #: src/features/add/AddPage.tsx
 msgid "What are you adding"
 msgstr "Co dodajesz"
@@ -1486,6 +1578,10 @@ msgstr "Liczby całkowite. 2 noce = 2 udziały."
 #: src/features/add/PeopleField.tsx
 msgid "With"
 msgstr "Z kim"
+
+#: src/lib/repeat.ts
+msgid "Yearly"
+msgstr "Co rok"
 
 #: src/features/add/DateSheet.tsx
 #: src/lib/dates.ts

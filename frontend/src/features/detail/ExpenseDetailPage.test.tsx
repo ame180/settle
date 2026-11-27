@@ -142,6 +142,47 @@ describe('ExpenseDetailPage', () => {
     expect(screen.queryByRole('button', { name: 'Delete expense' })).not.toBeInTheDocument()
   })
 
+  it('shows when the latest of a repeat comes next, and that deleting it stops the repeat', async () => {
+    stubDetailApi({
+      'GET /api/expenses/7': {
+        status: 200,
+        body: expenseResponse({
+          repeat: { unit: 'month', every: 1, nextOn: '2026-11-20T00:00:00+00:00', active: true },
+          series: { latestId: 7, isLatest: true },
+        }),
+      },
+    })
+    renderExpense()
+
+    expect(await screen.findByText('Repeats monthly · next on 20 Nov')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Delete expense' }))
+    const sheet = await screen.findByRole('dialog', { name: 'Delete “Zakupy Biedronka”?' })
+    expect(within(sheet).getByText('The monthly repeat stops too.')).toBeInTheDocument()
+  })
+
+  it('links an older expense of a repeat to the latest', async () => {
+    stubDetailApi({
+      'GET /api/expenses/7': {
+        status: 200,
+        body: expenseResponse({
+          repeat: { unit: 'week', every: 2, nextOn: null, active: false },
+          series: { latestId: 9, isLatest: false },
+        }),
+      },
+      'GET /api/expenses/9': {
+        status: 200,
+        body: expenseResponse({ id: 9, occurredOn: '2026-11-03T00:00:00+00:00' }),
+      },
+    })
+    renderExpense()
+
+    const link = await screen.findByRole('link', {
+      name: 'Part of a repeat every 2 weeks · latest 3 Nov',
+    })
+    expect(link).toHaveAttribute('href', '/expenses/9')
+    expect(screen.queryByText(/next on/)).not.toBeInTheDocument()
+  })
+
   it('deletes after confirming, then goes back and refreshes balances', async () => {
     const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries')
     const fetchMock = stubDetailApi({

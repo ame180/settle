@@ -13,6 +13,7 @@ import { expenseCategories } from '@/lib/categories'
 import { calendarDayKey } from '@/lib/dates'
 import { trimDecimal } from '@/lib/decimal'
 import { peopleOtherThan } from '@/lib/person'
+import { choiceOf, continuesRepeat, repeatOf, type RepeatChoice } from '@/lib/repeat'
 import { checkSplit, defaultSplit, splitDebts, type SplitDraft } from './splitModel'
 
 /** The Add expense form, as typed. The user is always in it and isn't listed in `others`. */
@@ -24,6 +25,8 @@ export type ExpenseDraft = {
   categoryPicked: boolean
   amount: string
   occurredOn: string
+  /** Only the latest expense of a repeat can change it; an older one keeps it off. */
+  repeat: RepeatChoice
   note: string
   split: SplitDraft
 }
@@ -50,6 +53,7 @@ export function emptyDraft(meId: number, occurredOn: string): ExpenseDraft {
     categoryPicked: false,
     amount: '',
     occurredOn,
+    repeat: 'off',
     note: '',
     split: defaultSplit(meId),
   }
@@ -74,6 +78,7 @@ export function draftFromExpense(expense: ExpenseResponse, meId: number): Expens
     categoryPicked: true,
     amount: expense.amount,
     occurredOn: calendarDayKey(expense.occurredOn),
+    repeat: continuesRepeat(expense) ? choiceOf(expense.repeat) : 'off',
     note: expense.description ?? '',
     split: {
       payerId: expense.payee.id,
@@ -107,6 +112,7 @@ export const expenseRequestSchema = z.object({
   splitType: z.enum(['exact', 'percentage', 'shares', 'equal']),
   category: z.enum(expenseCategories),
   description: z.string().nullish(),
+  repeat: z.object({ unit: z.enum(['week', 'month', 'year']), every: z.number() }).nullish(),
 })
 
 /** Whether the user changed anything that gets saved; what other split types remember doesn't count. */
@@ -215,6 +221,7 @@ export function buildExpenseRequest(draft: ExpenseDraft, meId: number): BuildRes
     splitType: draft.split.type,
     category: draft.category,
     description: draft.note.trim() === '' ? null : draft.note.trim(),
+    repeat: repeatOf(draft.repeat),
   }
   const parsed = expenseRequestSchema.safeParse(candidate)
   if (!parsed.success) {
@@ -247,6 +254,7 @@ export function fieldForPath(propertyPath: string): ExpenseField | null {
     case 'splitType':
       return 'split'
     case 'occurredOn':
+    case 'repeat':
       return 'date'
     case 'description':
       return 'note'

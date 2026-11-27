@@ -7,6 +7,7 @@ import { useCreateExpense, useUpdateExpense } from '@/api/expenses'
 import type { ExpenseRequest, MeResponse } from '@/api/types'
 import { CategoryTile } from '@/components/CategoryTile'
 import { categoryLabel } from '@/lib/categories'
+import { formatShortDate } from '@/lib/dates'
 import { formatGrosze, formatPln } from '@/lib/money'
 import { getShortName, joinNames, ownDisplayName } from '@/lib/person'
 import { Input } from '@/components/ui/input'
@@ -51,7 +52,14 @@ type ExpenseFormProps = {
   me: MeResponse
   draft: ExpenseDraft
   onDraftChange: (update: (draft: ExpenseDraft) => ExpenseDraft) => void
-  mode: { kind: 'create' } | { kind: 'edit'; expenseId: number }
+  mode:
+    | { kind: 'create' }
+    | {
+        kind: 'edit'
+        expenseId: number
+        canRepeat: boolean
+        nextCopy: { on: string | null } | null
+      }
   initialFocus?: 'people' | 'title'
   /** Rendered at the top of the scrolling area (the Expense | Payment tabs). */
   top?: ReactNode
@@ -337,6 +345,14 @@ export function ExpenseForm({
               onDateChange={(occurredOn) =>
                 update('date', (current) => ({ ...current, occurredOn }))
               }
+              repeat={
+                mode.kind === 'create' || mode.canRepeat
+                  ? {
+                      value: draft.repeat,
+                      onChange: (repeat) => update('date', (current) => ({ ...current, repeat })),
+                    }
+                  : undefined
+              }
               dateError={errors.date}
               note={draft.note}
               onNoteChange={(note) => update('note', (current) => ({ ...current, note }))}
@@ -350,9 +366,14 @@ export function ExpenseForm({
       {/* While picking people the list gets all the room above the keyboard. */}
       {!peopleOpen && (
         <FormFooter serverError={serverError}>
-          {mode.kind === 'edit' && draft.others.length > 0 && (
+          {mode.kind === 'edit' && (draft.others.length > 0 || mode.nextCopy) && (
             <p className="text-center text-[13px] text-muted-foreground">
-              <Trans>{recipients} will see your changes.</Trans>
+              {draft.others.length > 0 && (
+                <span className="block">
+                  <Trans>{recipients} will see your changes.</Trans>
+                </span>
+              )}
+              {mode.nextCopy && <span className="block">{nextCopyLine(mode.nextCopy.on)}</span>}
             </p>
           )}
           <PrimaryButton
@@ -484,6 +505,14 @@ function OutcomeLine({
 
 function Hint({ children }: { children: ReactNode }) {
   return <p className="text-[15px] text-muted-foreground">{children}</p>
+}
+
+function nextCopyLine(on: string | null): string {
+  if (on === null) {
+    return t`The next one copies them.`
+  }
+  const date = formatShortDate(on)
+  return t`The next one, on ${date}, copies them.`
 }
 
 function genericError(mode: 'create' | 'edit'): string {

@@ -56,6 +56,13 @@ export type ExpenseDebtRequest = {
   value?: string | null
 }
 
+export type RepeatUnit = 'week' | 'month' | 'year'
+
+export type Repeat = {
+  unit: RepeatUnit
+  every: number
+}
+
 export type ExpenseRequest = {
   title: string
   amount: string
@@ -65,6 +72,7 @@ export type ExpenseRequest = {
   splitType?: SplitType
   category?: ExpenseCategory
   description?: string | null
+  repeat?: Repeat | null
 }
 
 export type ExpenseDebtResponse = {
@@ -84,6 +92,18 @@ export type ExpenseResponse = {
   splitType: SplitType
   category: ExpenseCategory
   debts: ExpenseDebtResponse[]
+  repeat: RepeatResponse | null
+  series: SeriesResponse | null
+}
+
+export type RepeatResponse = Repeat & {
+  nextOn: string | null
+  active: boolean
+}
+
+export type SeriesResponse = {
+  latestId: number
+  isLatest: boolean
 }
 
 export type CommentRequest = {
@@ -138,6 +158,7 @@ export type ActivityItem = {
   /** Transfers only. */
   payer: PersonRef | null
   category: ExpenseCategory | null
+  recurring: boolean
 }
 
 export type ContactRequest = {

@@ -64,6 +64,7 @@ type DetailActionsProps = {
   deleteLabel: string
   confirmTitle: string
   confirmDescription: string
+  confirmNote?: ReactNode
   deletion: DeleteAndGoBack
 }
 
@@ -74,6 +75,7 @@ export function DetailActions({
   deleteLabel,
   confirmTitle,
   confirmDescription,
+  confirmNote,
   deletion,
 }: DetailActionsProps) {
   const { t } = useLingui()
@@ -90,6 +92,7 @@ export function DetailActions({
         onOpenChange={setConfirmOpen}
         title={confirmTitle}
         description={confirmDescription}
+        note={confirmNote}
         confirmLabel={deleteLabel}
         onConfirm={confirm}
         pending={isPending}
