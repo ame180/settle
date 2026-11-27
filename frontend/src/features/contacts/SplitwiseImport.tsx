@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/sheet'
 import { balanceDirection, formatMoney, formatPln } from '@/lib/money'
 import { getShortName } from '@/lib/person'
+import { cn } from '@/lib/utils'
 
 // Matches the server's limit on the CSV text.
 const MAX_FILE_BYTES = 1_048_576
@@ -225,7 +226,10 @@ function SummaryBody({
 
   return (
     <>
-      <fieldset className="flex flex-col gap-2 px-4" disabled={importing}>
+      <fieldset
+        className={cn('flex flex-col gap-2 px-4', summary === null && 'pb-6')}
+        disabled={importing}
+      >
         <legend className="mb-2 text-[15px] text-muted-foreground">
           <Trans>Which one are you?</Trans>
         </legend>
