@@ -92,6 +92,8 @@ class SplitwiseCsvParserTest extends TestCase
         yield 'bad date' => [self::HEADER.'10.01.2025,Lunch,General,10.00,PLN,10.00,-10.00'.$total];
         yield 'comma decimal' => [self::HEADER.'2025-01-10,Lunch,General,"10,00",PLN,10.00,-10.00'.$total];
         yield 'nets do not cancel out' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,10.00,-9.00'.$total];
+        yield 'cost beyond the amount column' => [self::HEADER.'2025-01-10,House,General,100000000.00,PLN,10.00,-10.00'.$total];
+        yield 'total does not cancel out' => [self::HEADER."2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n\n2025-02-01,Total balance, , ,PLN,10.00,-9.00\n"];
         yield 'owed more than the cost' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,12.00,-12.00'.$total];
         yield 'short row' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN'.$total];
         yield 'trailing junk' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00'.$total."something else\n"];

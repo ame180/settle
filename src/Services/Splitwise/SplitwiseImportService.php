@@ -38,13 +38,15 @@ class SplitwiseImportService
     public function preview(User $user, User $contact, string $csv): SplitwiseImportPreview
     {
         $export = $this->parser->parse($csv);
+        $existing = $this->existingKeyCounts($user, $contact);
+        $balance = $this->currentBalance($user, $contact);
 
         return new SplitwiseImportPreview(
             names: $export->names,
             mismatches: $export->totalMismatches(),
             options: [
-                $this->summarize($user, $contact, $this->plan($export, $user, $contact, 0)),
-                $this->summarize($user, $contact, $this->plan($export, $user, $contact, 1)),
+                $this->summarize($balance, $this->plan($export, $user, $contact, 0, $existing)),
+                $this->summarize($balance, $this->plan($export, $user, $contact, 1, $existing)),
             ],
         );
     }
@@ -56,8 +58,8 @@ class SplitwiseImportService
      */
     public function import(User $user, User $contact, string $csv, int $ownColumn): SplitwiseImportSummary
     {
-        $plan = $this->plan($this->parser->parse($csv), $user, $contact, $ownColumn);
-        $summary = $this->summarize($user, $contact, $plan);
+        $plan = $this->plan($this->parser->parse($csv), $user, $contact, $ownColumn, $this->existingKeyCounts($user, $contact));
+        $summary = $this->summarize($this->currentBalance($user, $contact), $plan);
 
         $this->entityManager->wrapInTransaction(function () use ($plan): void {
             foreach ($plan['items'] as $item) {
@@ -76,14 +78,14 @@ class SplitwiseImportService
      * $ownColumn. A row the pair already has is skipped as many times as the pair has it, so
      * re-importing is harmless while repeated rows within one file still import.
      *
-     * @param 0|1 $ownColumn
+     * @param 0|1                $ownColumn
+     * @param array<string, int> $existing  counts of the pair's existing rows by dedupe key
      *
      * @return array{items: list<Expense|Transfer>, skipped: int, ownNet: string}
      */
-    private function plan(SplitwiseExport $export, User $user, User $contact, int $ownColumn): array
+    private function plan(SplitwiseExport $export, User $user, User $contact, int $ownColumn, array $existing): array
     {
         $people = 0 === $ownColumn ? [$user, $contact] : [$contact, $user];
-        $existing = $this->existingKeyCounts($user, $contact);
 
         $items = [];
         $skipped = 0;
@@ -150,7 +152,7 @@ class SplitwiseImportService
     /**
      * @param array{items: list<Expense|Transfer>, skipped: int, ownNet: string} $plan
      */
-    private function summarize(User $user, User $contact, array $plan): SplitwiseImportSummary
+    private function summarize(string $currentBalance, array $plan): SplitwiseImportSummary
     {
         $expenses = count(array_filter($plan['items'], static fn (Expense|Transfer $item): bool => $item instanceof Expense));
 
@@ -158,7 +160,7 @@ class SplitwiseImportService
             expenses: $expenses,
             transfers: count($plan['items']) - $expenses,
             skipped: $plan['skipped'],
-            balance: bcadd($this->currentBalance($user, $contact), $plan['ownNet'], 2),
+            balance: bcadd($currentBalance, $plan['ownNet'], 2),
         );
     }
 

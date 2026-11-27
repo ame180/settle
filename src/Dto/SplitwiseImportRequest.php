@@ -13,7 +13,7 @@ readonly class SplitwiseImportRequest
      */
     public function __construct(
         #[Assert\NotBlank]
-        #[Assert\Length(max: 1_048_576)]
+        #[Assert\Length(max: 1_048_576, countUnit: Assert\Length::COUNT_BYTES)]
         public string $csv,
 
         #[Assert\Choice([0, 1])]

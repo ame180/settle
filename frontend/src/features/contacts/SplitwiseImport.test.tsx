@@ -25,13 +25,16 @@ const preview: SplitwiseImportPreview = {
 
 type Reply = { status: number; body: unknown }
 
-function stubApi(previewReply: Reply = { status: 200, body: preview }) {
+function stubApi(
+  previewReply: Reply = { status: 200, body: preview },
+  importReply: Reply = { status: 200, body: preview.options[0] },
+) {
   const fetchMock = vi.fn((input: string, init?: RequestInit) => {
     if (init?.method === 'POST' && input.endsWith('?dryRun=1')) {
       return Promise.resolve(jsonResponse(previewReply.status, previewReply.body))
     }
     if (init?.method === 'POST') {
-      return Promise.resolve(jsonResponse(200, preview.options[0]))
+      return Promise.resolve(jsonResponse(importReply.status, importReply.body))
     }
     return Promise.resolve(jsonResponse(200, { totals: [], items: [ania] }))
   })
@@ -90,6 +93,20 @@ describe('Splitwise import', () => {
     await userEvent.click(await screen.findByLabelText('Anna Kowalska'))
 
     expect(screen.getByText(/3 expenses and 0 payments/)).toHaveTextContent(/you owe Ania/)
+  })
+
+  it('clears a failed import when the other name is picked', async () => {
+    stubApi(undefined, { status: 500, body: {} })
+    await chooseFile()
+
+    await userEvent.click(await screen.findByLabelText('Ame Nowak'))
+    await userEvent.click(screen.getByRole('button', { name: 'Import' }))
+    expect(await screen.findByText('Couldn’t import. Nothing was added.')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByLabelText('Anna Kowalska'))
+
+    expect(screen.queryByText('Couldn’t import. Nothing was added.')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument()
   })
 
   it('offers Import anyway when the rows do not add up', async () => {

@@ -123,7 +123,10 @@ export function SplitwiseImport({ contact }: { contact: ContactListItem }) {
               contact={contact}
               preview={previewMutation.data}
               ownColumn={ownColumn}
-              onOwnColumnChange={setOwnColumn}
+              onOwnColumnChange={(column) => {
+                setOwnColumn(column)
+                importMutation.reset()
+              }}
               importing={importMutation.isPending}
               importFailed={importMutation.isError}
               onImport={runImport}
