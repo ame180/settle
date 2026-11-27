@@ -106,7 +106,7 @@ class SplitwiseCsvParser
         $absoluteNet = ltrim($netA, '-');
         if (0 !== bccomp(bcadd($netA, $netB, self::SCALE), '0', self::SCALE)
             || bccomp($cost, '0', self::SCALE) < 0
-            || ('PLN' === $currency && bccomp($cost, self::MAX_AMOUNT, self::SCALE) > 0)
+            || (SplitwiseImportService::CURRENCY === $currency && bccomp($cost, self::MAX_AMOUNT, self::SCALE) > 0)
             || bccomp($absoluteNet, $cost, self::SCALE) > 0) {
             throw $this->notAnExport();
         }

@@ -22,7 +22,7 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class SplitwiseImportService
 {
-    private const string CURRENCY = 'PLN';
+    public const string CURRENCY = 'PLN';
     private const int TITLE_MAX_LENGTH = 255;
 
     public function __construct(
