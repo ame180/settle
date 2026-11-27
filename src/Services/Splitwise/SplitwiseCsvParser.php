@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\Splitwise;
 
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-
 /**
- * Reads a Splitwise friend export ("Export as spreadsheet" on a friend). Splitwise translates
- * its labels, so the file is read by position: a note line, a blank line, a 7-column header
- * ending in the two people's names, a blank line, the expense rows, a blank line, then one Total
- * balance row per currency (with empty Category and Cost).
+ * Reads a Splitwise friend export. Splitwise translates its labels, so the file is read by
+ * position: a note line, a blank line, a 7-column header ending in the two people's names, a
+ * blank line, the expense rows, a blank line, then one Total balance row per currency (with empty
+ * Category and Cost). Only the shape is checked here; the amounts that get imported are checked
+ * on import.
  */
 class SplitwiseCsvParser
 {
-    /** A third decimal is accepted so a file that also has a 3-decimal currency (skipped on import) still reads. */
-    public const int SCALE = 3;
-
     private const int COLUMNS = 7;
-    private const string DECIMAL = '/^-?\d+(\.\d{1,3})?$/';
-    /** The amount columns are DECIMAL(10,2); only PLN rows are written, so other currencies may exceed it. */
-    private const string MAX_AMOUNT = '99999999.99';
+    private const string DECIMAL = '/^-?\d+(\.\d+)?$/';
 
     public function parse(string $csv): SplitwiseExport
     {
@@ -49,12 +43,12 @@ class SplitwiseCsvParser
                 continue;
             }
 
-            [$currency, $net] = $this->parseTotal($line);
+            [$currency, $nets] = $this->parseTotal($line);
             if (isset($totals[$currency])) {
                 throw $this->notAnExport();
             }
 
-            $totals[$currency] = $net;
+            $totals[$currency] = $nets;
         }
 
         return new SplitwiseExport($names, $rows, $totals);
@@ -103,31 +97,22 @@ class SplitwiseCsvParser
             throw $this->notAnExport();
         }
 
-        $absoluteNet = ltrim($netA, '-');
-        if (0 !== bccomp(bcadd($netA, $netB, self::SCALE), '0', self::SCALE)
-            || bccomp($cost, '0', self::SCALE) < 0
-            || (SplitwiseImportService::CURRENCY === $currency && bccomp($cost, self::MAX_AMOUNT, self::SCALE) > 0)
-            || bccomp($absoluteNet, $cost, self::SCALE) > 0) {
-            throw $this->notAnExport();
-        }
-
         return new SplitwiseRow($parsedDate, $description, $category, $cost, $currency, [$netA, $netB]);
     }
 
     /**
      * @param list<?string> $line
      *
-     * @return array{string, string}
+     * @return array{string, array{string, string}}
      */
     private function parseTotal(array $line): array
     {
         $cells = array_map(static fn (?string $cell): string => trim((string) $cell), $line);
-        if (!$this->isTotal($line) || 1 !== preg_match('/^[A-Z]{3}$/', $cells[4]) || !$this->isDecimal($cells[5]) || !$this->isDecimal($cells[6])
-            || 0 !== bccomp(bcadd($cells[5], $cells[6], self::SCALE), '0', self::SCALE)) {
+        if (!$this->isTotal($line) || 1 !== preg_match('/^[A-Z]{3}$/', $cells[4]) || !$this->isDecimal($cells[5]) || !$this->isDecimal($cells[6])) {
             throw $this->notAnExport();
         }
 
-        return [$cells[4], $cells[5]];
+        return [$cells[4], [$cells[5], $cells[6]]];
     }
 
     /**
@@ -159,8 +144,8 @@ class SplitwiseCsvParser
         return 1 === preg_match(self::DECIMAL, $value);
     }
 
-    private function notAnExport(): UnprocessableEntityHttpException
+    private function notAnExport(): UnsupportedSplitwiseExportException
     {
-        return new UnprocessableEntityHttpException('The file is not a Splitwise friend export.');
+        return new UnsupportedSplitwiseExportException();
     }
 }

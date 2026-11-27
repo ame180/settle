@@ -195,8 +195,8 @@ export type SplitwiseImportSummary = {
 export type SplitwiseImportPreview = {
   /** The file's two people, in column order. */
   names: [string, string]
-  /** Per currency, how far the file's rows are off its own total. */
-  mismatches: CurrencyAmount[]
+  /** How far the file's PLN rows are off its own PLN total; null when they agree. */
+  mismatch: string | null
   /** What importing does if the user is the first or the second person in the file. */
   options: [SplitwiseImportSummary, SplitwiseImportSummary]
 }

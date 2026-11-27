@@ -21,8 +21,7 @@ class SplitwiseCsvParserTest extends TestCase
 
         $this->assertSame(['Anna Kowalska', 'Ben Nowak'], $export->names);
         $this->assertCount(7, $export->rows);
-        $this->assertSame(['PLN' => '122.20', 'EUR' => '15.00'], $export->totalsByCurrency);
-        $this->assertSame([], $export->totalMismatches());
+        $this->assertSame(['PLN' => ['122.20', '-122.20'], 'EUR' => ['15.00', '-15.00']], $export->totalsByCurrency);
 
         $taxi = $export->rows[1];
         $this->assertSame('2025-01-11', $taxi->date->format('Y-m-d'));
@@ -48,31 +47,11 @@ class SplitwiseCsvParserTest extends TestCase
         $this->assertSame(['Anna Kowalska', 'Ben Nowak'], $export->names);
     }
 
-    public function testReportsMismatchPerCurrency(): void
-    {
-        $csv = self::HEADER."2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n2025-01-10,Taxi,General,8.00,EUR,4.00,-4.00\n\n"
-            ."2025-02-01,Total balance, , ,PLN,12.50,-12.50\n2025-02-01,Total balance, , ,EUR,4.00,-4.00\n";
-
-        $mismatches = (new SplitwiseCsvParser())->parse($csv)->totalMismatches();
-
-        $this->assertCount(1, $mismatches);
-        $this->assertSame('PLN', $mismatches[0]->currency);
-        $this->assertSame('-2.50', $mismatches[0]->amount);
-    }
-
-    public function testAcceptsLargeAmountsInOtherCurrencies(): void
-    {
-        $csv = self::HEADER."2025-01-10,Hotel,Hotel,150000000.00,VND,150000000.00,-150000000.00\n\n2025-02-01,Total balance, , ,VND,150000000.00,-150000000.00\n";
-
-        $this->assertCount(1, (new SplitwiseCsvParser())->parse($csv)->rows);
-    }
-
     public function testAcceptsExportWithoutRows(): void
     {
         $export = (new SplitwiseCsvParser())->parse(self::HEADER."2025-02-01,Total balance, , ,PLN,0.00,0.00\n");
 
         $this->assertSame([], $export->rows);
-        $this->assertSame([], $export->totalMismatches());
     }
 
     /**
@@ -98,10 +77,7 @@ class SplitwiseCsvParserTest extends TestCase
         yield 'blank name' => ["Note\n\nDate,Description,Category,Cost,Currency,Anna, \n\n"];
         yield 'bad date' => [self::HEADER.'10.01.2025,Lunch,General,10.00,PLN,10.00,-10.00'.$total];
         yield 'comma decimal' => [self::HEADER.'2025-01-10,Lunch,General,"10,00",PLN,10.00,-10.00'.$total];
-        yield 'nets do not cancel out' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,10.00,-9.00'.$total];
-        yield 'cost beyond the amount column' => [self::HEADER.'2025-01-10,House,General,100000000.00,PLN,10.00,-10.00'.$total];
-        yield 'total does not cancel out' => [self::HEADER."2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n\n2025-02-01,Total balance, , ,PLN,10.00,-9.00\n"];
-        yield 'owed more than the cost' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,12.00,-12.00'.$total];
+        yield 'total without a currency' => [self::HEADER."2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n\n2025-02-01,Total balance, , , ,10.00,-10.00\n"];
         yield 'short row' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN'.$total];
         yield 'trailing junk' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00'.$total."something else\n"];
         yield 'duplicate total' => [self::HEADER.'2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00'.$total."2025-02-01,Total balance, , ,PLN,10.00,-10.00\n"];

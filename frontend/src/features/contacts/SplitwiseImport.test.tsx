@@ -16,7 +16,7 @@ const ania: ContactListItem = {
 
 const preview: SplitwiseImportPreview = {
   names: ['Ame Nowak', 'Anna Kowalska'],
-  mismatches: [],
+  mismatch: null,
   options: [
     { expenses: 137, transfers: 44, skipped: 6, balance: '9642.18' },
     { expenses: 3, transfers: 0, skipped: 184, balance: '-9642.18' },
@@ -112,7 +112,7 @@ describe('Splitwise import', () => {
   it('offers Import anyway when the rows do not add up', async () => {
     stubApi({
       status: 200,
-      body: { ...preview, mismatches: [{ currency: 'PLN', amount: '-192.92' }] },
+      body: { ...preview, mismatch: '-192.92' },
     })
     await chooseFile()
 
@@ -142,7 +142,9 @@ describe('Splitwise import', () => {
     stubApi({ status: 422, body: { status: 422, title: 'Unprocessable Entity' } })
     await chooseFile()
 
-    expect(await screen.findByText('This isn’t a Splitwise friend export.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('This file isn’t a supported Splitwise export.'),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Choose another file' })).toBeInTheDocument()
   })
 

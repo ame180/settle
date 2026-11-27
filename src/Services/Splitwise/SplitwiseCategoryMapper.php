@@ -8,8 +8,8 @@ use App\Enum\ExpenseCategory;
 
 /**
  * Splitwise category labels in English and Polish, as its exports write them: the subcategory
- * name, or "<Parent> - Other" for the Other subcategories. Source: Splitwise's public
- * GET /api/v3.0/get_categories with Accept-Language en and pl.
+ * name, from Splitwise's public GET /api/v3.0/get_categories with Accept-Language en and pl. The
+ * Other subcategories were seen only as "Home - Other"; "<Parent> - Other" is assumed for the rest.
  */
 class SplitwiseCategoryMapper
 {
@@ -98,7 +98,6 @@ class SplitwiseCategoryMapper
         return in_array($label, self::PAYMENT_LABELS, true);
     }
 
-    /** Everything else (General, the rest of Life, unknown labels) is general. */
     public function toCategory(string $label): ExpenseCategory
     {
         return self::CATEGORIES[$label] ?? ExpenseCategory::General;

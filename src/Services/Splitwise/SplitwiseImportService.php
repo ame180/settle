@@ -22,8 +22,10 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class SplitwiseImportService
 {
-    public const string CURRENCY = 'PLN';
+    private const string CURRENCY = 'PLN';
     private const int TITLE_MAX_LENGTH = 255;
+    private const string AMOUNT = '/^-?\d+(\.\d{1,2})?$/';
+    private const string MAX_AMOUNT = '99999999.99';
 
     public function __construct(
         private readonly SplitwiseCsvParser $parser,
@@ -37,13 +39,13 @@ class SplitwiseImportService
 
     public function preview(User $user, User $contact, string $csv): SplitwiseImportPreview
     {
-        $export = $this->parser->parse($csv);
+        $export = $this->read($csv);
         $existing = $this->existingKeyCounts($user, $contact);
         $balance = $this->currentBalance($user, $contact);
 
         return new SplitwiseImportPreview(
             names: $export->names,
-            mismatches: $export->totalMismatches(),
+            mismatch: $this->totalMismatch($export),
             options: [
                 $this->summarize($balance, $this->plan($export, $user, $contact, 0, $existing)),
                 $this->summarize($balance, $this->plan($export, $user, $contact, 1, $existing)),
@@ -52,13 +54,11 @@ class SplitwiseImportService
     }
 
     /**
-     * All or nothing: every row is written in one transaction.
-     *
      * @param 0|1 $ownColumn
      */
     public function import(User $user, User $contact, string $csv, int $ownColumn): SplitwiseImportSummary
     {
-        $plan = $this->plan($this->parser->parse($csv), $user, $contact, $ownColumn, $this->existingKeyCounts($user, $contact));
+        $plan = $this->plan($this->read($csv), $user, $contact, $ownColumn, $this->existingKeyCounts($user, $contact));
         $summary = $this->summarize($this->currentBalance($user, $contact), $plan);
 
         $this->entityManager->wrapInTransaction(function () use ($plan): void {
@@ -74,9 +74,8 @@ class SplitwiseImportService
     }
 
     /**
-     * Builds (without persisting) what the import would add when the user is the person in
-     * $ownColumn. A row the pair already has is skipped as many times as the pair has it, so
-     * re-importing is harmless while repeated rows within one file still import.
+     * A row the pair already has is skipped as many times as the pair has it, so re-importing is
+     * harmless while repeated rows within one file still import.
      *
      * @param 0|1                $ownColumn
      * @param array<string, int> $existing  counts of the pair's existing rows by dedupe key
@@ -123,7 +122,8 @@ class SplitwiseImportService
     }
 
     /**
-     * The person owed paid the whole cost; the other owes their net, the rest is the payer's own share.
+     * The export has only each side's net, not who paid; booking it as the owed person paying the
+     * whole cost keeps the balance right.
      */
     private function buildExpense(SplitwiseRow $row, User $payee, User $debtor, string $debtorShare): Expense
     {
@@ -147,6 +147,56 @@ class SplitwiseImportService
         }
 
         return $expense;
+    }
+
+    private function read(string $csv): SplitwiseExport
+    {
+        $export = $this->parser->parse($csv);
+
+        foreach ($export->rows as $row) {
+            if (self::CURRENCY === $row->currency && !$this->isImportable($row)) {
+                throw new UnsupportedSplitwiseExportException();
+            }
+        }
+
+        $total = $export->totalsByCurrency[self::CURRENCY] ?? null;
+        if (null !== $total && !$this->cancelsOut($total)) {
+            throw new UnsupportedSplitwiseExportException();
+        }
+
+        return $export;
+    }
+
+    private function isImportable(SplitwiseRow $row): bool
+    {
+        return $this->cancelsOut($row->nets)
+            && 1 === preg_match(self::AMOUNT, $row->cost)
+            && bccomp($row->cost, '0', 2) >= 0
+            && bccomp($row->cost, self::MAX_AMOUNT, 2) <= 0
+            && bccomp(ltrim($row->nets[0], '-'), $row->cost, 2) <= 0;
+    }
+
+    /**
+     * @param array{string, string} $nets
+     */
+    private function cancelsOut(array $nets): bool
+    {
+        return 1 === preg_match(self::AMOUNT, $nets[0])
+            && 1 === preg_match(self::AMOUNT, $nets[1])
+            && 0 === bccomp(bcadd($nets[0], $nets[1], 2), '0', 2);
+    }
+
+    /** The file's PLN rows minus its PLN Total balance, from the first person's side; null when they agree. */
+    private function totalMismatch(SplitwiseExport $export): ?string
+    {
+        $difference = bcsub('0', $export->totalsByCurrency[self::CURRENCY][0] ?? '0', 2);
+        foreach ($export->rows as $row) {
+            if (self::CURRENCY === $row->currency) {
+                $difference = bcadd($difference, $row->nets[0], 2);
+            }
+        }
+
+        return 0 === bccomp($difference, '0', 2) ? null : $difference;
     }
 
     /**

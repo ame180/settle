@@ -51,7 +51,7 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertSame([
             'names' => ['Anna Kowalska', 'Ben Nowak'],
-            'mismatches' => [],
+            'mismatch' => null,
             'options' => [
                 ['expenses' => 4, 'transfers' => 1, 'skipped' => 2, 'balance' => '122.20'],
                 ['expenses' => 4, 'transfers' => 1, 'skipped' => 2, 'balance' => '-122.20'],
@@ -69,7 +69,7 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => $csv]);
 
         $this->assertJsonResponseIsSuccessful(200);
-        $this->assertSame([['currency' => 'PLN', 'amount' => '2.20']], $this->getJsonResponse()['mismatches']);
+        $this->assertSame('2.20', $this->getJsonResponse()['mismatch']);
     }
 
     public function testImportCreatesExpensesAndTransfersForTheChosenSide(): void
@@ -166,6 +166,56 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->assertSame(0, $this->countRows(Expense::class));
     }
 
+    public function testDryRunChecksOnlyThePlnTotal(): void
+    {
+        $csv = str_replace('EUR,15.00,-15.00', 'EUR,99.00,-99.00', self::fixture('en.csv'));
+
+        $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => $csv]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertNull($this->getJsonResponse()['mismatch']);
+    }
+
+    public function testSkipsOtherCurrenciesWhateverTheirAmounts(): void
+    {
+        $csv = self::header()
+            ."2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n"
+            ."2025-01-11,Hotel,Hotel,150000000.00,VND,150000000.00,-150000000.00\n"
+            ."2025-01-12,Dinner,Dining out,12.345,KWD,6.172,-6.173\n\n"
+            ."2025-02-01,Total balance, , ,PLN,10.00,-10.00\n";
+
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => $csv, 'ownColumn' => 0]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['expenses' => 1, 'transfers' => 0, 'skipped' => 2, 'balance' => '10.00'], $this->getJsonResponse());
+    }
+
+    /**
+     * @dataProvider unimportablePlnProvider
+     */
+    public function testRejectsPlnAmountsItCannotImport(string $rows): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::header().$rows, 'ownColumn' => 0]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(0, $this->countRows(Expense::class));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function unimportablePlnProvider(): iterable
+    {
+        $total = "\n2025-02-01,Total balance, , ,PLN,10.00,-10.00\n";
+
+        yield 'nets do not cancel out' => ['2025-01-10,Lunch,General,10.00,PLN,10.00,-9.00'.$total];
+        yield 'owed more than the cost' => ['2025-01-10,Lunch,General,10.00,PLN,12.00,-12.00'.$total];
+        yield 'negative cost' => ['2025-01-10,Lunch,General,-10.00,PLN,10.00,-10.00'.$total];
+        yield 'cost beyond the amount column' => ['2025-01-10,House,General,100000000.00,PLN,10.00,-10.00'.$total];
+        yield 'third decimal' => ['2025-01-10,Lunch,General,10.005,PLN,10.00,-10.00'.$total];
+        yield 'total does not cancel out' => ["2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n\n2025-02-01,Total balance, , ,PLN,10.00,-9.00\n"];
+    }
+
     public function testRejectsFileOfAnotherShape(): void
     {
         $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => "Date,Amount\n2025-01-10,10.00\n"]);
@@ -221,6 +271,11 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
     private function getEntityManager(): EntityManagerInterface
     {
         return static::getContainer()->get(EntityManagerInterface::class);
+    }
+
+    private static function header(): string
+    {
+        return "Note: does not include group expenses\n\nDate,Description,Category,Cost,Currency,Anna Kowalska,Ben Nowak\n\n";
     }
 
     private static function fixture(string $file): string

@@ -879,10 +879,6 @@ msgstr "Imported {counts}"
 msgid "Importing…"
 msgstr "Importing…"
 
-#: src/features/contacts/SplitwiseImport.tsx
-msgid "In Splitwise, open the friend → Export as spreadsheet."
-msgstr "In Splitwise, open the friend → Export as spreadsheet."
-
 #: src/features/auth/LoginPage.tsx
 msgid "Invalid email or password."
 msgstr "Invalid email or password."
@@ -1551,8 +1547,8 @@ msgid "This file is too large."
 msgstr "This file is too large."
 
 #: src/features/contacts/SplitwiseImport.tsx
-msgid "This isn’t a Splitwise friend export."
-msgstr "This isn’t a Splitwise friend export."
+msgid "This file isn’t a supported Splitwise export."
+msgstr "This file isn’t a supported Splitwise export."
 
 #: src/app/ErrorPages.tsx
 msgid "This page doesn’t exist"

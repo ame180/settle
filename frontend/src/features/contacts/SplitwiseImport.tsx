@@ -17,7 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { balanceDirection, formatMoney, formatPln } from '@/lib/money'
+import { balanceDirection, formatPln } from '@/lib/money'
 import { getShortName } from '@/lib/person'
 import { cn } from '@/lib/utils'
 
@@ -26,7 +26,6 @@ const MAX_FILE_BYTES = 1_048_576
 
 type OwnColumn = 0 | 1
 
-/** A quiet row on Edit contact: pick a Splitwise friend export, confirm in a sheet, import. */
 export function SplitwiseImport({ contact }: { contact: ContactListItem }) {
   const { t } = useLingui()
   const userId = contact.person.id
@@ -134,10 +133,7 @@ export function SplitwiseImport({ contact }: { contact: ContactListItem }) {
             />
           ) : previewMutation.isError ? (
             isWrongFile(previewMutation.error) ? (
-              <StatusBody
-                message={t`This isn’t a Splitwise friend export.`}
-                hint={t`In Splitwise, open the friend → Export as spreadsheet.`}
-              >
+              <StatusBody message={t`This file isn’t a supported Splitwise export.`}>
                 <ChooseAnotherButton onClick={chooseFile} />
               </StatusBody>
             ) : (
@@ -173,20 +169,11 @@ function countsText(summary: SplitwiseImportSummary) {
   return translate`${expenses} and ${payments}`
 }
 
-function StatusBody({
-  message,
-  hint,
-  children,
-}: {
-  message: string
-  hint?: string
-  children: ReactNode
-}) {
+function StatusBody({ message, children }: { message: string; children: ReactNode }) {
   return (
     <>
-      <div className="flex flex-col gap-1 px-4">
+      <div className="px-4">
         <SheetDescription className="text-foreground">{message}</SheetDescription>
-        {hint && <p className="text-[15px] text-muted-foreground">{hint}</p>}
       </div>
       <SheetFooter className="pb-6">{children}</SheetFooter>
     </>
@@ -224,8 +211,8 @@ function SummaryBody({
 }: SummaryBodyProps) {
   const { t } = useLingui()
   const summary = ownColumn === null ? null : preview.options[ownColumn]
-  const hasMismatch = preview.mismatches.length > 0
-  const offBy = mismatchText(preview)
+  const hasMismatch = preview.mismatch !== null
+  const offBy = preview.mismatch === null ? '' : formatPln(preview.mismatch)
 
   return (
     <>
@@ -310,12 +297,6 @@ function SummaryBody({
       )}
     </>
   )
-}
-
-function mismatchText(preview: SplitwiseImportPreview) {
-  return preview.mismatches
-    .map((mismatch) => formatMoney(mismatch.amount, mismatch.currency))
-    .join(', ')
 }
 
 function SummaryText({
