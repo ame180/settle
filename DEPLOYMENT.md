@@ -5,7 +5,7 @@ Settle ships as two images built from `docker/Dockerfile`, run with Docker Compo
 - `ghcr.io/ame180/settle-php` (`prod` target): PHP-FPM with the app, vendor dependencies and the built frontend. Applies migrations on start.
 - `ghcr.io/ame180/settle-web` (`web` target): nginx serving `public/` and passing PHP requests to the `php` service.
 
-`deploy/compose.yaml` runs both with MariaDB. TLS and the public hostname come from a reverse proxy in front of `web`.
+`deploy/compose.yaml` runs both with MariaDB, plus a `scheduler` service on the php image (see [Scheduled jobs](#scheduled-jobs)). TLS and the public hostname come from a reverse proxy in front of `web`.
 
 | Environment | Deployed by | Image tag |
 | --- | --- | --- |
@@ -137,6 +137,8 @@ On the server, point `IMAGE_TAG` in `.env` at an earlier tag and restart:
 cd ~/settle-staging && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v0.1.0/' .env && docker compose up -d --wait
 ```
 
+v0.1.0 has no `scheduler`, so it restarts in a loop on that image. When rolling back to it, add `--scale scheduler=0` to the `up` command above and to any later `up` until the next deploy.
+
 Rolling back code does not roll back the database. Migrations run on every start of `php`, so they must stay backward-compatible: the previous release has to work against the newer schema. A failing migration keeps `php` restarting (and `web` waiting) until it is fixed or rolled back.
 
 ## Backups
@@ -152,13 +154,27 @@ docker compose exec -T mariadb sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSW
 To restore a dump (from that command or the nightly backups), stop the app so nothing writes, empty the database, load the dump and start again:
 
 ```bash
-docker compose stop web php
+docker compose stop web scheduler php
 docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "DROP DATABASE \`$MARIADB_DATABASE\`; CREATE DATABASE \`$MARIADB_DATABASE\`"'
 gunzip -c <dump>.sql.gz | docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" "$MARIADB_DATABASE"'
-docker compose start php web
+docker compose start php scheduler web
 ```
 
 On start, `php` applies any migrations newer than the dump, as on a deploy.
+
+## Scheduled jobs
+
+The `scheduler` service creates repeating expenses when they fall due. It runs `bin/console app:recurring:run` once on start, then `messenger:consume scheduler_default`, which runs the same job every hour. Each run creates every occurrence that is due, including ones missed while the service was down, each dated on its own schedule date, so stopping it only delays them. It doesn't run migrations; it starts once `php` is healthy.
+
+Dates follow the container's timezone, UTC, so an occurrence due on a given day appears within an hour after midnight UTC.
+
+To use a host cron instead, remove the service and run the job from the environment's directory, hourly or more often:
+
+```bash
+docker compose exec -T php bin/console app:recurring:run
+```
+
+Runs are safe to overlap, so a manual run alongside the service creates nothing twice.
 
 ## Adding users
 
@@ -176,7 +192,7 @@ If someone already added them as a contact, this claims that account, so their s
 
 All commands run in the environment's directory.
 
-- Status and logs: `docker compose ps`, `docker compose logs -f php`
+- Status and logs: `docker compose ps`, `docker compose logs -f php` (`scheduler` for repeating expenses)
 - Stop and start (e.g. staging between test sessions): `docker compose stop`, `docker compose start`
 - Reset the staging database (after a branch's migrations left it out of step):
 

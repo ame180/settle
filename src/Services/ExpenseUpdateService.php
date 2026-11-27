@@ -18,6 +18,7 @@ class ExpenseUpdateService
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly SplitCalculator $splitCalculator,
+        private readonly RecurringSeriesService $recurringSeriesService,
     ) {
     }
 
@@ -45,6 +46,8 @@ class ExpenseUpdateService
             }
         }
 
+        $this->recurringSeriesService->assertCanSetRepeat($expense, $request->repeat);
+
         $splits = $this->splitCalculator->calculate($request->splitType, $request->amount, $request->debts);
 
         $existingDebts = $this->entityManager->getRepository(Debt::class)->findBy(['expense' => $expense]);
@@ -53,6 +56,7 @@ class ExpenseUpdateService
             $this->entityManager->remove($debt);
         }
 
+        $previousOccurredOn = $expense->getOccurredOn();
         $expense
             ->setPayee($usersById[$request->payeeId])
             ->setTitle($request->title)
@@ -67,6 +71,8 @@ class ExpenseUpdateService
             $expense->addDebt($debt);
             $this->entityManager->persist($debt);
         }
+
+        $this->recurringSeriesService->applyOnUpdate($expense, $request->repeat, $previousOccurredOn);
 
         $this->entityManager->flush();
 

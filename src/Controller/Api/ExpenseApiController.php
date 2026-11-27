@@ -108,6 +108,9 @@ class ExpenseApiController extends AbstractController
             $participants[] = $debt->getPayer();
         }
 
-        return ExpenseResponse::fromExpense($expense, $this->personRefFactory->createMany($viewer, $participants));
+        $series = $expense->getSeries();
+        $seriesLatestId = null === $series ? null : $this->expenseRepository->findLatestIdInSeries($series);
+
+        return ExpenseResponse::fromExpense($expense, $this->personRefFactory->createMany($viewer, $participants), $seriesLatestId);
     }
 }

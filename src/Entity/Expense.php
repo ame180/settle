@@ -58,6 +58,10 @@ class Expense
     #[ORM\OneToMany(targetEntity: Debt::class, mappedBy: 'expense', orphanRemoval: true)]
     private Collection $debts;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?RecurringSeries $series = null;
+
     public function __construct(User $payee, string $title, ?string $description, string $amount, \DateTimeImmutable $occurredOn, string $currency = 'PLN', SplitType $splitType = SplitType::Exact, ExpenseCategory $category = ExpenseCategory::General)
     {
         $this->payee = $payee;
@@ -208,6 +212,18 @@ class Expense
     public function removeDebt(Debt $debt): static
     {
         $this->debts->removeElement($debt);
+
+        return $this;
+    }
+
+    public function getSeries(): ?RecurringSeries
+    {
+        return $this->series;
+    }
+
+    public function setSeries(?RecurringSeries $series): static
+    {
+        $this->series = $series;
 
         return $this;
     }

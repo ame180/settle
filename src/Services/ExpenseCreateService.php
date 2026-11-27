@@ -18,6 +18,7 @@ class ExpenseCreateService
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly SplitCalculator $splitCalculator,
+        private readonly RecurringSeriesService $recurringSeriesService,
     ) {
     }
 
@@ -49,6 +50,7 @@ class ExpenseCreateService
         $expense = new Expense($payee, $request->title, $request->description, $request->amount, $request->occurredOn, splitType: $request->splitType, category: $request->category);
 
         $this->entityManager->persist($expense);
+        $this->recurringSeriesService->applyOnCreate($expense, $request->repeat);
 
         $splits = $this->splitCalculator->calculate($request->splitType, $request->amount, $request->debts);
 

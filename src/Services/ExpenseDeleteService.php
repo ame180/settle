@@ -12,11 +12,14 @@ class ExpenseDeleteService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly RecurringSeriesService $recurringSeriesService,
     ) {
     }
 
     public function delete(Expense $expense): void
     {
+        $this->recurringSeriesService->applyOnDelete($expense);
+
         $existingDebts = $this->entityManager->getRepository(Debt::class)->findBy(['expense' => $expense]);
         foreach ($existingDebts as $debt) {
             $expense->removeDebt($debt);

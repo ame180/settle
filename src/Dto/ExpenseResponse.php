@@ -24,14 +24,18 @@ readonly class ExpenseResponse
         public SplitType $splitType,
         public ExpenseCategory $category,
         public array $debts,
+        public ?RepeatResponse $repeat,
+        public ?SeriesResponse $series,
     ) {
     }
 
     /**
      * @param array<int, PersonRef> $people keyed by user id, must cover the payee and every debtor
      */
-    public static function fromExpense(Expense $expense, array $people): self
+    public static function fromExpense(Expense $expense, array $people, ?int $seriesLatestId): self
     {
+        $series = $expense->getSeries();
+
         $debts = array_map(
             fn ($debt) => new ExpenseDebtResponse(
                 payer: $people[$debt->getPayer()->getId()],
@@ -52,6 +56,8 @@ readonly class ExpenseResponse
             splitType: $expense->getSplitType(),
             category: $expense->getCategory(),
             debts: array_values($debts),
+            repeat: null === $series ? null : RepeatResponse::fromSeries($series),
+            series: null === $seriesLatestId ? null : new SeriesResponse($seriesLatestId, $seriesLatestId === $expense->getId()),
         );
     }
 }

@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Debt;
 use App\Entity\Expense;
+use App\Entity\RecurringSeries;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -88,5 +89,20 @@ class ExpenseRepository extends ServiceEntityRepository
         }
 
         return $lastCreatedAt;
+    }
+
+    /**
+     * The latest expense of a series is the one created last, whatever its date.
+     */
+    public function findLatestIdInSeries(RecurringSeries $series): ?int
+    {
+        $latestId = $this->createQueryBuilder('e')
+            ->select('MAX(e.id)')
+            ->where('e.series = :series')
+            ->setParameter('series', $series)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return null === $latestId ? null : (int) $latestId;
     }
 }
