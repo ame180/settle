@@ -168,7 +168,7 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
 
     public function testPreviewChecksOnlyThePlnTotal(): void
     {
-        $csv = str_replace('EUR,15.00,-15.00', 'EUR,99.00,-99.00', self::fixture('en.csv'));
+        $csv = str_replace('EUR,15.00,-15.00', 'EUR,99.00,-98.00', self::fixture('en.csv'));
 
         $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => $csv]);
 

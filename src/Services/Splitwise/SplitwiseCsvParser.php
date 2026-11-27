@@ -8,8 +8,8 @@ namespace App\Services\Splitwise;
  * Reads a Splitwise friend export. Splitwise translates its labels, so the file is read by
  * position: a note line, a blank line, a 7-column header ending in the two people's names, a
  * blank line, the expense rows, a blank line, then one Total balance row per currency (with empty
- * Category and Cost). Only the shape is checked here; the amounts that get imported are checked
- * on import.
+ * Category and Cost). Only the shape is checked here; SplitwiseImportService checks the PLN
+ * amounts.
  */
 class SplitwiseCsvParser
 {
@@ -21,12 +21,12 @@ class SplitwiseCsvParser
         $lines = $this->readLines($csv);
 
         if (count($lines) < 4 || !$this->isNote($lines[0]) || !$this->isBlank($lines[1]) || self::COLUMNS !== count($lines[2]) || !$this->isBlank($lines[3])) {
-            throw $this->notAnExport();
+            throw new UnsupportedSplitwiseExportException();
         }
 
         $names = [trim((string) $lines[2][5]), trim((string) $lines[2][6])];
         if ('' === $names[0] || '' === $names[1]) {
-            throw $this->notAnExport();
+            throw new UnsupportedSplitwiseExportException();
         }
 
         $index = 4;
@@ -45,7 +45,7 @@ class SplitwiseCsvParser
 
             [$currency, $nets] = $this->parseTotal($line);
             if (isset($totals[$currency])) {
-                throw $this->notAnExport();
+                throw new UnsupportedSplitwiseExportException();
             }
 
             $totals[$currency] = $nets;
@@ -83,18 +83,18 @@ class SplitwiseCsvParser
     private function parseRow(array $line): SplitwiseRow
     {
         if (self::COLUMNS !== count($line)) {
-            throw $this->notAnExport();
+            throw new UnsupportedSplitwiseExportException();
         }
 
         [$date, $description, $category, $cost, $currency, $netA, $netB] = array_map(static fn (?string $cell): string => trim((string) $cell), $line);
 
         $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
         if (false === $parsedDate || $parsedDate->format('Y-m-d') !== $date) {
-            throw $this->notAnExport();
+            throw new UnsupportedSplitwiseExportException();
         }
 
         if (1 !== preg_match('/^[A-Z]{3}$/', $currency) || !$this->isDecimal($cost) || !$this->isDecimal($netA) || !$this->isDecimal($netB)) {
-            throw $this->notAnExport();
+            throw new UnsupportedSplitwiseExportException();
         }
 
         return new SplitwiseRow($parsedDate, $description, $category, $cost, $currency, [$netA, $netB]);
@@ -109,7 +109,7 @@ class SplitwiseCsvParser
     {
         $cells = array_map(static fn (?string $cell): string => trim((string) $cell), $line);
         if (!$this->isTotal($line) || 1 !== preg_match('/^[A-Z]{3}$/', $cells[4]) || !$this->isDecimal($cells[5]) || !$this->isDecimal($cells[6])) {
-            throw $this->notAnExport();
+            throw new UnsupportedSplitwiseExportException();
         }
 
         return [$cells[4], [$cells[5], $cells[6]]];
@@ -142,10 +142,5 @@ class SplitwiseCsvParser
     private function isDecimal(string $value): bool
     {
         return 1 === preg_match(self::DECIMAL, $value);
-    }
-
-    private function notAnExport(): UnsupportedSplitwiseExportException
-    {
-        return new UnsupportedSplitwiseExportException();
     }
 }

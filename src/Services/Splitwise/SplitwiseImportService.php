@@ -186,7 +186,6 @@ class SplitwiseImportService
             && 0 === bccomp(bcadd($nets[0], $nets[1], 2), '0', 2);
     }
 
-    /** The file's PLN rows minus its PLN Total balance, from the first person's side; null when they agree. */
     private function totalMismatch(SplitwiseExport $export): ?string
     {
         $difference = bcsub('0', $export->totalsByCurrency[self::CURRENCY][0] ?? '0', 2);
