@@ -13,7 +13,6 @@ type DateNoteFieldsProps = {
   idPrefix: string
   occurredOn: string
   onDateChange: (occurredOn: string) => void
-  /** Offered in the date sheet when given. */
   repeat?: { value: RepeatChoice; onChange: (repeat: RepeatChoice) => void }
   dateError?: string
   note: string

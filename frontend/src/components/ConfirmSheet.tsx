@@ -19,7 +19,6 @@ type ConfirmSheetProps = {
   onOpenChange: (open: boolean) => void
   title: string
   description: string
-  /** Inline content ending the description, such as what else the action stops. */
   note?: ReactNode
   /** The destructive action: "Delete expense", "Discard". */
   confirmLabel: string

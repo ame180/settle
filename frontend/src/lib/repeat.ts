@@ -12,7 +12,6 @@ const repeats: Record<Exclude<RepeatChoice, 'off'>, Repeat> = {
   yearly: { unit: 'year', every: 1 },
 }
 
-/** The latest expense of a repeat that is still running: the next one copies it. */
 export function continuesRepeat(expense: ExpenseResponse): boolean {
   return expense.series?.isLatest === true && expense.repeat?.active === true
 }
@@ -21,7 +20,6 @@ export function repeatOf(choice: RepeatChoice): Repeat | null {
   return choice === 'off' ? null : repeats[choice]
 }
 
-/** Anything the picker can't show reads as off. */
 export function choiceOf(repeat: Repeat | null): RepeatChoice {
   if (repeat === null) {
     return 'off'
@@ -47,7 +45,6 @@ export function repeatChoiceLabel(choice: RepeatChoice): string {
   }
 }
 
-/** On the latest expense. */
 export function repeatsLabel(repeat: Repeat): string {
   switch (choiceOf(repeat)) {
     case 'weekly':
@@ -61,7 +58,6 @@ export function repeatsLabel(repeat: Repeat): string {
   }
 }
 
-/** On an older expense. */
 export function partOfRepeatLabel(repeat: Repeat): string {
   switch (choiceOf(repeat)) {
     case 'weekly':
@@ -75,7 +71,6 @@ export function partOfRepeatLabel(repeat: Repeat): string {
   }
 }
 
-/** In the delete sheet of the latest expense. */
 export function repeatStopsLabel(repeat: Repeat): string {
   switch (choiceOf(repeat)) {
     case 'weekly':

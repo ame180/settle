@@ -57,9 +57,7 @@ type ExpenseFormProps = {
     | {
         kind: 'edit'
         expenseId: number
-        /** False on an older expense of a repeat: only the latest can change it. */
         canRepeat: boolean
-        /** Editing the latest of an active repeat: the next one copies the changes. */
         nextCopy: { on: string | null } | null
       }
   initialFocus?: 'people' | 'title'
