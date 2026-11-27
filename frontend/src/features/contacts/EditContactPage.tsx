@@ -22,6 +22,7 @@ import { useGoBack } from '@/lib/useGoBack'
 import { cn } from '@/lib/utils'
 import { ContactNotFound } from './ContactNotFound'
 import { parseIdParam } from '@/lib/parseIdParam'
+import { SplitwiseImport } from './SplitwiseImport'
 
 const editContactSchema = z.object({
   nickname: z
@@ -178,6 +179,10 @@ function EditContactForm({ contact }: { contact: ContactListItem }) {
           <Trans>Save</Trans>
         </PrimaryButton>
       </form>
+
+      <div className="border-t border-border/60 pt-2">
+        <SplitwiseImport contact={contact} />
+      </div>
     </div>
   )
 }
