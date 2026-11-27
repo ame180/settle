@@ -29,8 +29,7 @@ services:
       mariadb:
         condition: service_healthy
 
-  # Creates repeating expenses when due. Skips the image's entrypoint, so only `php` runs migrations,
-  # and waits for it, so it starts on the migrated schema. Catches up on start, then ticks hourly.
+  # Skips the image's entrypoint, so only `php` runs migrations.
   scheduler:
     image: ghcr.io/ame180/settle-php:${IMAGE_TAG:?set IMAGE_TAG}
     environment: *php-environment

@@ -20,7 +20,7 @@ services:
       mysql:
         condition: service_healthy
 
-  # Creates repeating expenses when due, like the deploy's `scheduler`. Restart it to pick up code changes.
+  # Long-running: restart it to pick up code changes.
   scheduler:
     build:
       context: .
