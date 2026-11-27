@@ -60,6 +60,13 @@ class SplitwiseCsvParserTest extends TestCase
         $this->assertSame('-2.50', $mismatches[0]->amount);
     }
 
+    public function testAcceptsLargeAmountsInOtherCurrencies(): void
+    {
+        $csv = self::HEADER."2025-01-10,Hotel,Hotel,150000000.00,VND,150000000.00,-150000000.00\n\n2025-02-01,Total balance, , ,VND,150000000.00,-150000000.00\n";
+
+        $this->assertCount(1, (new SplitwiseCsvParser())->parse($csv)->rows);
+    }
+
     public function testAcceptsExportWithoutRows(): void
     {
         $export = (new SplitwiseCsvParser())->parse(self::HEADER."2025-02-01,Total balance, , ,PLN,0.00,0.00\n");
