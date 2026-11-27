@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Dto\SplitwiseImportRequest;
+use App\Dto\SplitwisePreviewRequest;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Services\ContactService;
@@ -12,7 +13,6 @@ use App\Services\Splitwise\SplitwiseImportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,19 +28,35 @@ class SplitwiseImportApiController extends AbstractController
     ) {
     }
 
-    /**
-     * With dryRun=1 nothing is written and the response describes both ways the file's two
-     * people could map onto the pair; otherwise ownColumn picks one and the rows are imported.
-     */
+    #[Route('/contacts/{userId}/import/splitwise/preview', name: 'api_contacts_import_splitwise_preview', methods: ['POST'], requirements: ['userId' => '\d+'])]
+    #[IsGranted('ROLE_USER')]
+    public function preview(
+        int $userId,
+        #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: Response::HTTP_BAD_REQUEST)]
+        SplitwisePreviewRequest $request,
+    ): JsonResponse {
+        [$user, $contact] = $this->pair($userId);
+
+        return $this->json($this->importService->preview($user, $contact, $request->csv));
+    }
+
     #[Route('/contacts/{userId}/import/splitwise', name: 'api_contacts_import_splitwise', methods: ['POST'], requirements: ['userId' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function import(
         int $userId,
         #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: Response::HTTP_BAD_REQUEST)]
         SplitwiseImportRequest $request,
-        #[MapQueryParameter]
-        bool $dryRun = false,
     ): JsonResponse {
+        [$user, $contact] = $this->pair($userId);
+
+        return $this->json($this->importService->import($user, $contact, $request->csv, $request->ownColumn));
+    }
+
+    /**
+     * @return array{User, User}
+     */
+    private function pair(int $userId): array
+    {
         /** @var User $user */
         $user = $this->getUser();
 
@@ -53,14 +69,6 @@ class SplitwiseImportApiController extends AbstractController
             throw $this->createNotFoundException('Contact not found.');
         }
 
-        if ($dryRun) {
-            return $this->json($this->importService->preview($user, $contact, $request->csv));
-        }
-
-        if (null === $request->ownColumn) {
-            throw new BadRequestHttpException('Choose which person in the file is you.');
-        }
-
-        return $this->json($this->importService->import($user, $contact, $request->csv, $request->ownColumn));
+        return [$user, $contact];
     }
 }

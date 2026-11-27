@@ -10,7 +10,7 @@ function importPath(userId: number) {
 export function useSplitwiseImportPreview(userId: number) {
   return useMutation({
     mutationFn: (csv: string) =>
-      apiRequest<SplitwiseImportPreview>(`${importPath(userId)}?dryRun=1`, {
+      apiRequest<SplitwiseImportPreview>(`${importPath(userId)}/preview`, {
         method: 'POST',
         body: { csv },
       }),

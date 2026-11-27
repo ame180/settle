@@ -39,14 +39,14 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
     {
         $client = $this->client;
         $client->restart();
-        $this->requestJson($client, 'POST', $this->url(dryRun: true), ['csv' => self::fixture('en.csv')]);
+        $this->requestJson($client, 'POST', $this->previewUrl(), ['csv' => self::fixture('en.csv')]);
 
         $this->assertResponseStatusCodeSame(401);
     }
 
-    public function testDryRunDescribesBothSidesWithoutWriting(): void
+    public function testPreviewDescribesBothSidesWithoutWriting(): void
     {
-        $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => self::fixture('en.csv')]);
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => self::fixture('en.csv')]);
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertSame([
@@ -62,11 +62,11 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->assertSame(0, $this->countRows(Transfer::class));
     }
 
-    public function testDryRunReportsTotalMismatch(): void
+    public function testPreviewReportsTotalMismatch(): void
     {
         $csv = str_replace('PLN,122.20,-122.20', 'PLN,120.00,-120.00', self::fixture('en.csv'));
 
-        $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => $csv]);
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => $csv]);
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertSame('2.20', $this->getJsonResponse()['mismatch']);
@@ -126,7 +126,7 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('en.csv'), 'ownColumn' => 0]);
         $this->assertJsonResponseIsSuccessful(200);
 
-        $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => self::fixture('en.csv')]);
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => self::fixture('en.csv')]);
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertSame(['expenses' => 0, 'transfers' => 0, 'skipped' => 7, 'balance' => '122.20'], $this->getJsonResponse()['options'][0]);
@@ -166,11 +166,11 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->assertSame(0, $this->countRows(Expense::class));
     }
 
-    public function testDryRunChecksOnlyThePlnTotal(): void
+    public function testPreviewChecksOnlyThePlnTotal(): void
     {
         $csv = str_replace('EUR,15.00,-15.00', 'EUR,99.00,-99.00', self::fixture('en.csv'));
 
-        $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => $csv]);
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => $csv]);
 
         $this->assertJsonResponseIsSuccessful(200);
         $this->assertNull($this->getJsonResponse()['mismatch']);
@@ -218,7 +218,7 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
 
     public function testRejectsFileOfAnotherShape(): void
     {
-        $this->requestJson($this->client, 'POST', $this->url(dryRun: true), ['csv' => "Date,Amount\n2025-01-10,10.00\n"]);
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => "Date,Amount\n2025-01-10,10.00\n"]);
 
         $this->assertResponseStatusCodeSame(422);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
@@ -236,9 +236,14 @@ class SplitwiseImportApiControllerTest extends ApiTestCase
         $this->assertSame(0, $this->countRows(Expense::class));
     }
 
-    private function url(bool $dryRun = false): string
+    private function url(): string
     {
-        return '/api/contacts/'.$this->ben->getId().'/import/splitwise'.($dryRun ? '?dryRun=1' : '');
+        return '/api/contacts/'.$this->ben->getId().'/import/splitwise';
+    }
+
+    private function previewUrl(): string
+    {
+        return $this->url().'/preview';
     }
 
     /**

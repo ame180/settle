@@ -30,7 +30,7 @@ function stubApi(
   importReply: Reply = { status: 200, body: preview.options[0] },
 ) {
   const fetchMock = vi.fn((input: string, init?: RequestInit) => {
-    if (init?.method === 'POST' && input.endsWith('?dryRun=1')) {
+    if (init?.method === 'POST' && input.endsWith('/preview')) {
       return Promise.resolve(jsonResponse(previewReply.status, previewReply.body))
     }
     if (init?.method === 'POST') {
@@ -44,7 +44,7 @@ function stubApi(
 
 function importCalls(fetchMock: ReturnType<typeof stubApi>) {
   return fetchMock.mock.calls
-    .filter(([input, init]) => init?.method === 'POST' && !input.endsWith('?dryRun=1'))
+    .filter(([input, init]) => init?.method === 'POST' && !input.endsWith('/preview'))
     .map(([input, init]) => [input, JSON.parse(String(init?.body))])
 }
 
