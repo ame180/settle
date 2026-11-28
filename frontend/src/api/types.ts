@@ -184,6 +184,23 @@ export type ContactListResponse = {
   items: ContactListItem[]
 }
 
+export type SplitwiseImportSummary = {
+  expenses: number
+  transfers: number
+  skipped: number
+  /** The pair's PLN balance after the import; positive = the contact owes the user. */
+  balance: string
+}
+
+export type SplitwiseImportPreview = {
+  /** The file's two people, in column order. */
+  names: [string, string]
+  /** How far the file's PLN rows are off its own PLN total; null when they agree. */
+  mismatch: string | null
+  /** What importing does if the user is the first or the second person in the file. */
+  options: [SplitwiseImportSummary, SplitwiseImportSummary]
+}
+
 export type ApiViolation = {
   propertyPath: string
   title: string

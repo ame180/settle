@@ -23,6 +23,10 @@ msgstr "{assignedNumber} z {totalAmount}"
 msgid "{assignedPercent}% of 100%"
 msgstr "{assignedPercent}% ze 100%"
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "{counts} between {ownName} and {otherName}."
+msgstr "{counts} – {ownName} i {otherName}."
+
 #: src/features/activity/ActivityRows.tsx
 msgid "{date} · {subline}"
 msgstr "{date} · {subline}"
@@ -62,6 +66,14 @@ msgstr "Dodano do kontaktów: {displayName}"
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{each} each"
 msgstr "Po {each}"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "{expenseCount, plural, one {# expense} other {# expenses}}"
+msgstr "{expenseCount, plural, one {# wydatek} few {# wydatki} many {# wydatków} other {# wydatku}}"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "{expenses} and {payments}"
+msgstr "{expenses} i {payments}"
 
 #: src/features/add/DateSheet.tsx
 msgid "{futureDate} is in the future. It still counts towards your balances straight away."
@@ -119,6 +131,10 @@ msgstr "{payerName} płaci, {payeeName} otrzymuje"
 msgid "{payerName} paid you"
 msgstr "{payerName} płaci, ty otrzymujesz"
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "{paymentCount, plural, one {# payment} other {# payments}}"
+msgstr "{paymentCount, plural, one {# płatność} few {# płatności} many {# płatności} other {# płatności}}"
+
 #: src/features/add/SplitEditorSheet.tsx
 msgid "{peopleCount, plural, one {{sharing} of # person sharing} other {{sharing} of # people sharing}}"
 msgstr "{peopleCount, plural, one {{sharing} z # osoby w podziale} few {{sharing} z # osób w podziale} many {{sharing} z # osób w podziale} other {{sharing} z # osoby w podziale}}"
@@ -168,6 +184,10 @@ msgstr "{shareCount, plural, one {{personName}: # udział} few {{personName}: # 
 #: src/features/detail/expenseSummary.ts
 msgid "{shareCount, plural, one {# share} other {# shares}}"
 msgstr "{shareCount, plural, one {# udział} few {# udziały} many {# udziałów} other {# udziału}}"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "{skippedCount, plural, other {# skipped.}}"
+msgstr "{skippedCount, plural, other {Pominięto: #.}}"
 
 #: src/features/add/ExpenseForm.tsx
 msgid "{title} added."
@@ -300,6 +320,18 @@ msgstr "Suma to {assigned}%, a nie 100%. Dotknij, aby poprawić."
 msgid "Adds up to {totalLabel}"
 msgstr "Zgadza się: {totalLabel}"
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "After import, {contactName} owes you {amount}."
+msgstr "Po imporcie {contactName} ma ci oddać {amount}."
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "After import, you owe {contactName} {amount}."
+msgstr "Po imporcie masz do oddania {amount}."
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "After import, you’re settled up."
+msgstr "Po imporcie wszystko będzie rozliczone."
+
 #: src/features/add/SplitEditorSheet.tsx
 msgid "All of it assigned"
 msgstr "Przypisano całość"
@@ -402,6 +434,10 @@ msgstr "Sprawdź podział"
 msgid "Check your connection and try again."
 msgstr "Sprawdź połączenie i spróbuj ponownie."
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Checking the file"
+msgstr "Sprawdzanie pliku"
+
 #: src/features/add/PaymentForm.tsx
 msgid "Choose"
 msgstr "Wybierz"
@@ -409,6 +445,14 @@ msgstr "Wybierz"
 #: src/features/add/PaymentForm.tsx
 msgid "Choose a person"
 msgstr "Wybierz osobę"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Choose another file"
+msgstr "Wybierz inny plik"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Choose which person in the file is you."
+msgstr "Wybierz, która osoba w pliku to ty."
 
 #: src/features/add/SplitEditorSheet.tsx
 msgid "Choose who paid and how the cost is shared."
@@ -424,6 +468,7 @@ msgstr "Wybierz, komu płacisz"
 
 #: src/features/add/ScreenFrame.tsx
 #: src/features/add/SplitEditorSheet.tsx
+#: src/features/contacts/SplitwiseImport.tsx
 msgid "Close"
 msgstr "Zamknij"
 
@@ -479,6 +524,10 @@ msgstr "Nie udało się dodać tego kontaktu. Spróbuj ponownie."
 msgid "Couldn't change your password. Try again."
 msgstr "Nie udało się zmienić hasła. Spróbuj ponownie."
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Couldn’t check the file."
+msgstr "Nie udało się sprawdzić pliku."
+
 #: src/features/auth/SignUpPage.tsx
 msgid "Couldn't create your account. Try again."
 msgstr "Nie udało się założyć konta. Spróbuj ponownie."
@@ -490,6 +539,10 @@ msgstr "Nie udało się usunąć wydatku. Spróbuj ponownie."
 #: src/features/detail/TransferDetailPage.tsx
 msgid "Couldn’t delete the payment. Try again."
 msgstr "Nie udało się usunąć płatności. Spróbuj ponownie."
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Couldn’t import. Nothing was added."
+msgstr "Nie udało się zaimportować. Niczego nie dodano."
 
 #: src/features/activity/ActivityPage.tsx
 #: src/features/contacts/ContactPage.tsx
@@ -806,6 +859,26 @@ msgstr "Dom i rachunki"
 msgid "How to split"
 msgstr "Jak podzielić"
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Import"
+msgstr "Importuj"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Import anyway"
+msgstr "Importuj mimo to"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Import from Splitwise"
+msgstr "Import ze Splitwise"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Imported {counts}"
+msgstr "Zaimportowano: {counts}"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Importing…"
+msgstr "Importowanie…"
+
 #: src/features/auth/LoginPage.tsx
 msgid "Invalid email or password."
 msgstr "Nieprawidłowy e-mail lub hasło."
@@ -1045,6 +1118,10 @@ msgstr "Notatka"
 #: src/features/add/DateNoteFields.tsx
 msgid "Note <0>(optional)</0>"
 msgstr "Notatka <0>(opcjonalnie)</0>"
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Nothing new to import."
+msgstr "Nie ma nic nowego do zaimportowania."
 
 #: src/features/contacts/ContactsPage.tsx
 msgid "Nothing to settle"
@@ -1405,6 +1482,10 @@ msgstr "To więcej, niż masz do oddania ({name}: {current})."
 msgid "That’s your email. You’re always in it."
 msgstr "To twój adres e-mail. Zawsze bierzesz udział w wydatku."
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "The file’s rows don’t add up to its total (off by {offBy})."
+msgstr "Pozycje w pliku nie sumują się do jego salda (różnica: {offBy})."
+
 #: src/lib/repeat.ts
 msgid "The monthly repeat stops too."
 msgstr "Powtarzanie co miesiąc też się zatrzyma."
@@ -1461,6 +1542,14 @@ msgstr "Tego nie można cofnąć."
 msgid "This expense doesn’t exist"
 msgstr "Ten wydatek nie istnieje"
 
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "This file is too large."
+msgstr "Ten plik jest za duży."
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "This file isn’t a supported Splitwise export."
+msgstr "Ten plik nie jest obsługiwanym eksportem ze Splitwise."
+
 #: src/app/ErrorPages.tsx
 msgid "This page doesn’t exist"
 msgstr "Ta strona nie istnieje"
@@ -1504,6 +1593,7 @@ msgstr "Transport"
 
 #: src/components/LoadError.tsx
 #: src/features/activity/ActivityListFooter.tsx
+#: src/features/contacts/SplitwiseImport.tsx
 msgid "Try again"
 msgstr "Spróbuj ponownie"
 
@@ -1554,6 +1644,10 @@ msgstr "Na co był wydatek?"
 #: src/features/add/DiscardSheet.tsx
 msgid "What you’ve entered won’t be saved."
 msgstr "Wpisane dane nie zostaną zapisane."
+
+#: src/features/contacts/SplitwiseImport.tsx
+msgid "Which one are you?"
+msgstr "Która osoba to ty?"
 
 #: src/features/add/PaymentForm.tsx
 msgid "Who did you pay?"

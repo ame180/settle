@@ -67,4 +67,19 @@ class TransferRepository extends ServiceEntityRepository
 
         return $lastCreatedAt;
     }
+
+    /**
+     * @return list<Transfer>
+     */
+    public function findBetweenPair(User $first, User $second, string $currency): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.currency = :currency')
+            ->andWhere('(t.payer = :first AND t.payee = :second) OR (t.payer = :second AND t.payee = :first)')
+            ->setParameter('currency', $currency)
+            ->setParameter('first', $first)
+            ->setParameter('second', $second)
+            ->getQuery()
+            ->getResult();
+    }
 }

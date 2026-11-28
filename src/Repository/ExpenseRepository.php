@@ -105,4 +105,22 @@ class ExpenseRepository extends ServiceEntityRepository
 
         return null === $latestId ? null : (int) $latestId;
     }
+
+    /**
+     * Expenses one of the two paid and the other owes a share of, in one currency.
+     *
+     * @return list<Expense>
+     */
+    public function findBetweenPair(User $first, User $second, string $currency): array
+    {
+        return $this->createQueryBuilder('e')
+            ->join('e.debts', 'd')
+            ->where('e.currency = :currency')
+            ->andWhere('(e.payee = :first AND d.payer = :second) OR (e.payee = :second AND d.payer = :first)')
+            ->setParameter('currency', $currency)
+            ->setParameter('first', $first)
+            ->setParameter('second', $second)
+            ->getQuery()
+            ->getResult();
+    }
 }

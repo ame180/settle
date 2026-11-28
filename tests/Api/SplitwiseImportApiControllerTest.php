@@ -1,0 +1,290 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Api;
+
+use App\Entity\Contact;
+use App\Entity\Expense;
+use App\Entity\Transfer;
+use App\Entity\User;
+use App\Enum\ExpenseCategory;
+use App\Tests\Support\ApiTestCase;
+use App\Tests\Support\Factory\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+
+class SplitwiseImportApiControllerTest extends ApiTestCase
+{
+    private KernelBrowser $client;
+    private User $anna;
+    private User $ben;
+
+    protected function setUp(): void
+    {
+        $this->client = static::createClient();
+        $entityManager = $this->getEntityManager();
+
+        $this->anna = UserFactory::createUser('anna@example.com');
+        $this->ben = UserFactory::createUser('ben@example.com');
+        $entityManager->persist($this->anna);
+        $entityManager->persist($this->ben);
+        $entityManager->persist(new Contact($this->anna, $this->ben));
+        $entityManager->flush();
+
+        $this->client->loginUser($this->anna);
+    }
+
+    public function testNotLoggedIn(): void
+    {
+        $client = $this->client;
+        $client->restart();
+        $this->requestJson($client, 'POST', $this->previewUrl(), ['csv' => self::fixture('en.csv')]);
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    public function testPreviewDescribesBothSidesWithoutWriting(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => self::fixture('en.csv')]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame([
+            'names' => ['Anna Kowalska', 'Ben Nowak'],
+            'mismatch' => null,
+            'options' => [
+                ['expenses' => 4, 'transfers' => 1, 'skipped' => 2, 'balance' => '122.20'],
+                ['expenses' => 4, 'transfers' => 1, 'skipped' => 2, 'balance' => '-122.20'],
+            ],
+        ], $this->getJsonResponse());
+
+        $this->assertSame(0, $this->countRows(Expense::class));
+        $this->assertSame(0, $this->countRows(Transfer::class));
+    }
+
+    public function testPreviewReportsTotalMismatch(): void
+    {
+        $csv = str_replace('PLN,122.20,-122.20', 'PLN,120.00,-120.00', self::fixture('en.csv'));
+
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => $csv]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame('2.20', $this->getJsonResponse()['mismatch']);
+    }
+
+    public function testImportCreatesExpensesAndTransfersForTheChosenSide(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('en.csv'), 'ownColumn' => 0]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['expenses' => 4, 'transfers' => 1, 'skipped' => 2, 'balance' => '122.20'], $this->getJsonResponse());
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->clear();
+
+        $groceries = $entityManager->getRepository(Expense::class)->findOneBy(['title' => 'Groceries run']);
+        $this->assertNotNull($groceries);
+        $this->assertSame('anna@example.com', $groceries->getPayee()->getEmail());
+        $this->assertSame('100.00', $groceries->getAmount());
+        $this->assertSame(ExpenseCategory::Groceries, $groceries->getCategory());
+        $this->assertSame('2025-01-10', $groceries->getOccurredOn()->format('Y-m-d'));
+        $this->assertNull($groceries->getDescription());
+        $this->assertSame(['anna@example.com' => '50.00', 'ben@example.com' => '50.00'], $this->sharesByEmail($groceries));
+
+        $taxi = $entityManager->getRepository(Expense::class)->findOneBy(['title' => 'Taxi, airport']);
+        $this->assertNotNull($taxi);
+        $this->assertSame('ben@example.com', $taxi->getPayee()->getEmail());
+        $this->assertSame(ExpenseCategory::Transport, $taxi->getCategory());
+        $this->assertSame(['anna@example.com' => '80.00'], $this->sharesByEmail($taxi));
+
+        $transfer = $entityManager->getRepository(Transfer::class)->findOneBy([]);
+        $this->assertNotNull($transfer);
+        $this->assertSame('ben@example.com', $transfer->getPayer()->getEmail());
+        $this->assertSame('anna@example.com', $transfer->getPayee()->getEmail());
+        $this->assertSame('20.00', $transfer->getAmount());
+        $this->assertNull($transfer->getDescription());
+
+        $this->client->request('GET', '/api/contacts');
+        $this->assertSame([['currency' => 'PLN', 'amount' => '122.20']], $this->getJsonResponse()['items'][0]['balances']);
+    }
+
+    public function testImportAsSecondPersonFlipsDirection(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('en.csv'), 'ownColumn' => 1]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame('-122.20', $this->getJsonResponse()['balance']);
+
+        $this->getEntityManager()->clear();
+        $groceries = $this->getEntityManager()->getRepository(Expense::class)->findOneBy(['title' => 'Groceries run']);
+        $this->assertNotNull($groceries);
+        $this->assertSame('ben@example.com', $groceries->getPayee()->getEmail());
+    }
+
+    public function testReimportSkipsEverythingAlreadyImported(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('en.csv'), 'ownColumn' => 0]);
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => self::fixture('en.csv')]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['expenses' => 0, 'transfers' => 0, 'skipped' => 7, 'balance' => '122.20'], $this->getJsonResponse()['options'][0]);
+    }
+
+    public function testPolishExportOfTheSameHistoryAddsNothing(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('en.csv'), 'ownColumn' => 0]);
+        $this->assertJsonResponseIsSuccessful(200);
+
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('pl.csv'), 'ownColumn' => 0]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['expenses' => 0, 'transfers' => 0, 'skipped' => 7, 'balance' => '122.20'], $this->getJsonResponse());
+        $this->assertSame(4, $this->countRows(Expense::class));
+        $this->assertSame(1, $this->countRows(Transfer::class));
+    }
+
+    public function testPolishExportMapsCategoriesAndPayments(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('pl.csv'), 'ownColumn' => 0]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['expenses' => 4, 'transfers' => 1, 'skipped' => 2, 'balance' => '122.20'], $this->getJsonResponse());
+
+        $this->getEntityManager()->clear();
+        $phone = $this->getEntityManager()->getRepository(Expense::class)->findOneBy(['title' => 'Phone']);
+        $this->assertNotNull($phone);
+        $this->assertSame(ExpenseCategory::HomeAndBills, $phone->getCategory());
+    }
+
+    public function testImportRequiresOwnColumn(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::fixture('en.csv')]);
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertSame(0, $this->countRows(Expense::class));
+    }
+
+    public function testPreviewChecksOnlyThePlnTotal(): void
+    {
+        $csv = str_replace('EUR,15.00,-15.00', 'EUR,99.00,-98.00', self::fixture('en.csv'));
+
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => $csv]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertNull($this->getJsonResponse()['mismatch']);
+    }
+
+    public function testSkipsOtherCurrenciesWhateverTheirAmounts(): void
+    {
+        $csv = self::header()
+            ."2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n"
+            ."2025-01-11,Hotel,Hotel,150000000.00,VND,150000000.00,-150000000.00\n"
+            ."2025-01-12,Dinner,Dining out,12.345,KWD,6.172,-6.173\n\n"
+            ."2025-02-01,Total balance, , ,PLN,10.00,-10.00\n";
+
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => $csv, 'ownColumn' => 0]);
+
+        $this->assertJsonResponseIsSuccessful(200);
+        $this->assertSame(['expenses' => 1, 'transfers' => 0, 'skipped' => 2, 'balance' => '10.00'], $this->getJsonResponse());
+    }
+
+    /**
+     * @dataProvider unimportablePlnProvider
+     */
+    public function testRejectsPlnAmountsItCannotImport(string $rows): void
+    {
+        $this->requestJson($this->client, 'POST', $this->url(), ['csv' => self::header().$rows, 'ownColumn' => 0]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(0, $this->countRows(Expense::class));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function unimportablePlnProvider(): iterable
+    {
+        $total = "\n2025-02-01,Total balance, , ,PLN,10.00,-10.00\n";
+
+        yield 'nets do not cancel out' => ['2025-01-10,Lunch,General,10.00,PLN,10.00,-9.00'.$total];
+        yield 'owed more than the cost' => ['2025-01-10,Lunch,General,10.00,PLN,12.00,-12.00'.$total];
+        yield 'negative cost' => ['2025-01-10,Lunch,General,-10.00,PLN,10.00,-10.00'.$total];
+        yield 'cost beyond the amount column' => ['2025-01-10,House,General,100000000.00,PLN,10.00,-10.00'.$total];
+        yield 'third decimal' => ['2025-01-10,Lunch,General,10.005,PLN,10.00,-10.00'.$total];
+        yield 'total does not cancel out' => ["2025-01-10,Lunch,General,10.00,PLN,10.00,-10.00\n\n2025-02-01,Total balance, , ,PLN,10.00,-9.00\n"];
+    }
+
+    public function testRejectsFileOfAnotherShape(): void
+    {
+        $this->requestJson($this->client, 'POST', $this->previewUrl(), ['csv' => "Date,Amount\n2025-01-10,10.00\n"]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
+    public function testRejectsUnrelatedUser(): void
+    {
+        $stranger = UserFactory::createUser('stranger@example.com');
+        $this->getEntityManager()->persist($stranger);
+        $this->getEntityManager()->flush();
+
+        $this->requestJson($this->client, 'POST', '/api/contacts/'.$stranger->getId().'/import/splitwise', ['csv' => self::fixture('en.csv'), 'ownColumn' => 0]);
+
+        $this->assertResponseStatusCodeSame(404);
+        $this->assertSame(0, $this->countRows(Expense::class));
+    }
+
+    private function url(): string
+    {
+        return '/api/contacts/'.$this->ben->getId().'/import/splitwise';
+    }
+
+    private function previewUrl(): string
+    {
+        return $this->url().'/preview';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function sharesByEmail(Expense $expense): array
+    {
+        $shares = [];
+        foreach ($expense->getDebts() as $debt) {
+            $shares[(string) $debt->getPayer()->getEmail()] = $debt->getAmount();
+        }
+
+        ksort($shares);
+
+        return $shares;
+    }
+
+    /**
+     * @param class-string $entityClass
+     */
+    private function countRows(string $entityClass): int
+    {
+        return (int) $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(entity.id)')
+            ->from($entityClass, 'entity')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    private function getEntityManager(): EntityManagerInterface
+    {
+        return static::getContainer()->get(EntityManagerInterface::class);
+    }
+
+    private static function header(): string
+    {
+        return "Note: does not include group expenses\n\nDate,Description,Category,Cost,Currency,Anna Kowalska,Ben Nowak\n\n";
+    }
+
+    private static function fixture(string $file): string
+    {
+        return (string) file_get_contents(__DIR__.'/../Support/fixtures/splitwise/'.$file);
+    }
+}

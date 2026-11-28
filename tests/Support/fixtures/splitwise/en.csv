@@ -1,0 +1,14 @@
+Note: does not include group expenses
+
+Date,Description,Category,Cost,Currency,Anna Kowalska,Ben Nowak
+
+2025-01-10,Groceries run,Groceries,100.00,PLN,50.00,-50.00
+2025-01-11,"Taxi, airport",Taxi,80.00,PLN,-80.00,80.00
+2025-01-12,Ben N. paid Anna K.,Payment,20.00,PLN,-20.00,20.00
+2025-01-13,Gift for mum,General,90.00,PLN,0.00,0.00
+2025-01-14,Dinner,Dining out,30.00,EUR,15.00,-15.00
+2025-01-15,Phone,TV/Phone/Internet,86.10,PLN,86.10,-86.10
+2025-01-15,Phone,TV/Phone/Internet,86.10,PLN,86.10,-86.10
+
+2025-02-01,Total balance, , ,PLN,122.20,-122.20
+2025-02-01,Total balance, , ,EUR,15.00,-15.00
